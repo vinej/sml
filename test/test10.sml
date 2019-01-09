@@ -6,6 +6,6 @@ print(strlen(a))
 
 if (strcmp(a,'12') == 0)
 	print('compare ok')
-endif
+end
 
 

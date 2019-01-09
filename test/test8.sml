@@ -1,9 +1,9 @@
-k1 = M_PI
+k1 = m_pi
 
 ab = acosh(60)
 
 print(ab)
 
-print(sqrt(M_PI))
+print(sqrt(m_pi))
 
-2 * 3 * M_PI
+2 * 3 * m_pi

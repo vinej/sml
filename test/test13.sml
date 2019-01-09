@@ -8,13 +8,12 @@ end
 b = 0
 for(a,1,4,1)
   b = b + 1
-  
   for(c,1,2,1)
     if (c==2)
 		print(c)
-	endif
-  next(c)
-next(a)
+	end
+  next
+next
 
 print(b)
 

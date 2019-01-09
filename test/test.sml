@@ -8,7 +8,7 @@ exe(t)
 #test
 
 i = 3   #compteur
-do(w1)
+for
   if (p == 35)
     print(p)
     p = p * 30
@@ -19,16 +19,16 @@ do(w1)
     else
         p = p * 12
 		print(p)
-    endif
+    end
   else
     p = p * 4
     print(p)
-  endif
+  end
   i = i - 1
   if(i == 0)
     break(w1)
   endif
-loop(w1)
+next
 print(i)
 p*2
 

@@ -18,15 +18,15 @@ vector_set_all(v2,3)
 vector_mul(v1,v2)
 
 i = 2
-do
+for
   val1 = vector_get(v1,1)
   val1 = vector_get(v1,0)
   val1 = vector_get(v1,2)
   if (i == 0)
     break
-  endif
+  end
   i = i - 1
-loop
+next
 
 print(val1)
 
@@ -36,7 +36,7 @@ print(val5)
 
 if (!vector_equal(v1,v2))
   print("vi is not l\"heure equal to v2")
-endif
+end
 
 #vector_free(v1)
 #vector_free(v2)
