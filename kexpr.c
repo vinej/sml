@@ -17,9 +17,9 @@
 #include "function.h"
 #include "str.h"
 #include "command.h"
-#include <complex/gsl_complex.h>
-#include <complex/gsl_complex_math.h>
-#include <vector/gsl_vector.h>
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_complex_math.h>
+#include <gsl/gsl_vector.h>
 #include <stdio.h>
 
 // GLOBAL VARIABLE USED BY ALL FUNCTIONS

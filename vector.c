@@ -4,7 +4,7 @@
 #include "kexpr.h"
 #include "vector.h"
 #include "khash.h"
-#include <vector/gsl_vector.h>
+#include <gsl/gsl_vector.h>
 
 static int ke_vector_alloc(ke1_t *stack, int top) {
    	ke1_t *p;

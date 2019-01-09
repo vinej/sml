@@ -3,7 +3,7 @@
 #include "kexpr.h"
 #include "matrix.h"
 #include "khash.h"
-#include <matrix/gsl_matrix.h>
+#include <gsl/gsl_matrix.h>
 
 static int ke_matrix_alloc(ke1_t *stack, int top) {
    	ke1_t *p, *q;

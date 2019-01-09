@@ -1,7 +1,6 @@
 #include "kexpr.h"
 #include "plot.h"
-#include "plplot.h"
-
+#include <plplot/plplot.h>
 
 static int ke_plsdev(ke1_t *stack, int top) {
 	ke1_t *p;

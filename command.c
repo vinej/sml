@@ -235,10 +235,6 @@ int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 	}
 	p = &stack[top - 1];
 	kdq_push(int, callstack, *itokp);
-	//if (!tokp->ijmp) {
-	//	khint_t iter = kh_get(KH_IDEF, hidefcommand, tokp->ifield);
-	//	tokp->ijmp = (int)kh_val(hidefcommand, iter);
-	//}
 	*itokp = tokp->ijmp;
 	--top;
 	return top;

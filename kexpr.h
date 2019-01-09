@@ -1,9 +1,9 @@
 #ifndef KEXPR_H
 #define KEXPR_H
 
-#include <vector/gsl_vector.h>
-#include <matrix/gsl_matrix.h>
-#include <complex/gsl_complex.h>
+#include <gsl/gsl_vector.h>
+#include <gsl/gsl_matrix.h>
+#include <gsl/gsl_complex.h>
 
 #include <stdint.h>
 

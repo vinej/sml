@@ -1,6 +1,6 @@
 #include "stdafx.h"
-#include <complex/gsl_complex.h>
-#include <complex/gsl_complex_math.h>
+#include <gsl/gsl_complex.h>
+#include <gsl/gsl_complex_math.h>
 #include <string.h>
 #include "kexpr.h"
 #include "complex.h"
