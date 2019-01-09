@@ -5,10 +5,29 @@ VisualStudioVersion = 15.0.27703.2018
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "sml", "sml.vcxproj", "{75871E0A-F05A-4DE9-9B51-42134148B2A6}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{100DBD8D-D0E9-40EB-B2E4-E7B44ED1C26D}"
+	ProjectSection(SolutionItems) = preProject
+		test\test.sml = test\test.sml
+		test\test10.sml = test\test10.sml
+		test\test11.sml = test\test11.sml
+		test\test12.sml = test\test12.sml
+		test\test13.sml = test\test13.sml
+		test\test14.sml = test\test14.sml
+		test\test15.sml = test\test15.sml
+		test\test16.sml = test\test16.sml
+		test\test17.sml = test\test17.sml
+		test\test18.sml = test\test18.sml
+		test\test2.sml = test\test2.sml
+		test\test3.sml = test\test3.sml
+		test\test4.sml = test\test4.sml
+		test\test5.sml = test\test5.sml
+		test\test6.sml = test\test6.sml
+		test\test7.sml = test\test7.sml
+		test\test8.sml = test\test8.sml
+		test\test9.sml = test\test9.sml
+	EndProjectSection
+EndProject
 Global
-	GlobalSection(Performance) = preSolution
-		HasPerformanceSessions = true
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
@@ -30,5 +49,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {00BB3403-8EB4-43B3-96E5-8F663F3071FF}
+	EndGlobalSection
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
 	EndGlobalSection
 EndGlobal

@@ -551,14 +551,15 @@ void ke_free_val() {
         ke_free_memory(fieldp);
     }
 	ke_free_memory(g_gbl_fields);
-	ke_free_memory(g_tokens);
 	g_gbl_fields = NULL;
+}
+
+void ke_free_tokens() {
+	ke_free_memory(g_tokens);
 }
 
 void ke_fill_list(kexpr_t *ke)
 {
-	if (g_gbl_fields) ke_free_memory(g_gbl_fields);
-	g_gbl_fields = ke_calloc_memory(sizeof(ke1_t *) * (g_gbl_field_qte),1);
     g_tokens = ke_calloc_memory(ke->n * sizeof(ke1_t *),1);
 	ke1_t * ne = NULL;
 	for (int i = 0; i < ke->n; ++i) {
@@ -578,6 +579,7 @@ void ke_fill_list(kexpr_t *ke)
         }
         g_tokens[i] = tokp;
 	}
+	ke_set_ijmp(ke, g_tokens);
 }
 
 void ke_set_int(ke1_t *tokp, int64_t y)
@@ -652,11 +654,19 @@ kexpr_t *ke_parse(char *_s, int *err)
 	kexpr_t *ke;
 	e = ke_parse_core(_s, &n, err);
 	if (*err == 0) {
-        ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
-        ke->n = n, ke->e = e;
-        //#ifdef DEBUG
-            ke_print(ke);
-        //#endif // DEBUG
+		ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
+		ke->n = n, ke->e = e;
+		//#ifdef DEBUG
+		ke_print(ke);
+		//#endif // DEBUG
+		if (g_gbl_fields == NULL) {
+			g_gbl_fields = ke_calloc_memory(sizeof(ke1_t *) * 1000, 1);
+		}
+		//else {} {
+		//	g_gbl_fields = realloc(g_gbl_fields, sizeof(ke1_t *) * g_gbl_field_qte);
+		//	memset(g_gbl_fields + old_m, 0, (*m - old_m) * sizeof(ke1_t));
+		//
+		//}
         return ke;
 	} else {
         ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
@@ -783,8 +793,12 @@ void ke_fill_hash() {
     //ke_constants_hash();
 }
 
+ke1_t* ke_get_val_index(int i) {
+	return g_tokens[i];
+}
+
 void ke_set_val_index(int i, ke1_t *tokp) {
-    ke_set_val(g_tokens[i],tokp);
+	ke_set_val(g_tokens[i], tokp);
 }
 
 void inline ke_set_val(ke1_t* e, ke1_t *q) {

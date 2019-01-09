@@ -4,6 +4,32 @@
 #include "kexpr.h"
 #include "function.h"
 
+#define RADIAN 1
+#define DEGREE 2
+#define GRADIAN  3
+static int anglem = RADIAN;
+
+static double convert_anglem(double value) {
+	switch (anglem)
+	{
+	case RADIAN:
+		return value;
+	case DEGREE:
+		return value * 180 / M_PI;
+	case GRADIAN:
+		return value * 200 / M_PI;
+	default:
+		return value;
+	}
+}
+
+static int ke_function_anglem(ke1_t *stack, int top) {
+	ke1_t *p;
+	p = &stack[--top];
+	anglem = p->r;
+	return top;
+}
+
 static int ke_function_exp(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
@@ -53,7 +79,7 @@ static int ke_function_sqrt(ke1_t *stack, int top) {
 static int ke_function_sin(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = sin(p->r);
+    p->r = convert_anglem(sin(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -62,7 +88,7 @@ static int ke_function_sin(ke1_t *stack, int top) {
 static int ke_function_cos(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = cos(p->r);
+    p->r = convert_anglem(cos(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -71,7 +97,8 @@ static int ke_function_cos(ke1_t *stack, int top) {
 static int ke_function_tan(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = tan(p->r);    p->ttype = KET_VAL;
+    p->r = convert_anglem(tan(p->r));
+	p->ttype = KET_VAL;
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -98,7 +125,7 @@ static int ke_function_ceil(ke1_t *stack, int top) {
 static int ke_function_acos(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = acos(p->r);
+	p->r = convert_anglem(acos(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -107,7 +134,7 @@ static int ke_function_acos(ke1_t *stack, int top) {
 static int ke_function_asin(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = asin(p->r);
+    p->r = convert_anglem(asin(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -116,7 +143,7 @@ static int ke_function_asin(ke1_t *stack, int top) {
 static int ke_function_atan(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = atan(p->r);
+    p->r = convert_anglem(atan(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -125,7 +152,7 @@ static int ke_function_atan(ke1_t *stack, int top) {
 static int ke_function_cosh(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = cosh(p->r);
+    p->r = convert_anglem(cosh(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -134,7 +161,7 @@ static int ke_function_cosh(ke1_t *stack, int top) {
 static int ke_function_sinh(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = sinh(p->r);
+    p->r = convert_anglem(sinh(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -143,7 +170,7 @@ static int ke_function_sinh(ke1_t *stack, int top) {
 static int ke_function_tanh(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = tanh(p->r);
+    p->r = convert_anglem(tanh(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -153,7 +180,7 @@ static int ke_function_atan2(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    p->r = atan2(p->r, q->r);
+    p->r = convert_anglem(atan2(p->r, q->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -172,7 +199,7 @@ static int ke_function_fmod(ke1_t *stack, int top) {
 static int ke_function_csc(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = 1/sin(p->r);
+    p->r = convert_anglem(1/sin(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -181,7 +208,7 @@ static int ke_function_csc(ke1_t *stack, int top) {
 static int ke_function_sec(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = 1/cos(p->r);
+    p->r = convert_anglem(1/cos(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -190,7 +217,7 @@ static int ke_function_sec(ke1_t *stack, int top) {
 static int ke_function_cot(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = 1/tan(p->r);
+    p->r = convert_anglem(1/tan(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -199,7 +226,7 @@ static int ke_function_cot(ke1_t *stack, int top) {
 static int ke_function_csch(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = 1/sinh(p->r);
+    p->r = convert_anglem(1/sinh(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -208,7 +235,7 @@ static int ke_function_csch(ke1_t *stack, int top) {
 static int ke_function_sech(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = 1/cosh(p->r);
+    p->r = convert_anglem(1/cosh(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -217,7 +244,7 @@ static int ke_function_sech(ke1_t *stack, int top) {
 static int ke_function_coth(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = 1/tanh(p->r);
+    p->r = convert_anglem(1/tanh(p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -226,7 +253,7 @@ static int ke_function_coth(ke1_t *stack, int top) {
 static int ke_function_acosh(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(cosh(p->r),-1);
+    p->r = convert_anglem(log(p->r+sqrt(p->r*p->r-1)));
     p->vtype = KEV_REAL;
     p->ttype = KET_VAL;
     p->assigned = 1;
@@ -236,7 +263,7 @@ static int ke_function_acosh(ke1_t *stack, int top) {
 static int ke_function_asinh(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(sinh(p->r),-1);
+    p->r = convert_anglem(log(p->r + sqrt(p->r*p->r+1)));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -245,7 +272,7 @@ static int ke_function_asinh(ke1_t *stack, int top) {
 static int ke_function_atanh(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(tanh(p->r),-1);
+    p->r = convert_anglem(0.5*log((1+p->r)/(1-p->r)));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -254,7 +281,7 @@ static int ke_function_atanh(ke1_t *stack, int top) {
 static int ke_function_acsc(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(1/sin(p->r),-1);
+    p->r = convert_anglem(asin(1/p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -263,7 +290,7 @@ static int ke_function_acsc(ke1_t *stack, int top) {
 static int ke_function_asec(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(1/cos(p->r),-1);
+    p->r = convert_anglem(acos(1/p->r));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -272,7 +299,7 @@ static int ke_function_asec(ke1_t *stack, int top) {
 static int ke_function_acot(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(1/tan(p->r),-1);
+    p->r = convert_anglem(-((2*atan(p->r)-M_PI)/2));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -281,7 +308,7 @@ static int ke_function_acot(ke1_t *stack, int top) {
 static int ke_function_acsch(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(1/sinh(p->r),-1);
+    p->r = convert_anglem(log(1/p->r + sqrt(1/p->r*1/p->r + 1)));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -290,7 +317,7 @@ static int ke_function_acsch(ke1_t *stack, int top) {
 static int ke_function_asech(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(1/cosh(p->r),-1);
+    p->r = convert_anglem(log(1/p->r + sqrt(1/p->r*1/p->r - 1)));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
@@ -299,16 +326,18 @@ static int ke_function_asech(ke1_t *stack, int top) {
 static int ke_function_acoth(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = pow(1/tanh(p->r),-1);
+    p->r = convert_anglem(0.5*log((1 + 1/p->r) / (1 - 1/p->r)));
     p->vtype = KEV_REAL;
     p->assigned = 1;
     return top;
 }
 
 void ke_function_hash() {
-    ke_hash_add((fncp)&ke_function_exp, FUNCTION_EXP);
+	ke_hash_add((fncp)&ke_function_anglem, FUNCTION_ANGLEM);
+	ke_hash_add((fncp)&ke_function_exp, FUNCTION_EXP);
     ke_hash_add((fncp)&ke_function_pow, FUNCTION_POW);
-    ke_hash_add((fncp)&ke_function_log, FUNCTION_LOG);
+	ke_hash_add((fncp)&ke_function_log, FUNCTION_LN);
+	ke_hash_add((fncp)&ke_function_log, FUNCTION_LOG);
     ke_hash_add((fncp)&ke_function_log10, FUNCTION_LOG10);
     ke_hash_add((fncp)&ke_function_sqrt, FUNCTION_SQRT);
     ke_hash_add((fncp)&ke_function_sin, FUNCTION_SIN);

@@ -97,9 +97,11 @@ typedef struct ke1_s {
 		gsl_vector * vector;
 		gsl_matrix * matrix;
 	    gsl_complex complex;
+		struct ke1_s * tokp;
 	} gsl;
-    double r;
+	int64_t imax;
 	int64_t i;
+	double r;
 	char *s;
 } ke1_t;
 
@@ -144,6 +146,7 @@ void ke_init_memory_count();
 void * ke_calloc_memory(size_t i, size_t x);
 void * ke_malloc_memory(size_t i);
 void ke_free_memory(void *);
+void ke_free_tokens();
 void ke_fill_list(kexpr_t *ke);
 void ke_free_val();
 void ke_free(kexpr_t *ke);
@@ -154,6 +157,8 @@ void ke_set_val(ke1_t* e, ke1_t *q);
 void ke_set_val_index(int i, ke1_t *q);
 ke1_t * ke_get_tok();
 ke1_t * ke_get_tokidx(int idx);
+ke1_t* ke_get_val_index(int i);
+
 
 #endif
 

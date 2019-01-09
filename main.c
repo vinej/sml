@@ -18,6 +18,10 @@ int main(int argc, char *argv[])
 	int c = 0 , err = 0 , to_print = 0 , is_console = 0 , is_one_expr = 0, is_file = 1; //, is_int = 0;
 	kexpr_t *ke;
 
+	if (argc == 1) {
+		is_console = 1;
+		is_file = 0;
+	}
 	//while ((c = getopt(argc, argv, "pcef")) >= 0) {
 	//	if (c == 'p') to_print = 1;
 	//	if (c == 'c') is_console = 1;
@@ -73,7 +77,8 @@ int main(int argc, char *argv[])
                 if (err) {
                     fprintf(stderr, "\nParse error: 0x%x\n", err);
                     ke_free(ke);
-                    ke_free_val();
+					ke_free_tokens();
+					ke_free_val();
                     ke_free_hash();
                     exit(1);
                 }
@@ -83,7 +88,8 @@ int main(int argc, char *argv[])
         if (is_file) {
             free(str);
         }
-        ke_free_val();
+		ke_free_tokens();
+		ke_free_val();
         ke_destroy(ke);
 	}
     else {
@@ -92,7 +98,7 @@ int main(int argc, char *argv[])
 
         while(1) {
             printf( "jyv>>> : ");
-            //gets( str );
+            gets( str );
             char * p = str;
             while(*p) {
                 if (*p < 32) *p = 32;
@@ -112,7 +118,7 @@ int main(int argc, char *argv[])
                 } else {
 					ke_fill_list(ke);
 					err |= ke_eval(ke, &vi, &vr, &vs, &ret_type);
-					ke_free_val();
+					ke_free_tokens();
 					if (err) {
                         fprintf(stderr, "\nEval error: 0x%x\n", err);
                     }
@@ -122,8 +128,10 @@ int main(int argc, char *argv[])
             }
             printf( "\n");
         }
-        ke_free_hash();
+		ke_free_val();
+		ke_free_hash();
     }
 	return 0;
+
 }
 

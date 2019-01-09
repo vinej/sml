@@ -34,6 +34,8 @@ int inline peekfor() {	return g_forstack[g_fortop-1];}
 int inline popfor() { return g_forstack[--g_fortop]; }
 void inline pushfor(int val) { g_forstack[g_fortop++] = val;  }
 
+// g_forstack max 20 level of for
+int lastDef = -1;
 
 int ifind_forward_rtn(kexpr_t *kexpr, int starti) {
 	int i = -1;
@@ -100,22 +102,88 @@ int ifind_else_or_end(kexpr_t *kexpr, int starti) {
     return -1;
 }
 
+void ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
+	ke1_t *tokp = NULL;
+	int n = kexpr->n;
+	int lastForCmd = 0;
+	for (int itok = 0; itok < n; ++itok) {
+		tokp = tokens[itok];
+		if (tokp->ttype == KET_CMD || tokp->ttype == KET_VCMD) {
+			switch (tokp->icmd) {
+			case CMD_IBRK:
+				// use for find the for token to set assigned to 0
+				tokp->i = lastForCmd;
+				if (!tokp->ijmp) {
+					tokp->ijmp = ifind_forward_next(kexpr, itok);
+				}
+				break;
+			case CMD_ICNT:
+				if (!tokp->ijmp) {
+					tokp->ijmp = peekfor();
+				}
+				break;
+			case CMD_IEXE:
+				if (!tokp->ijmp) {
+					khint_t iter = kh_get(KH_IDEF, hidefcommand, tokp->ifield);
+					tokp->ijmp = (int)kh_val(hidefcommand, iter);
+				}
+				break;
+			case CMD_IDEF:
+				lastDef = itok;
+				int absent;
+				khint_t iter = kh_put(KH_IDEF, hidefcommand, tokp->ifield, &absent);
+				kh_val(hidefcommand, iter) = ((itok) - tokp->n_args - 1);
+
+				if (!tokp->ijmp) {
+					tokp->ijmp = ifind_forward_rtn(kexpr, itok);
+				}
+				break;
+			case CMD_IIF:
+				if (!tokp->ijmp) {
+					tokp->ijmp = ifind_else_or_end(kexpr, itok);
+				}
+				break;
+			case CMD_IELSE:
+				if (!tokp->ijmp) {
+					tokp->ijmp = ifind_forward_end(kexpr, itok);
+				}
+				break;
+			case CMD_IEND:
+				break;
+			case CMD_IRTN:
+				if (!tokp->ijmp) {
+					tokp->ijmp = lastDef;
+				}
+				break;
+			case CMD_IFOR:
+				if (tokp->ttype == KET_CMD) {
+					lastForCmd = 5;
+					pushfor(itok - 5);
+				}
+				else
+				{
+					lastForCmd = 1;
+					pushfor(itok - 1);
+				}
+				if (!tokp->ijmp) {
+					tokp->ijmp = ifind_forward_next(kexpr, itok);
+				}
+				break;
+			case CMD_INEXT:
+				if (!tokp->ijmp) {
+					tokp->ijmp = popfor();
+				}
+			default:
+				break;
+			}
+		}
+	}
+}
+
 int ke_command_if(kexpr_t *kexpr, ke1_t * tokp, ke1_t *stack, int top, int * itokp) {
     ke1_t *p, *q;
     p = NULL;
-    if (tokp->n_args == 2) {
-       p = &stack[--top];
-       q = &stack[top-1];
-    } else {
-       q = &stack[top-1];
-    }
-    if (q->i == 0) {
-		if (!tokp->ijmp) {
-			tokp->ijmp = ifind_else_or_end(kexpr, *itokp);
-		}
-		*itokp = tokp->ijmp;
-    }
-    --top;
+	*itokp = (&stack[--top])->i ? *itokp : tokp->ijmp;
     return top;
 }
 
@@ -130,7 +198,7 @@ int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * it
     int absent;
 
     if (tokp->assigned) {
-        // found, execute it
+        // execute it
         int n = tokp->n_args;
         // set parameter value from the g_stack
         for (int j = 0; j < n-1; ++j) {
@@ -141,7 +209,7 @@ int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * it
         }
         return top - tokp->n_args;
     } else {
-        // not found, save position for futur use and find the end of the function
+        // save position for futur use and find the end of the function
         // remove arguments from g_stack
 		tokp->assigned = 1;
         int n = tokp->n_args - 1;
@@ -149,11 +217,6 @@ int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * it
             q = &stack[--top];
             --n;
         }
-		if (!tokp->ijmp) {
-			khint_t iter = kh_put(KH_IDEF, hidefcommand, tokp->ifield, &absent);
-			kh_val(hidefcommand, iter) = ((*itokp) - tokp->n_args - 1);
-			tokp->ijmp = ifind_forward_rtn(kexpr, *itokp);
-		}
 		*itokp = tokp->ijmp;
         --top;
         return top;
@@ -172,10 +235,10 @@ int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 	}
 	p = &stack[top - 1];
 	kdq_push(int, callstack, *itokp);
-	if (!tokp->ijmp) {
-		khint_t iter = kh_get(KH_IDEF, hidefcommand, p->ifield);
-		tokp->ijmp = (int)kh_val(hidefcommand, iter);
-	}
+	//if (!tokp->ijmp) {
+	//	khint_t iter = kh_get(KH_IDEF, hidefcommand, tokp->ifield);
+	//	tokp->ijmp = (int)kh_val(hidefcommand, iter);
+	//}
 	*itokp = tokp->ijmp;
 	--top;
 	return top;
@@ -183,41 +246,35 @@ int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 
 
 int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
-	#ifdef DEBUG
-	    if (tokp->n_args != 4) {
-		    ke_print_error_one(kexpr, "invalid number of argument for <for>", tokp, *itokp);
-		}
-	#endif
-	int itok = *itokp;
 	int n = tokp->n_args;
 	ke1_t *p = &stack[top - n];
     if (!tokp->assigned) {
-		pushfor(itok - 5);
+		ke1_t *inc = &stack[top - n + 1];
+		ke1_t *max = &stack[top - n + 2];
 		ke1_t *min = &stack[top - n + 3];
         p->vtype = KEV_INT;
         p->i = min->i;
         tokp->assigned = 1;
-        if (p->islocal){
-            ke_set_local_val(kexpr, itok, p, p);
+		tokp->i = inc->i;
+		tokp->imax = max->i;
+		if (p->islocal){
+            ke_set_local_val(kexpr, *itokp, p, p);
         } else {
-            ke_set_val_index(itok-n, p);
-        }
+			tokp->gsl.tokp = ke_get_tokidx(*itokp - n);
+			tokp->gsl.tokp->r = p->i;
+			tokp->gsl.tokp->i = p->i;
+		}
     } else {
-		ke1_t *max = &stack[top - n + 2];
-		if (p->i >= max->i) {
+		if (p->i >= tokp->imax) {
 	        tokp->assigned = 0;
-			int pop = popfor();
-			if (!tokp->ijmp) {
-				tokp->ijmp = ifind_forward_next(kexpr, itok);
-			}
 			*itokp = tokp->ijmp;
 		} else {
-			ke1_t *inc = &stack[top - n + 1];
-			p->i = p->i + inc->i;
+			p->i += tokp->i;
 			if (p->islocal){
-				ke_set_local_val(kexpr, itok, p, p);
+				ke_set_local_val(kexpr, *itokp, p, p);
 			} else {
-				ke_set_val_index(itok-n, p);
+				tokp->gsl.tokp->i += tokp->i;
+				tokp->gsl.tokp->r = (double)tokp->gsl.tokp->i;
 			}
 		}
 	}
@@ -246,36 +303,38 @@ int ke_command_print(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * i
 }
 
 int ke_command_val_else(kexpr_t *ke, ke1_t *e, int itok) {
-	if (!e->ijmp) {
-		e->ijmp = ifind_forward_end(ke, itok);
-	}
 	return e->ijmp;
 }
 
-int  ke_command_val_end(kexpr_t *kexpr, ke1_t *tokp, int itokp) {
-	return itokp;
+int  ke_command_val_end(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+	return itok;
 }
 
-int  ke_command_val_brk(kexpr_t *kexpr, ke1_t *tokp, int itokp) {
+int  ke_command_val_brk(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	int ifor = popfor();
-	// 4 parameters for the for + 1
-	ke1_t *efor = ke_get_tokidx(ifor+5);
+	// tokp->i is to determine is the for was a single for or the one with 4 parameters
+	ke1_t *efor = ke_get_tokidx(ifor + tokp->i);
 	efor->assigned = 0;
-	if (!tokp->ijmp) {
-		tokp->ijmp = ifind_forward_next(kexpr, itokp);
-	}
 	return tokp->ijmp;
 }
 
-int  ke_command_val_cnt(kexpr_t *kexpr, ke1_t *tokp, int itokp) {
-	return peekfor();
+
+int  ke_command_val_for(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+	if (!tokp->assigned) {
+		tokp->assigned = 1;
+	}
+	return itok;
 }
 
-int  ke_command_val_next(kexpr_t *kexpr, ke1_t *tokp, int itokp) {
-	return peekfor();
+int  ke_command_val_cnt(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+	return tokp->ijmp;
 }
 
-int  ke_command_val_rtn(kexpr_t *kexpr, ke1_t *tokp, int itokp) {
+int  ke_command_val_next(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+	return tokp->ijmp;
+}
+
+int  ke_command_val_rtn(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	return *kdq_pop(int, callstack);
 }
 
@@ -307,6 +366,7 @@ void ke_command_hash() {
     ke_command_hash_add((cmdp)&ke_command_exe, CMD_EXE);
     ke_command_hash_add((cmdp)&ke_command_for, CMD_FOR);
 
+	ke_vcommand_hash_add((vcmdp)&ke_command_val_for, CMD_FOR);
 	ke_vcommand_hash_add((vcmdp)&ke_command_val_else, CMD_ELSE);
 	ke_vcommand_hash_add((vcmdp)&ke_command_val_end, CMD_END);
 	ke_vcommand_hash_add((vcmdp)&ke_command_val_brk, CMD_BRK);

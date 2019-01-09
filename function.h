@@ -4,8 +4,10 @@
 void ke_function_print(ke1_t *k);
 void ke_function_hash();
 
+#define FUNCTION_ANGLEM "anglem"
 #define FUNCTION_EXP "exp"
 #define FUNCTION_POW "pow"
+#define FUNCTION_LN "ln"
 #define FUNCTION_LOG "log"
 #define FUNCTION_LOG10 "log10"
 #define FUNCTION_SQRT "sqrt"
