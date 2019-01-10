@@ -1,6 +1,6 @@
 def(t)
  p = p + 23
-end(t)
+enddef
 
 p = 12
 exe(t)
@@ -26,14 +26,8 @@ for
   end
   i = i - 1
   if(i == 0)
-    break(w1)
-  endif
+    break
+  end
 next
 print(i)
 p*2
-
-
-  
-
-
-

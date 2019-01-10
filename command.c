@@ -259,9 +259,12 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 		tokp->gsl.tokp = ke_get_tokidx(*itokp - n);
 		tokp->gsl.tokp->r = p->i;
 		tokp->gsl.tokp->i = p->i;
+		pushfor(*itokp);
+
     } else {
 		if (p->i >= tokp->imax) {
 	        tokp->assigned = 0;
+			popfor();
 			*itokp = tokp->ijmp;
 		} else {
 			p->i += tokp->i;
@@ -304,7 +307,7 @@ int  ke_command_val_end(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 int  ke_command_val_brk(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	int ifor = popfor();
 	// tokp->i is to determine is the for was a single for or the one with 4 parameters
-	ke1_t *efor = ke_get_tokidx(ifor + tokp->i);
+	ke1_t *efor = ke_get_tokidx(ifor);
 	efor->assigned = 0;
 	return tokp->ijmp;
 }

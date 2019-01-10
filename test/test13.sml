@@ -1,9 +1,9 @@
 def(sum, _a, _b)
   for(_c,1,3,1)
     print(_c)
-  next(_c)
+  next
   _a + _b
-end
+enddef
 
 b = 0
 for(a,1,4,1)
