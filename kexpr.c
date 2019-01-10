@@ -834,31 +834,6 @@ void inline ke_set_val(ke1_t* e, ke1_t *q) {
      }
 }
 
-void inline ke_set_local_val(kexpr_t *kexpr, int i, ke1_t *p, ke1_t* q) {
-    // set variable between <def> and <end>
-    ke1_t *f = &kexpr->e[i];
-    ke1_t *c = f;
-    int cnt = i;
-    while(1) {
-        if (c->ttype == KET_CMD && c->icmd == CMD_IDEF) break;
-        if (c->ttype == KET_VNAME &&  c->ifield == p->ifield) {
-            ke_set_val(c,q);
-        }
-        --c; --cnt;
-        if (cnt == 0) break;
-    }
-    c = f;
-    cnt = i;
-    while(1) {
-        ++c;
-        if (cnt == kexpr->n) break;
-		if (c->ttype == KET_VCMD && c->icmd == CMD_IRTN) break;
-		if (c->ttype == KET_VNAME &&  c->ifield == p->ifield) {
-			ke_set_val(c,q);
-        }
-    }
-}
-
 int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 {
 	ke1_t *p, *q;
