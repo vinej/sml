@@ -27,6 +27,7 @@ khash_t(KH_VCMD) *hvcommand;
 khash_t(KH_IDEF) *hdefcommand;
 stack_t *harg;
 
+extern ke1_t ** g_gbl_fields;
 
 // g_forstack max 20 level of for
 int g_forstack[20]; int g_fortop = 0;
@@ -124,14 +125,16 @@ void ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				break;
 			case CMD_IEXE:
 				if (!tokp->ijmp) {
-					khint_t iter = kh_get(KH_IDEF, hidefcommand, tokp->ifield);
+					ke1_t *def_name = tokens[itok - tokp->n_args];
+					khint_t iter = kh_get(KH_IDEF, hidefcommand, def_name->ifield);
 					tokp->ijmp = (int)kh_val(hidefcommand, iter);
 				}
 				break;
 			case CMD_IDEF:
 				lastDef = itok;
 				int absent;
-				khint_t iter = kh_put(KH_IDEF, hidefcommand, tokp->ifield, &absent);
+				ke1_t *def_name = tokens[itok - tokp->n_args];
+				khint_t iter = kh_put(KH_IDEF, hidefcommand, def_name->ifield, &absent);
 				kh_val(hidefcommand, iter) = ((itok) - tokp->n_args - 1);
 
 				if (!tokp->ijmp) {
@@ -204,8 +207,8 @@ int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * it
         for (int j = 0; j < n-1; ++j) {
            q = &stack[top-n+j+1];
 		   v = stack_pop(harg);
-           ke_set_local_val(kexpr,*itokp + 1, q, v);
-           ke_free_memory(v);
+		   ke_set_val(g_gbl_fields[q->ifield], v);
+		   ke_free_memory(v);
         }
         return top - tokp->n_args;
     } else {
@@ -253,25 +256,17 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
         tokp->assigned = 1;
 		tokp->i = inc->i;
 		tokp->imax = max->i;
-		if (p->islocal){
-            ke_set_local_val(kexpr, *itokp, p, p);
-        } else {
-			tokp->gsl.tokp = ke_get_tokidx(*itokp - n);
-			tokp->gsl.tokp->r = p->i;
-			tokp->gsl.tokp->i = p->i;
-		}
+		tokp->gsl.tokp = ke_get_tokidx(*itokp - n);
+		tokp->gsl.tokp->r = p->i;
+		tokp->gsl.tokp->i = p->i;
     } else {
 		if (p->i >= tokp->imax) {
 	        tokp->assigned = 0;
 			*itokp = tokp->ijmp;
 		} else {
 			p->i += tokp->i;
-			if (p->islocal){
-				ke_set_local_val(kexpr, *itokp, p, p);
-			} else {
-				tokp->gsl.tokp->i += tokp->i;
-				tokp->gsl.tokp->r = (double)tokp->gsl.tokp->i;
-			}
+			tokp->gsl.tokp->i += tokp->i;
+			tokp->gsl.tokp->r = (double)tokp->gsl.tokp->i;
 		}
 	}
 	return top - n;

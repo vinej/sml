@@ -95,7 +95,7 @@
       <EnableModules>false</EnableModules>
       <CompileAs>CompileAsC</CompileAs>
       <DisableLanguageExtensions>true</DisableLanguageExtensions>
-      <AdditionalIncludeDirectories>c:\cygwin64\plplot\include;C:\cygwin64\plplot\build\include;C:\gsl26;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -135,7 +135,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>c:\sml\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <EnableModules>false</EnableModules>
       <CompileAs>CompileAsC</CompileAs>

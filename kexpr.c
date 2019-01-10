@@ -194,6 +194,9 @@ fncp ke_function(char * name) {
 	}
 }
 
+int isNextDefName = 0;
+char currentDefName[100];
+
 // parse a token except "(", ")" and ","
 ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't parse parentheses
 {
@@ -210,6 +213,9 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 			if (tok.f.defcmd != NULL) {
 				tok.icmd = ke_command_icmd(tok.name);
 				tok.ttype = KET_CMD;
+				if (strcmp(tok.name, CMD_DEF) == 0) {
+					isNextDefName = 1;
+				}
 				tok.ijmp = 0;
 			} else {
 				tok.f.deffunc = (fncp)ke_function(tok.name);
@@ -229,16 +235,32 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 			else {
 				tok.f.defvcmd = (vcmdp)ke_command_val(tok.name);
 				if (tok.f.defvcmd != NULL) {
+					if (strcmp(tok.name, CMD_RTN) == 0) {
+						*currentDefName = 0;
+					}
 					tok.ttype = KET_VCMD;
 					tok.icmd = ke_command_icmd(tok.name);
 				}
 				else {
 					tok.ttype = KET_VNAME;
-					if (*tok.name == LOCAL_VAR) {
+					if (isNextDefName) {
+						strcpy(currentDefName, tok.name);
+						isNextDefName = 0;
 						tok.islocal = 1;
 					}
 					else {
-						tok.islocal = 0;
+						if (*currentDefName != 0) {
+							char * localName = ke_calloc_memory(strlen(tok.name) + strlen(currentDefName) + 2, 1);
+							strcpy(localName, currentDefName);
+							strcat(localName, "__");
+							strcat(localName, tok.name);
+							ke_free_memory(tok.name);
+							tok.name = localName;
+							tok.islocal = 1;
+						}
+						else {
+							tok.islocal = 0;
+						}
 					}
 					khint_t iter = kh_get(KH_FIELD, hname, tok.name);
 					if (kh_end(hname) != iter) {
@@ -564,19 +586,17 @@ void ke_fill_list(kexpr_t *ke)
 	ke1_t * ne = NULL;
 	for (int i = 0; i < ke->n; ++i) {
         ke1_t *tokp = &ke->e[i];
-        if (!tokp->islocal) {
-            if (tokp->ttype == KET_VNAME) {
-				ne = g_gbl_fields[tokp->ifield];
-				if (ne == NULL) {
-                    char * newname = ke_mystrndup(tokp->name, strlen(tokp->name));
-                    ne = ke_malloc_memory(sizeof(ke1_t));
-                    memcpy(ne, tokp, sizeof(ke1_t));
-                    ne->name = newname;
-					g_gbl_fields[tokp->ifield] = ne;
-                }
-				tokp = ne;
-			}
-        }
+        if (tokp->ttype == KET_VNAME) {
+			ne = g_gbl_fields[tokp->ifield];
+			if (ne == NULL) {
+                char * newname = ke_mystrndup(tokp->name, strlen(tokp->name));
+                ne = ke_malloc_memory(sizeof(ke1_t));
+                memcpy(ne, tokp, sizeof(ke1_t));
+                ne->name = newname;
+				g_gbl_fields[tokp->ifield] = ne;
+            }
+			tokp = ne;
+		}
         g_tokens[i] = tokp;
 	}
 	ke_set_ijmp(ke, g_tokens);
@@ -864,14 +884,7 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
 				q = &g_stack[--top];
 				p = &g_stack[--top];
-				if (p->islocal) {
-					// local variable
-					ke_set_local_val(kexpr, g_tok_idx, p, q);
-				}
-				else {
-					// gloval variable
-					ke_set_val(g_gbl_fields[p->ifield], q);
-				}
+				ke_set_val(g_gbl_fields[p->ifield], q);
 			}
 			else {
 				if (tokp->n_args == 2) {
