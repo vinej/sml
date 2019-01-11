@@ -81,7 +81,7 @@ static const char *ke_opstr[] = {
 
 #define KE_GEN_CMP(_type, _op) \
 	static void ke_op_##_type(ke1_t *p, ke1_t *q) { \
-		if (p->vtype == KEV_STR && q->vtype == KEV_STR) p->i = (strcmp(p->s, q->s) _op 0); \
+		if (p->vtype == KEV_STR && q->vtype == KEV_STR) p->i = (strcmp(p->obj.s, q->obj.s) _op 0); \
 		else p->i = p->vtype == KEV_REAL || q->vtype == KEV_REAL? (p->r _op q->r) : (p->i _op q->i); \
 		p->r = (double)p->i; \
 		p->vtype = KEV_INT; \
@@ -305,7 +305,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 			if (*p == '\\') ++p; // escaping
 		if (*p == c) {
 			tok.ttype = KET_VAL, tok.vtype = KEV_STR;
-			tok.s = ke_mystrndup(q + 1, p - q - 1);
+			tok.obj.s = ke_mystrndup(q + 1, p - q - 1);
 			*r = p + 1;
 		} else *err |= KEE_UNQU, *r = p;
 	} else { // an operator
@@ -563,12 +563,12 @@ void ke_free_val() {
 	for(int i = 1; i < g_gbl_field_qte; ++i) {
 		ke1_t*fieldp = g_gbl_fields[i];
         ke_free_memory(fieldp->name);
-		if (fieldp->gsl.matrix && fieldp->vtype == KEV_MAT) {
+		if (fieldp->obj.matrix && fieldp->vtype == KEV_MAT) {
 			ke_matrix_freemem(fieldp);
-		} else if (fieldp->gsl.vector && fieldp->vtype == KEV_VEC) {
+		} else if (fieldp->obj.vector && fieldp->vtype == KEV_VEC) {
 			ke_vector_freemem(fieldp);
-		} else if (fieldp->s) {
-            ke_free_memory(fieldp->s);
+		} else if (fieldp->obj.s) {
+            ke_free_memory(fieldp->obj.s);
 		}
         ke_free_memory(fieldp);
     }
@@ -617,13 +617,13 @@ void ke_set_null_vector(int ifield)
 {
 	ke1_t * ftokp = g_gbl_fields[ifield];
     ke_vector_freemem(ftokp);
-    ftokp->gsl.vector = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
+    ftokp->obj.vector = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
 }
 
 void ke_set_vector(ke1_t *tokp, gsl_vector * vecp)
 {
     ke_vector_freemem(tokp);
-    tokp->gsl.vector = vecp, tokp->vtype = KEV_VEC, tokp->ttype = KET_VAL, tokp->assigned = 1;
+    tokp->obj.vector = vecp, tokp->vtype = KEV_VEC, tokp->ttype = KET_VAL, tokp->assigned = 1;
 }
 
 void ke_set_null_matrix(int ifield)
@@ -631,26 +631,26 @@ void ke_set_null_matrix(int ifield)
 	ke1_t * f = g_gbl_fields[ifield];
 
     ke_matrix_freemem(f);
-    f->gsl.matrix = NULL, f->vtype = KEV_REAL, f->ttype = KET_VAL, f->assigned = 0;
+    f->obj.matrix = NULL, f->vtype = KEV_REAL, f->ttype = KET_VAL, f->assigned = 0;
 }
 
 void ke_set_matrix(ke1_t *tokp, gsl_matrix * matp)
 {
     ke_matrix_freemem(tokp);
-    tokp->gsl.matrix = matp, tokp->vtype = KEV_MAT, tokp->ttype = KET_VAL, tokp->assigned = 1;
+    tokp->obj.matrix = matp, tokp->vtype = KEV_MAT, tokp->ttype = KET_VAL, tokp->assigned = 1;
 }
 
 
 void ke_set_complex(ke1_t *tokp, gsl_complex complex)
 {
-	tokp->gsl.complex = complex, tokp->vtype = KEV_COMPLEX, tokp->assigned = 1;
+	tokp->obj.complex = complex, tokp->vtype = KEV_COMPLEX, tokp->assigned = 1;
 }
 
 static void ke_set_str_internal(ke1_t *tokp, char * tmp) {
-    if (tokp->vtype == KEV_STR && tokp->s) {
-        ke_free_memory(tokp->s);
+    if (tokp->vtype == KEV_STR && tokp->obj.s) {
+        ke_free_memory(tokp->obj.s);
     }
-    tokp->s = tmp;
+    tokp->obj.s = tmp;
     tokp->i = 0, tokp->r = 0, tokp->assigned = 1;
     tokp->vtype = KEV_STR;
 }
@@ -701,7 +701,7 @@ void ke_print_one_stack(ke1_t * tokp)
     if (tokp->ttype == KET_VNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL) {
         if (tokp->name != NULL) printf("%s", tokp->name);
         else {
-            if (tokp->vtype == KEV_STR) printf("%s", tokp->s);
+            if (tokp->vtype == KEV_STR) printf("%s", tokp->obj.s);
             if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
             if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
         }
@@ -725,11 +725,11 @@ void ke_print_one(ke1_t * tokp)
 		#ifdef DEBUG
 			if (tokp->name != NULL) printf("%s=", tokp->name);
 		#endif // DEBUG
-        if (tokp->s == NULL) {
+        if (tokp->obj.s == NULL) {
             if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
             if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
         } else {
-            printf("%s", tokp->s);
+            printf("%s", tokp->obj.s);
         }
     }
 
@@ -825,10 +825,10 @@ void inline ke_set_val(ke1_t* e, ke1_t *q) {
 	 e->vtype = q->vtype;
      if (q->vtype == KEV_INT)  e->i = q->i; //, e->assigned = 1; //double yy = (double)q->i; e->r = yy,
 	 else if (q->vtype == KEV_REAL)	e->r = q->r;  //e->i = (int64_t)e->r; e->assigned = 1;
-	 else if (q->vtype == KEV_STR) 	ke_set_str(e, q->s);
-	 else if (q->vtype == KEV_VEC)	ke_set_vector(e, q->gsl.vector);
-	 else if (q->vtype == KEV_MAT) 	ke_set_matrix(e, q->gsl.matrix);
-	 else if (q->vtype == KEV_COMPLEX) ke_set_complex(e, q->gsl.complex);
+	 else if (q->vtype == KEV_STR) 	ke_set_str(e, q->obj.s);
+	 else if (q->vtype == KEV_VEC)	ke_set_vector(e, q->obj.vector);
+	 else if (q->vtype == KEV_MAT) 	ke_set_matrix(e, q->obj.matrix);
+	 else if (q->vtype == KEV_COMPLEX) ke_set_complex(e, q->obj.complex);
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
@@ -886,7 +886,7 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
     #endif // DEBUG
 
 	*ret_type = g_stack->vtype;
-	*_i = g_stack->i, *_r = g_stack->r, *_p = g_stack->s;
+	*_i = g_stack->i, *_r = g_stack->r, *_p = g_stack->obj.s;
 
 	#ifdef DEBUG
         printf("= ");
@@ -926,9 +926,9 @@ void ke_free(kexpr_t *kexpr)
     int i;
 	for (i = 0; i < kexpr->n; ++i) {
 		ke1_t *e = &kexpr->e[i];
-		if (e->vtype == KEV_STR && e->s) {
-            ke_free_memory(e->s);
-            e->s = NULL;
+		if (e->vtype == KEV_STR && e->obj.s) {
+            ke_free_memory(e->obj.s);
+            e->obj.s = NULL;
 		}
         if (e->name) {
             ke_free_memory(e->name);

@@ -46,7 +46,7 @@ int ifind_forward_rtn(kexpr_t *kexpr, int starti) {
 			return i;
 		}
 	}
-	printf("->*** ERROR, %s:%d:%d", "not found for iforward", CMD_IRTN, starti);
+	printf("->*** ERROR, %s:%d:%d", "not found in ifind_forward_rtn", CMD_IRTN, starti);
 	return -1;
 }
 
@@ -64,7 +64,7 @@ int ifind_forward_next(kexpr_t *kexpr, int starti) {
 				return i;
 		}
 	}
-	printf("->*** ERROR: %s|%d", "not found next", starti);
+	printf("->*** ERROR: %s|%d", "not found in ifind_forward_next", starti);
 	return -1;
 }
 
@@ -81,7 +81,7 @@ int ifind_forward_end(kexpr_t *kexpr, int starti) {
 				return i;
 		}
 	}
-	printf("->*** ERROR: %s|%d", "not found: end", starti);
+	printf("->*** ERROR: %s|%d", "not found in ifind_forward_end", starti);
 	return -1;
 }
 
@@ -99,7 +99,7 @@ int ifind_else_or_end(kexpr_t *kexpr, int starti) {
 				return i;
 		}
     }
-    printf("->*** ERROR: %s|%d", "not find: end|else", starti);
+    printf("->*** ERROR: %s|%d", "not found in ifind_else_or_end", starti);
     return -1;
 }
 
@@ -184,7 +184,7 @@ void ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 }
 
 int ke_command_if(kexpr_t *kexpr, ke1_t * tokp, ke1_t *stack, int top, int * itokp) {
-    ke1_t *p, *q;
+    ke1_t *p;
     p = NULL;
 	*itokp = (&stack[--top])->i ? *itokp : tokp->ijmp;
     return top;
@@ -198,8 +198,6 @@ int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * it
 
     // get the def name
     p = (ke1_t *)&stack[top - tokp->n_args];
-    int absent;
-
     if (tokp->assigned) {
         // execute it
         int n = tokp->n_args;
@@ -246,30 +244,24 @@ int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 
 int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
 	int n = tokp->n_args;
-	ke1_t *p = &stack[top - n];
+	ke1_t *p = &stack[top - n]; // copy of the real variable into the stack
+
     if (!tokp->assigned) {
-		ke1_t *inc = &stack[top - n + 1];
-		ke1_t *max = &stack[top - n + 2];
 		ke1_t *min = &stack[top - n + 3];
-        p->vtype = KEV_INT;
-        p->i = min->i;
         tokp->assigned = 1;
-		tokp->i = inc->i;
-		tokp->imax = max->i;
-		tokp->gsl.tokp = ke_get_tokidx(*itokp - n);
-		tokp->gsl.tokp->r = p->i;
-		tokp->gsl.tokp->i = p->i;
+		tokp->obj.tokp = ke_get_tokidx(*itokp - n);
+		tokp->obj.tokp->r = (min->vtype == KEV_INT ? min->i : min->r);
 		pushfor(*itokp);
 
     } else {
-		if (p->i >= tokp->imax) {
+		ke1_t *max = &stack[top - n + 2];
+		if (p->r >= (max->vtype == KEV_INT ? max->i : max->r)) {  
 	        tokp->assigned = 0;
 			popfor();
 			*itokp = tokp->ijmp;
 		} else {
-			p->i += tokp->i;
-			tokp->gsl.tokp->i += tokp->i;
-			tokp->gsl.tokp->r = (double)tokp->gsl.tokp->i;
+			ke1_t *inc = &stack[top - n + 1];
+			tokp->obj.tokp->r += (inc->vtype == KEV_INT ? inc->i : inc->r);
 		}
 	}
 	return top - n;

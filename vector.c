@@ -9,7 +9,7 @@
 static int ke_vector_alloc(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->gsl.vector = gsl_vector_alloc((size_t)p->i); ke_inc_memory();
+    p->obj.vector = gsl_vector_alloc((size_t)p->i); ke_inc_memory();
     p->ttype = KET_VAL;
     p->vtype = KEV_VEC;
     return top;
@@ -19,10 +19,10 @@ static int ke_vector_get(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    p->r = gsl_vector_get(p->gsl.vector, (size_t)q->i);
+    p->r = gsl_vector_get(p->obj.vector, (size_t)q->i);
     p->ttype = KET_VAL;
     p->vtype = KEV_REAL;
-    p->gsl.vector = NULL;
+    p->obj.vector = NULL;
     return top;
 }
 
@@ -31,7 +31,7 @@ static int ke_vector_set(ke1_t *stack, int top) {
     v = &stack[--top],
     q = &stack[--top],
     p = &stack[--top];
-    gsl_vector_set(p->gsl.vector, (size_t)q->i, v->r);
+    gsl_vector_set(p->obj.vector, (size_t)q->i, v->r);
     return top;
 }
 
@@ -42,9 +42,9 @@ static int ke_vector_put(ke1_t *stack, int top) {
 	p = (ke1_t *)&stack[top - e->n_args];
 	// set parameter value from the stack
 	for (int j = 0; j < n - 1; ++j) {
-		if (j == p->gsl.vector->size) break;
+		if (j == p->obj.vector->size) break;
 		q = &stack[top - n + j + 1];
-		gsl_vector_set(p->gsl.vector, (size_t)j, q->r);
+		gsl_vector_set(p->obj.vector, (size_t)j, q->r);
 	}
 	return top - e->n_args;
 }
@@ -61,7 +61,7 @@ static int ke_vector_set_all(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_set_all(p->gsl.vector, q->r);
+    gsl_vector_set_all(p->obj.vector, q->r);
     --top;
     return top;
 }
@@ -69,7 +69,7 @@ static int ke_vector_set_all(ke1_t *stack, int top) {
 static int ke_vector_set_zero(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    gsl_vector_set_zero(p->gsl.vector);
+    gsl_vector_set_zero(p->obj.vector);
     --top;
     return top;
 }
@@ -78,7 +78,7 @@ static int ke_vector_set_basis(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_set_basis(p->gsl.vector, (size_t)q->i);
+    gsl_vector_set_basis(p->obj.vector, (size_t)q->i);
     --top;
     return top;
 }
@@ -87,7 +87,7 @@ static int ke_vector_add(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_add(p->gsl.vector, q->gsl.vector);
+    gsl_vector_add(p->obj.vector, q->obj.vector);
     --top;
     return top;
 }
@@ -96,7 +96,7 @@ static int ke_vector_sub(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_sub(p->gsl.vector, q->gsl.vector);
+    gsl_vector_sub(p->obj.vector, q->obj.vector);
     --top;
     return top;
 }
@@ -105,7 +105,7 @@ static int ke_vector_mul(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_mul(p->gsl.vector, q->gsl.vector);
+    gsl_vector_mul(p->obj.vector, q->obj.vector);
     --top;
     return top;
 }
@@ -114,7 +114,7 @@ static int ke_vector_div(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_div(p->gsl.vector, q->gsl.vector);
+    gsl_vector_div(p->obj.vector, q->obj.vector);
     --top;
     return top;
 }
@@ -123,7 +123,7 @@ static int ke_vector_scale(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_scale(p->gsl.vector, q->r);
+    gsl_vector_scale(p->obj.vector, q->r);
     --top;
     return top;
 }
@@ -132,7 +132,7 @@ static int ke_vector_add_constant(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_add_constant(p->gsl.vector, q->r);
+    gsl_vector_add_constant(p->obj.vector, q->r);
     --top;
     return top;
 }
@@ -140,7 +140,7 @@ static int ke_vector_add_constant(ke1_t *stack, int top) {
 static int ke_vector_reverse(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    gsl_vector_reverse(p->gsl.vector);
+    gsl_vector_reverse(p->obj.vector);
     --top;
     return top;
 }
@@ -150,7 +150,7 @@ static int ke_vector_swap_elements(ke1_t *stack, int top) {
     v = &stack[--top],
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_swap_elements(p->gsl.vector, (size_t)q->i, (size_t)v->i);
+    gsl_vector_swap_elements(p->obj.vector, (size_t)q->i, (size_t)v->i);
     --top;
     return top;
 }
@@ -159,7 +159,7 @@ static int ke_vector_memcpy(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_memcpy(p->gsl.vector, q->gsl.vector);
+    gsl_vector_memcpy(p->obj.vector, q->obj.vector);
     --top;
     return top;
 }
@@ -168,7 +168,7 @@ static int ke_vector_swap(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_swap(p->gsl.vector, q->gsl.vector);
+    gsl_vector_swap(p->obj.vector, q->obj.vector);
     --top;
     return top;
 }
@@ -176,60 +176,60 @@ static int ke_vector_swap(ke1_t *stack, int top) {
 static int ke_vector_min(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = gsl_vector_min(p->gsl.vector);
+    p->r = gsl_vector_min(p->obj.vector);
     p->ttype = KET_VAL;
     p->vtype = KEV_REAL;
-    p->gsl.vector = NULL;
+    p->obj.vector = NULL;
     return top;
 }
 
 static int ke_vector_max(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->r = gsl_vector_max(p->gsl.vector);
+    p->r = gsl_vector_max(p->obj.vector);
     p->ttype = KET_VAL;
     p->vtype = KEV_REAL;
-    p->gsl.vector = NULL;
+    p->obj.vector = NULL;
     return top;
 }
 
 static int ke_vector_isnull(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->i = gsl_vector_isnull(p->gsl.vector);
+    p->i = gsl_vector_isnull(p->obj.vector);
     p->ttype = KET_VAL;
     p->vtype = KEV_INT;
-    p->gsl.vector = NULL;
+    p->obj.vector = NULL;
     return top;
 }
 
 static int ke_vector_ispos(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->i = gsl_vector_ispos(p->gsl.vector);
+    p->i = gsl_vector_ispos(p->obj.vector);
     p->ttype = KET_VAL;
     p->vtype = KEV_INT;
-    p->gsl.vector = NULL;
+    p->obj.vector = NULL;
     return top;
 }
 
 static int ke_vector_isneg(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->i = gsl_vector_isneg(p->gsl.vector);
+    p->i = gsl_vector_isneg(p->obj.vector);
     p->ttype = KET_VAL;
     p->vtype = KEV_INT;
-    p->gsl.vector = NULL;
+    p->obj.vector = NULL;
     return top;
 }
 
 static int ke_vector_isnonneg(ke1_t *stack, int top) {
    	ke1_t *p;
     p = &stack[top-1];
-    p->i = gsl_vector_isnonneg(p->gsl.vector);
+    p->i = gsl_vector_isnonneg(p->obj.vector);
     p->ttype = KET_VAL;
     p->vtype = KEV_INT;
-    p->gsl.vector = NULL;
+    p->obj.vector = NULL;
     return top;
 }
 
@@ -237,10 +237,10 @@ static int ke_vector_equal(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
-    gsl_vector_equal(p->gsl.vector, q->gsl.vector);
+    gsl_vector_equal(p->obj.vector, q->obj.vector);
     p->ttype = KET_VAL;
     p->vtype = KEV_INT;
-    p->gsl.vector = NULL;
+    p->obj.vector = NULL;
     return top;
 }
 
@@ -248,8 +248,8 @@ static int ke_vector_fscanf(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
-    FILE * f = fopen(q->s, "r");
-    gsl_vector_fscanf(f, p->gsl.vector);
+    FILE * f = fopen(q->obj.s, "r");
+    gsl_vector_fscanf(f, p->obj.vector);
     fclose(f);
     --top;
     return top;
@@ -259,8 +259,8 @@ static int ke_vector_fprintf(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
-    FILE * f = fopen(q->s, "w");
-    gsl_vector_fprintf(f, p->gsl.vector,"%5g");
+    FILE * f = fopen(q->obj.s, "w");
+    gsl_vector_fprintf(f, p->obj.vector,"%5g");
     fclose(f);
     --top;
     return top;
@@ -270,8 +270,8 @@ static int ke_vector_fread(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
-    FILE * f = fopen(q->s, "r");
-    gsl_vector_fread(f, p->gsl.vector);
+    FILE * f = fopen(q->obj.s, "r");
+    gsl_vector_fread(f, p->obj.vector);
     fclose(f);
     --top;
     return top;
@@ -281,8 +281,8 @@ static int ke_vector_fwrite(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
-    FILE * f = fopen(q->s, "w");
-    gsl_vector_fwrite(f, p->gsl.vector);
+    FILE * f = fopen(q->obj.s, "w");
+    gsl_vector_fwrite(f, p->obj.vector);
     fclose(f);
     --top;
     return top;
@@ -327,15 +327,15 @@ void ke_vector_hash() {
 
 void ke_vector_print(ke1_t *k) {
     printf("Vector: %s\n", k->name);
-    for(size_t i = 0; i < k->gsl.vector->size; i++) {
-        printf("%d : v:%g\n", i, gsl_vector_get(k->gsl.vector, i));
+    for(size_t i = 0; i < k->obj.vector->size; i++) {
+        printf("%d : v:%g\n", i, gsl_vector_get(k->obj.vector, i));
     }
 }
 
 void ke_vector_freemem(ke1_t *e) {
-    if (e->gsl.vector && e->vtype == KEV_VEC) {
-        gsl_vector_free(e->gsl.vector); ke_dec_memory();
-        e->gsl.vector = NULL;
+    if (e->obj.vector && e->vtype == KEV_VEC) {
+        gsl_vector_free(e->obj.vector); ke_dec_memory();
+        e->obj.vector = NULL;
     }
 }
 

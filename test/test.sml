@@ -1,6 +1,6 @@
 def(t)
  p = p + 23
-enddef
+enddef(t)
 
 p = 12
 exe(t)

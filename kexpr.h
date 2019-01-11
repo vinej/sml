@@ -81,11 +81,11 @@ typedef struct kexpr_s kexpr_t;
 
 struct ke1_s;
 typedef struct ke1_s {
-	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, futur:4, islocal:1; // ttype: token type; vtype: value type
-	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments
-	int32_t ijmp; // fast jmp
-	char *name; // variable name or function name
-	union {
+	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, futur:4, islocal:1; // ttype: token type; vtype: value type  
+	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
+	int32_t ijmp; // fast jmp                                                                                     
+	char *name; // variable name or function name                                                                 
+	union {    //                                                                                                 
 		void (*builtin)(struct ke1_s *a, struct ke1_s *b); // execution function
 		double (*real_func1)(double);
 		double (*real_func2)(double, double);
@@ -93,16 +93,16 @@ typedef struct ke1_s {
 		int (*defcmd)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
 		int (*defvcmd)(kexpr_t *ke, struct ke1_s*, int i);
 	} f;
-	union {
+	union {  //                                                                                                     
 		gsl_vector * vector;
 		gsl_matrix * matrix;
 	    gsl_complex complex;
 		struct ke1_s * tokp;
-	} gsl;
-	int64_t imax;
+		char *s;
+	} obj;
+	int line;
 	int64_t i;
 	double r;
-	char *s;
 } ke1_t;
 
 struct kexpr_s {

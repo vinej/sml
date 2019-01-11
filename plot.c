@@ -5,14 +5,14 @@
 static int ke_plsdev(ke1_t *stack, int top) {
 	ke1_t *p;
 	p = &stack[--top];
-	plsdev(p->s);
+	plsdev(p->obj.s);
 	return top;
 }
 
 static int ke_plinit(ke1_t *stack, int top) {
 	ke1_t *p;
 	p = &stack[--top];
-	plsdev(p->s);
+	plsdev(p->obj.s);
 	plinit();
 	return top;
 }
@@ -34,7 +34,7 @@ static int ke_plline(ke1_t *stack, int top) {
 	y = &stack[--top];
 	x = &stack[--top]; 
 	n = &stack[--top];
-	plline((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->gsl.vector, (PLINT)0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->gsl.vector, (PLINT)0));
+	plline((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, (PLINT)0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, (PLINT)0));
 	return top;
 }
 
@@ -101,7 +101,7 @@ static int ke_plaxes(ke1_t *stack, int top) {
 	xopt = &stack[--top];
 	y0 = &stack[--top];
 	x0 = &stack[--top];
-	plaxes((PLFLT)x0->r, (PLFLT)y0->r, (PLCHAR_VECTOR)xopt->s, (PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->s, (PLFLT)ytick->r, (PLINT)nysub->i);
+	plaxes((PLFLT)x0->r, (PLFLT)y0->r, (PLCHAR_VECTOR)xopt->obj.s, (PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->obj.s, (PLFLT)ytick->r, (PLINT)nysub->i);
 	return top;
 }
 
@@ -111,7 +111,7 @@ static int ke_plbin(ke1_t *stack, int top) {
 	y = &stack[--top];
 	x = &stack[--top];
 	nbin = &stack[--top];
-	plbin((PLINT)nbin->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->gsl.vector, (PLINT)0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->gsl.vector, (PLINT)0), (PLINT)opt->i);
+	plbin((PLINT)nbin->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, (PLINT)0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, (PLINT)0), (PLINT)opt->i);
 	return top;
 }
 
@@ -128,7 +128,7 @@ static int ke_plbox(ke1_t *stack, int top) {
 	nxsub = &stack[--top];
 	xtick = &stack[--top];
 	xopt = &stack[--top];
-	plbox((PLCHAR_VECTOR)xopt->s, (PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->s, (PLFLT)ytick->r, (PLINT)nysub->i);
+	plbox((PLCHAR_VECTOR)xopt->obj.s, (PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->obj.s, (PLFLT)ytick->r, (PLINT)nysub->i);
 	return --top;
 }
 
@@ -146,7 +146,7 @@ static int ke_plbox3(ke1_t *stack, int top) {
 	xtick = &stack[--top];
 	xlabel = &stack[--top];
 	xopt = &stack[--top];
-	plbox3((PLCHAR_VECTOR)xopt->s, (PLCHAR_VECTOR)xlabel->s, (PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->s, (PLCHAR_VECTOR)ylabel->s, (PLFLT)ytick->r, (PLINT)nysub->i, (PLCHAR_VECTOR)zopt->s, (PLCHAR_VECTOR)zlabel->s, (PLFLT)ztick->r, (PLINT)nzsub->i);
+	plbox3((PLCHAR_VECTOR)xopt->obj.s, (PLCHAR_VECTOR)xlabel->obj.s, (PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->obj.s, (PLCHAR_VECTOR)ylabel->obj.s, (PLFLT)ytick->r, (PLINT)nysub->i, (PLCHAR_VECTOR)zopt->obj.s, (PLCHAR_VECTOR)zlabel->obj.s, (PLFLT)ztick->r, (PLINT)nzsub->i);
 	return --top;
 }
 

@@ -13,6 +13,7 @@ void ht_timing(void (*f)(void))
 
 int main(int argc, char *argv[])
 {
+	printf("%d\n", sizeof(struct ke1_s));
     int MAX = 1;
     ke_init_memory_count();
 	int c = 0 , err = 0 , to_print = 0 , is_console = 0 , is_one_expr = 0, is_file = 1; //, is_int = 0;

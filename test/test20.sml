@@ -1,14 +1,11 @@
-
-def(sum, _a, _b)
-  _a + _b / 12.34
+def(add,a,b)
+  a + b
 enddef
-b=33
+
+
 for(b,1,10,1)
-  j = exe(sum,1.0,2.0)+b
-  print(j)
+  print(exe(add,b, 1.2))
 next
-print(j)
-print('end')
  
 
 
