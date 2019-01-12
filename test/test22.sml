@@ -1,9 +1,7 @@
+def(test)
+ a + b
+enddef
 
+exe(abc)
 
-for
-  a = 12 * simp(12)
-  if(a==12)
-    print('ok')
-  end
-  
-
+print('end')

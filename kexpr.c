@@ -36,7 +36,8 @@ char g_currentDefName[100]; // current name of the current function
 int g_sourceCodeLine = 1;  // use to keep the line number to show better error trapping
 int g_isFirstToken = 1;    // use to remove separators at the beginning of the program
 int g_isLastTokenNop = 0;  // use to manage the command seperator, the rule is to have one separator between each comand
-//---------------------
+char g_lastErrorMessage[256]; // 
+							//---------------------
 
 
 // KHASH MAP STR DEFINITION
@@ -312,6 +313,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 					tok.ttype = KET_FUNC;
 				}
 				else {
+					strcpy(g_lastErrorMessage, tok.name);
 					*err |= KEE_UNFUNC;
 				}
 			}
@@ -700,15 +702,14 @@ kexpr_t *ke_parse(char *_s, int *err)
 		//}
         return ke;
 	} else {
-		printf("SML: ERROR: Parser error between line <%d> and <%d>\n", g_sourceCodeLine-1, g_sourceCodeLine);
-		if (*err & KEE_ARG) printf("SML: ERROR: Wrong number of arguments\n");
-		if (*err & KEE_UNFUNC) printf("SML: ERROR: Function name not found\n");
-		if (*err & KEE_UNOP) printf("SML: ERROR: Undefiend operator\n");
-		if (*err & KEE_UNLP) printf("SML: ERROR: Unmatched left parentheses\n");
-		if (*err & KEE_UNRP) printf("SML: ERROR: Unmatched right parentheses\n");
-		if (*err & KEE_UNQU) printf("SML: ERROR: Unmatched quotation marks\n");
-		if (*err & KEE_FUNC) printf("SML: ERROR: Wrong function syntax\n");
-		if (*err & KEE_NUM) printf("SML: ERROR: Failed to parse number\n");
+		if (*err & KEE_ARG) printf("SML: ERROR: Wrong number of arguments at line <%d>\n", g_sourceCodeLine);
+		if (*err & KEE_UNFUNC) printf("SML: ERROR: Function name <%s> not found at line <%d>\n", g_lastErrorMessage, g_sourceCodeLine);
+		if (*err & KEE_UNOP) printf("SML: ERROR: Undefiend operator at line <%d>\n", g_sourceCodeLine);
+		if (*err & KEE_UNLP) printf("SML: ERROR: Unmatched left parentheses at line <%d>\n", g_sourceCodeLine);
+		if (*err & KEE_UNRP) printf("SML: ERROR: Unmatched right parentheses at line <%d>\n", g_sourceCodeLine);
+		if (*err & KEE_UNQU) printf("SML: ERROR: Unmatched quotation marks at line <%d>\n", g_sourceCodeLine);
+		if (*err & KEE_FUNC) printf("SML: ERROR: Wrong function syntax at line <%d>\n", g_sourceCodeLine);
+		if (*err & KEE_NUM) printf("SML: ERROR: Failed to parse number at line <%d>\n", g_sourceCodeLine);
 		ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
         ke->n = n, ke->e = e;
         ke_free(ke);

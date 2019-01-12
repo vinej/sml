@@ -121,6 +121,10 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				break;
 			case CMD_ICNT:
 				if (!tokp->ijmp) {
+					if (g_fortop < 0) {
+						printf("SML: ERROR: Command <for> not found for token <continue> at line <%d>\n", tokp->sourceLine);
+						return -1;
+					}
 					tokp->ijmp = peekfor();
 				}
 				break;
@@ -128,6 +132,10 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				if (!tokp->ijmp) {
 					ke1_t *def_name = tokens[itok - tokp->n_args];
 					khint_t iter = kh_get(KH_IDEF, hidefcommand, def_name->ifield);
+					if (kh_end(hidefcommand) == iter) {
+						printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_name->name, tokp->sourceLine);
+						return -1;
+					}
 					tokp->ijmp = (int)kh_val(hidefcommand, iter);
 				}
 				break;
@@ -158,6 +166,10 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 			case CMD_IEND:
 				break;
 			case CMD_IRTN:
+				if (lastDef == -1) {
+					printf("SML: ERROR: Command <def> not found for token <enddef> at line <%d>\n", tokp->sourceLine);
+					return -1;
+				}
 				if (!tokp->ijmp) {
 					tokp->ijmp = lastDef;
 				}
@@ -179,6 +191,10 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				break;
 			case CMD_INEXT:
 				if (!tokp->ijmp) {
+					if (g_fortop < 0) {
+						printf("SML: ERROR: Command <for> not found for token <next> at line <%d>\n", tokp->sourceLine);
+						return -1;
+					}
 					tokp->ijmp = popfor();
 				}
 			default:
