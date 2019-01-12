@@ -149,7 +149,7 @@ void * ke_calloc_memory(size_t i, size_t x);
 void * ke_malloc_memory(size_t i);
 void ke_free_memory(void *);
 void ke_free_tokens();
-void ke_fill_list(kexpr_t *ke);
+int ke_fill_list(kexpr_t *ke);
 void ke_free_val();
 void ke_free(kexpr_t *ke);
 void ke_free_hash();

@@ -7,7 +7,7 @@ void ke_command_destroy();
 int ke_command_get_rtn();
 vcmdp ke_command_val(char * name);
 int ke_command_icmd(char * name);
-void ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens);
+int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens);
 
 
 #define CMD_FOR "for"

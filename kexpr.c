@@ -30,6 +30,15 @@ ke1_t *g_stack = NULL;        // stack for the evaluation of the program
 ke1_t ** g_tokens = NULL;     // array of pointers of all program tokens
 int g_mem_count = 0;          // current count of memory allocation
 
+// parser variables
+int g_isNextDefName = 0;    // flag to indicate that the next token is the def name
+char g_currentDefName[100]; // current name of the current function
+int g_sourceCodeLine = 1;  // use to keep the line number to show better error trapping
+int g_isFirstToken = 1;    // use to remove separators at the beginning of the program
+int g_isLastTokenNop = 0;  // use to manage the command seperator, the rule is to have one separator between each comand
+//---------------------
+
+
 // KHASH MAP STR DEFINITION
 const int KH_FNC = 5;
 const int KH_FIELD = 6;
@@ -194,12 +203,6 @@ fncp ke_function(char * name) {
 	}
 }
 
-int isNextDefName = 0;
-char currentDefName[100];
-int sourceCodeLine = 1;
-int isFirstToken = 1;
-int isLastTokenNop = 0;
-
 // parse a token except "(", ")" and ","
 ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't parse parentheses
 {
@@ -218,7 +221,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 			++p;
 			while (*p != 0) {
 				if (*p == '\n') {
-					++sourceCodeLine;
+					++g_sourceCodeLine;
 					break;
 				}
 				++p;
@@ -232,8 +235,8 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 		}
 
 		if (*p == '\n') {
-			++sourceCodeLine;
-			if (isLastTokenNop || isFirstToken) {
+			++g_sourceCodeLine;
+			if (g_isLastTokenNop || g_isFirstToken) {
 				++p;
 				continue;
 			}
@@ -242,7 +245,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 		}
 
 		if (*p == ';') {
-			if (isLastTokenNop || isFirstToken) {
+			if (g_isLastTokenNop || g_isFirstToken) {
 				++p;
 				continue;
 			}
@@ -260,7 +263,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 			++p;
 			while (*p != 0) {
 				if (*p == '\n') {
-					++sourceCodeLine;
+					++g_sourceCodeLine;
 					++p;
 					break;
 				}
@@ -285,20 +288,22 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 	}
 
 	char *q = p;
-	isLastTokenNop = 0;
+	g_isLastTokenNop = 0;
+	tok.sourceLine = g_sourceCodeLine;
 	if (isalpha(*p) || *p == '_') { // a variable or a function
 		for (; *p && (*p == '_' || isalnum(*p)); ++p);
 		tok.name = ke_mystrndup(q, p - q);
+		while (*p) { if (*p == ' ') ++p; else break; }  // pass over the spaces
 		if (*p == '(') {
 			// find 
 			tok.n_args = 1;
-			tok.sourceLine = sourceCodeLine;
+			tok.sourceLine = g_sourceCodeLine;
 			tok.f.defcmd = (cmdp)ke_command(tok.name);
 			if (tok.f.defcmd != NULL) {
 				tok.icmd = ke_command_icmd(tok.name);
 				tok.ttype = KET_CMD;
 				if (strcmp(tok.name, CMD_DEF) == 0) {
-					isNextDefName = 1;
+					g_isNextDefName = 1;
 				}
 				tok.ijmp = 0;
 			} else {
@@ -307,7 +312,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 					tok.ttype = KET_FUNC;
 				}
 				else {
-					*err |= KEE_FUNC;
+					*err |= KEE_UNFUNC;
 				}
 			}
 		}
@@ -320,22 +325,22 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 				tok.f.defvcmd = (vcmdp)ke_command_val(tok.name);
 				if (tok.f.defvcmd != NULL) {
 					if (strcmp(tok.name, CMD_RTN) == 0) {
-						*currentDefName = 0;
+						*g_currentDefName = 0;
 					}
 					tok.ttype = KET_VCMD;
 					tok.icmd = ke_command_icmd(tok.name);
 				}
 				else {
 					tok.ttype = KET_VNAME;
-					if (isNextDefName) {
-						strcpy(currentDefName, tok.name);
-						isNextDefName = 0;
+					if (g_isNextDefName) {
+						strcpy(g_currentDefName, tok.name);
+						g_isNextDefName = 0;
 						tok.islocal = 1;
 					}
 					else {
-						if (*currentDefName != 0) {
-							char * localName = ke_calloc_memory(strlen(tok.name) + strlen(currentDefName) + 3, 1);
-							strcpy(localName, currentDefName);
+						if (*g_currentDefName != 0) {
+							char * localName = ke_calloc_memory(strlen(tok.name) + strlen(g_currentDefName) + 3, 1);
+							strcpy(localName, g_currentDefName);
 							strcat(localName, "__");
 							strcat(localName, tok.name);
 							ke_free_memory(tok.name);
@@ -430,12 +435,12 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 		else if (*p == '^') tok.op = KEO_BXOR, tok.f.builtin = ke_op_KEO_BXOR, tok.n_args = 2, *r = q + 1;
 		else if (*p == '~') tok.op = KEO_BNOT, tok.f.builtin = ke_op_KEO_BNOT, tok.n_args = 1, *r = q + 1;
 		else if (*p == '!') tok.op = KEO_LNOT, tok.f.builtin = ke_op_KEO_LNOT, tok.n_args = 1, *r = q + 1;
-		else if (*p == ';') tok.op = KEO_NOP, isLastTokenNop = 1, tok.f.builtin = ke_op_KEO_NOP, tok.n_args = 2, *r = q + 1;
+		else if (*p == ';') tok.op = KEO_NOP, g_isLastTokenNop = 1, tok.f.builtin = ke_op_KEO_NOP, tok.n_args = 2, *r = q + 1;
 		else {
 			tok.ttype = KET_NULL, *err |= KEE_UNOP;
 		}
 
-		isFirstToken = 0;
+		g_isFirstToken = 0;
 	}
 	return tok;
 }
@@ -470,12 +475,9 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 	p = s;
 	while (*p) {
 		while (1) {
-			if (*p == ' ') {
-				++p;
-				continue;
-			}
-			break;
+			if (*p == ' ') ++p; else break;
 		}
+
 		if (*p == '(') {
 			t = push_back(&op, &n_op, &m_op); // push to the operator g_stack
 			t->op = -1, t->ttype = KET_NULL; // ->op < 0 for a left parenthsis
@@ -487,7 +489,6 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			}
 			if (n_op == 0) { // error: extra right parenthesis
 				*err |= KEE_UNRP;
-                printf("\nerror: extra right parenthesis\n");
 				break;
 			} else --n_op; // pop out '('
 			if (n_op > 0 && (op[n_op-1].ttype == KET_FUNC || op[n_op - 1].ttype == KET_CMD)) { // the top of the operator g_stack is a function
@@ -590,7 +591,7 @@ void ke_free_tokens() {
 	ke_free_memory(g_tokens);
 }
 
-void ke_fill_list(kexpr_t *ke)
+int ke_fill_list(kexpr_t *ke)
 {
     g_tokens = ke_calloc_memory(ke->n * sizeof(ke1_t *),1);
 	ke1_t * ne = NULL;
@@ -609,7 +610,7 @@ void ke_fill_list(kexpr_t *ke)
 		}
         g_tokens[i] = tokp;
 	}
-	ke_set_ijmp(ke, g_tokens);
+	return ke_set_ijmp(ke, g_tokens);
 }
 
 void ke_set_int(ke1_t *tokp, int64_t y)
@@ -699,8 +700,16 @@ kexpr_t *ke_parse(char *_s, int *err)
 		//}
         return ke;
 	} else {
-		printf("Error <%d> a line <%d>", *err, sourceCodeLine);
-        ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
+		printf("SML: ERROR: Parser error between line <%d> and <%d>\n", g_sourceCodeLine-1, g_sourceCodeLine);
+		if (*err & KEE_ARG) printf("SML: ERROR: Wrong number of arguments\n");
+		if (*err & KEE_UNFUNC) printf("SML: ERROR: Function name not found\n");
+		if (*err & KEE_UNOP) printf("SML: ERROR: Undefiend operator\n");
+		if (*err & KEE_UNLP) printf("SML: ERROR: Unmatched left parentheses\n");
+		if (*err & KEE_UNRP) printf("SML: ERROR: Unmatched right parentheses\n");
+		if (*err & KEE_UNQU) printf("SML: ERROR: Unmatched quotation marks\n");
+		if (*err & KEE_FUNC) printf("SML: ERROR: Wrong function syntax\n");
+		if (*err & KEE_NUM) printf("SML: ERROR: Failed to parse number\n");
+		ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
         ke->n = n, ke->e = e;
         ke_free(ke);
 	    return NULL;
@@ -712,7 +721,7 @@ void ke_print_one_stack(ke1_t * tokp)
     if (tokp->ttype == KET_VNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL) {
         if (tokp->name != NULL) printf("%s", tokp->name);
         else {
-            if (tokp->vtype == KEV_STR) printf("%s", tokp->obj.s);
+            if (tokp->vtype == KEV_STR) printf("'%s'", tokp->obj.s);
             if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
             if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
         }

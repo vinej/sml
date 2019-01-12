@@ -38,7 +38,7 @@ void inline pushfor(int val) { g_forstack[g_fortop++] = val;  }
 // g_forstack max 20 level of for
 int lastDef = -1;
 
-int ifind_forward_rtn(kexpr_t *kexpr, int starti) {
+int ifind_forward_rtn(kexpr_t *kexpr, int starti, ke1_t * tokp) {
 	int i = -1;
 	for (int i = starti + 1; i < kexpr->n; i++) {
 		ke1_t *f = &kexpr->e[i];
@@ -46,11 +46,11 @@ int ifind_forward_rtn(kexpr_t *kexpr, int starti) {
 			return i;
 		}
 	}
-	printf("->*** ERROR, %s:%d:%d", "not found in ifind_forward_rtn", CMD_IRTN, starti);
+	printf("SML: ERROR: Command <enddef> not found for token <%s> at line <%d>\n", tokp->name, tokp->sourceLine);
 	return -1;
 }
 
-int ifind_forward_next(kexpr_t *kexpr, int starti) {
+int ifind_forward_next(kexpr_t *kexpr, int starti, ke1_t *tokp) {
 	int qte_for = 0;
 	for (int i = starti + 1; i < kexpr->n; i++) {
 		ke1_t *f = &kexpr->e[i];
@@ -64,11 +64,11 @@ int ifind_forward_next(kexpr_t *kexpr, int starti) {
 				return i;
 		}
 	}
-	printf("->*** ERROR: %s|%d", "not found in ifind_forward_next", starti);
+	printf("SML: ERROR: Command <next> not found for token <%s> at line <%d>\n", tokp->name, tokp->sourceLine);
 	return -1;
 }
 
-int ifind_forward_end(kexpr_t *kexpr, int starti) {
+int ifind_forward_end(kexpr_t *kexpr, int starti, ke1_t *tokp) {
 	int qte_if = 0;
 	for (int i = starti + 1; i < kexpr->n; i++) {
 		ke1_t *f = &kexpr->e[i];
@@ -81,11 +81,11 @@ int ifind_forward_end(kexpr_t *kexpr, int starti) {
 				return i;
 		}
 	}
-	printf("->*** ERROR: %s|%d", "not found in ifind_forward_end", starti);
+	printf("SML: ERROR: Command <end> not found for token <%s> at line <%d>\n", tokp->name, tokp->sourceLine);
 	return -1;
 }
 
-int ifind_else_or_end(kexpr_t *kexpr, int starti) {
+int ifind_else_or_end(kexpr_t *kexpr, int starti, ke1_t *tokp) {
     int i = -1;
     int qte_if = 0;
     for(int i = starti + 1; i < kexpr->n; i++) {
@@ -99,11 +99,11 @@ int ifind_else_or_end(kexpr_t *kexpr, int starti) {
 				return i;
 		}
     }
-    printf("->*** ERROR: %s|%d", "not found in ifind_else_or_end", starti);
-    return -1;
+	printf("SML: ERROR: Command <end or else> not found for token <%s> at line <%d>\n", tokp->name, tokp->sourceLine);
+	return -1;
 }
 
-void ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
+int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 	ke1_t *tokp = NULL;
 	int n = kexpr->n;
 	int lastForCmd = 0;
@@ -115,7 +115,8 @@ void ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				// use for find the for token to set assigned to 0
 				tokp->i = lastForCmd;
 				if (!tokp->ijmp) {
-					tokp->ijmp = ifind_forward_next(kexpr, itok);
+					tokp->ijmp = ifind_forward_next(kexpr, itok, tokp);
+					if (tokp->ijmp == -1) return -1;
 				}
 				break;
 			case CMD_ICNT:
@@ -138,17 +139,20 @@ void ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				kh_val(hidefcommand, iter) = ((itok) - tokp->n_args - 1);
 
 				if (!tokp->ijmp) {
-					tokp->ijmp = ifind_forward_rtn(kexpr, itok);
+					tokp->ijmp = ifind_forward_rtn(kexpr, itok, tokp);
+					if (tokp->ijmp == -1) return -1;
 				}
 				break;
 			case CMD_IIF:
 				if (!tokp->ijmp) {
-					tokp->ijmp = ifind_else_or_end(kexpr, itok);
+					tokp->ijmp = ifind_else_or_end(kexpr, itok, tokp);
+					if (tokp->ijmp == -1) return -1;
 				}
 				break;
 			case CMD_IELSE:
 				if (!tokp->ijmp) {
-					tokp->ijmp = ifind_forward_end(kexpr, itok);
+					tokp->ijmp = ifind_forward_end(kexpr, itok, tokp);
+					if (tokp->ijmp == -1) return -1;
 				}
 				break;
 			case CMD_IEND:
@@ -169,7 +173,8 @@ void ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 					pushfor(itok - 1);
 				}
 				if (!tokp->ijmp) {
-					tokp->ijmp = ifind_forward_next(kexpr, itok);
+					tokp->ijmp = ifind_forward_next(kexpr, itok, tokp);
+					if (tokp->ijmp == -1) return -1;
 				}
 				break;
 			case CMD_INEXT:

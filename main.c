@@ -55,8 +55,8 @@ int main(int argc, char *argv[])
 	if (!is_console) {
         ke_fill_hash();
         ke = ke_parse(str, &err);
-		ke_fill_list(ke);
-		if (err || ke == NULL) {
+		int status = ke_fill_list(ke);
+		if (status == -1 || err || ke == NULL) {
             fprintf(stderr, "\nParse error: 0x%x\n", err);
             ke_free_val();
             ke_free_hash();
@@ -117,8 +117,10 @@ int main(int argc, char *argv[])
 				if (err || ke == NULL) {
                     fprintf(stderr, "\nParse error: 0x%x\n", err);
                 } else {
-					ke_fill_list(ke);
-					err |= ke_eval(ke, &vi, &vr, &vs, &ret_type);
+					int status = ke_fill_list(ke);
+					if (status != -1) {
+						err |= ke_eval(ke, &vi, &vr, &vs, &ret_type);
+					}
 					ke_free_tokens();
 					if (err) {
                         fprintf(stderr, "\nEval error: 0x%x\n", err);
