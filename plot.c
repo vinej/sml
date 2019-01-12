@@ -154,10 +154,12 @@ void ke_plot_hash() {
 	ke_hash_add((fncp)&ke_plinit, PLOT);
 	ke_hash_add((fncp)&ke_plinit, PLOT_INIT);
 	ke_hash_add((fncp)&ke_plsdev, PLOT_PLSDEV);
+	ke_hash_add((fncp)&ke_plsdev, PLOT_PLDEV);
 	ke_hash_add((fncp)&ke_plenv, PLOT_PLENV);
 	ke_hash_add((fncp)&ke_plline, PLOT_PLLINE);
 	ke_hash_add((fncp)&ke_plend, PLOT_PLEND);
 	ke_hash_add((fncp)&ke_plpause, PLOT_PLSPAUSE);
+	ke_hash_add((fncp)&ke_plpause, PLOT_PLPAUSE);
 	ke_hash_add((fncp)&ke_pl_setcontlabelformat, PLOT_PLSETCONTLABELFORMAT);
 	ke_hash_add((fncp)&ke_pl_setcontlabelparam, PLOT_PLSETCONTLABELPARAM);
 	ke_hash_add((fncp)&ke_pladv, PLOT_PLADV);

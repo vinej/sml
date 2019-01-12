@@ -22,7 +22,7 @@ for
   val1 = vector_get(v1,1)
   val1 = vector_get(v1,0)
   val1 = vector_get(v1,2)
-  if (i == 0)
+  if(i == 0)
     break
   end
   i = i - 1
@@ -34,7 +34,7 @@ val5 = vector_max(v1)
 
 print(val5)
 
-if (!vector_equal(v1,v2))
+if (!vector_equal(v1,v2) == 0)
   print("vi is not l\"heure equal to v2")
 end
 

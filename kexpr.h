@@ -17,6 +17,7 @@
 #define KEE_FUNC    0x10 // wrong function syntax
 #define KEE_ARG     0x20
 #define KEE_NUM     0x40 // fail to parse a number
+//#define KEE_END     0x80 // fail to parse a number
 
 // Evaluation errors
 #define KEE_UNFUNC  0x40 // undefined function
@@ -81,9 +82,10 @@ typedef struct kexpr_s kexpr_t;
 
 struct ke1_s;
 typedef struct ke1_s {
-	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, futur:4, islocal:1; // ttype: token type; vtype: value type  
+	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, futur:3, islocal:1; // ttype: token type; vtype: value type  
 	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
-	int32_t ijmp; // fast jmp                                                                                     
+	int32_t ijmp; // fast jmp  
+	int32_t sourceLine; // fast jmp  
 	char *name; // variable name or function name                                                                 
 	union {    //                                                                                                 
 		void (*builtin)(struct ke1_s *a, struct ke1_s *b); // execution function

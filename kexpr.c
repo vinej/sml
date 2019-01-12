@@ -196,19 +196,103 @@ fncp ke_function(char * name) {
 
 int isNextDefName = 0;
 char currentDefName[100];
+int sourceCodeLine = 1;
+int isFirstToken = 1;
+int isLastTokenNop = 0;
 
 // parse a token except "(", ")" and ","
 ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't parse parentheses
 {
-	char *q = p;
 	ke1_t tok;
 	memset(&tok, 0, sizeof(ke1_t));
+	tok.realToken = 1;
+	while (1) { // not a real token
+		// comment
+		if (*p == 0) {
+			// fin du code pas d'autre tolen
+			tok.realToken = 0;
+			return tok;
+		}
+
+		if (*p == '#') {
+			++p;
+			while (*p != 0) {
+				if (*p == '\n') {
+					++sourceCodeLine;
+					break;
+				}
+				++p;
+			}
+			if (*p == 0) {
+				// fin du code pas d'autre tolen
+				tok.realToken = 0;
+				return tok;
+			}
+			continue;
+		}
+
+		if (*p == '\n') {
+			++sourceCodeLine;
+			if (isLastTokenNop || isFirstToken) {
+				++p;
+				continue;
+			}
+			*p = ';';
+			break;
+		}
+
+		if (*p == ';') {
+			if (isLastTokenNop || isFirstToken) {
+				++p;
+				continue;
+			}
+			break;
+		}
+
+		// do not accept control caracter and space
+		if (*p <= 32) {
+			++p;
+			continue;
+		}
+
+		// line continuation
+		if (*p == '\\') {
+			++p;
+			while (*p != 0) {
+				if (*p == '\n') {
+					++sourceCodeLine;
+					++p;
+					break;
+				}
+				++p;
+			}
+			if (*p == 0) {
+				// fin du code pas d'autre tolen
+				tok.realToken = 0;
+				return tok;
+			}
+			continue;
+		}
+
+		// ok we can continue with a real token
+		break;
+	}
+
+	if (*p == 0) {
+		// fin du code pas d'autre tolen
+		tok.realToken = 0;
+		return tok;
+	}
+
+	char *q = p;
+	isLastTokenNop = 0;
 	if (isalpha(*p) || *p == '_') { // a variable or a function
 		for (; *p && (*p == '_' || isalnum(*p)); ++p);
 		tok.name = ke_mystrndup(q, p - q);
 		if (*p == '(') {
 			// find 
 			tok.n_args = 1;
+			tok.sourceLine = sourceCodeLine;
 			tok.f.defcmd = (cmdp)ke_command(tok.name);
 			if (tok.f.defcmd != NULL) {
 				tok.icmd = ke_command_icmd(tok.name);
@@ -223,7 +307,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 					tok.ttype = KET_FUNC;
 				}
 				else {
-					printf("error");
+					*err |= KEE_FUNC;
 				}
 			}
 		}
@@ -250,7 +334,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 					}
 					else {
 						if (*currentDefName != 0) {
-							char * localName = ke_calloc_memory(strlen(tok.name) + strlen(currentDefName) + 2, 1);
+							char * localName = ke_calloc_memory(strlen(tok.name) + strlen(currentDefName) + 3, 1);
 							strcpy(localName, currentDefName);
 							strcat(localName, "__");
 							strcat(localName, tok.name);
@@ -307,7 +391,11 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 			tok.ttype = KET_VAL, tok.vtype = KEV_STR;
 			tok.obj.s = ke_mystrndup(q + 1, p - q - 1);
 			*r = p + 1;
-		} else *err |= KEE_UNQU, *r = p;
+		}
+		else
+		{
+			*err |= KEE_UNQU, *r = p;
+		}
 	} else { // an operator
 		tok.ttype = KET_OP;
 		if (*p == '*' && p[1] == '*') tok.op = KEO_POW, tok.f.builtin = ke_op_KEO_POW, tok.n_args = 2, *r = q + 2;
@@ -342,8 +430,12 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 		else if (*p == '^') tok.op = KEO_BXOR, tok.f.builtin = ke_op_KEO_BXOR, tok.n_args = 2, *r = q + 1;
 		else if (*p == '~') tok.op = KEO_BNOT, tok.f.builtin = ke_op_KEO_BNOT, tok.n_args = 1, *r = q + 1;
 		else if (*p == '!') tok.op = KEO_LNOT, tok.f.builtin = ke_op_KEO_LNOT, tok.n_args = 1, *r = q + 1;
-		else if (*p == ';') tok.op = KEO_NOP, tok.f.builtin = ke_op_KEO_NOP, tok.n_args = 2, *r = q + 1;
-		else tok.ttype = KET_NULL, *err |= KEE_UNOP;
+		else if (*p == ';') tok.op = KEO_NOP, isLastTokenNop = 1, tok.f.builtin = ke_op_KEO_NOP, tok.n_args = 2, *r = q + 1;
+		else {
+			tok.ttype = KET_NULL, *err |= KEE_UNOP;
+		}
+
+		isFirstToken = 0;
 	}
 	return tok;
 }
@@ -361,105 +453,6 @@ static inline ke1_t *push_back(ke1_t **a, int *n, int *m)
 	return &(*a)[(*n)++];
 }
 
-void ke_normalize_code(char * s) {
-	// replace all \n into ;
-	register char * p;
-	char *q, *pp;
-    // squeeze out spaces
-	int isFirst = 1;
-	char space = ' ';
-	p = s;
-	// remove control code and replace \n by ;
-	while(*p) {
-        if (*p == '\n') *p = ';';
-        else if (*p < 32) *p = ' ';
-        ++p;
-	}
-
-	// start with a space for the previous caracter. dummy static inline char *mystrndup(const char *src, int n)
-	pp = &space;
-	for (p = q = s; *p; ++p) {
-        // do not remove space into string
-        if (*p == '\'') {
-            *q++ = *p;
-            ++p;
-            while(*p != '\'' && *p != 0)
-            {
-                if (*p == '\\' && *(p+1) == '\'' ) {
-                    // do not keep the back slash
-                    *q++ = *p++;
-                    *q++ = *p++;
-                } else {
-                    *q++ = *p++;
-                }
-            }
-            if (*p != 0) {
-                *q++ = *p;
-            }
-            pp = p;
-            continue;
-        }
-
-        if (*p == '"') {
-            *q++ = *p;
-            ++p;
-            while(*p != '"' && *p != 0)
-            {
-                if (*p == '\\' && *(p+1) == '"' ) {
-                    // do not keep the back slash
-                    *q++ = *p++;
-                    *q++ = *p++;
-                } else {
-                    *q++ = *p++;
-                }
-            }
-            if (*p != 0) {
-                *q++ = *p;
-            }
-            pp = p;
-            continue;
-        }
-
-        if (*p == '#') {
-            ++p;
-            while(*p != 0 && *p != '#' && *p != ';') {
-                ++p;
-            }
-            if (*p == '#') ++p;
-            --p;
-            pp = p;
-            continue;
-        }
-
-        if (isFirst) {
-            while(isspace(*p) || *p == ';') { ++p; }
-            isFirst = 0;
-        }
-
-        if (*p == '#') { --p; continue; }
-
-        if (*p == ';' && *pp == ';') {
-           pp = p;
-           continue;
-        }
-
-        if (*p == ';' && *(q-1) != ';') *q++ = *p;
-        else if ( (!isspace(*p)) && (*p != ';')) *q++ = *p;
-        pp = p;
-	}
-	// remove traling ;
-	//while(*(q-2) == ';') { --q; }
-	*q = 0;
-	if (*(q-1) == 0) --q;
-	while(*(q-1) == ';') {
-        --q;
-        *q = 0;
-	}
-	#ifdef DEBUG
-        printf("\nSource code: %s\n\n",s);
-    #endif // DEBUG
-}
-
 ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 {
     char * p;
@@ -469,13 +462,20 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 	// remove remark, and normalize line seperator
 	char *s;
 	s = ke_mystrndup(_s, strlen(_s)); // make a copy
-	ke_normalize_code(s);
+	//ke_normalize_code(s);
 	*err = 0;
  	*_n = 0;
 	out = op = 0;
 	n_out = m_out = n_op = m_op = 0;
 	p = s;
 	while (*p) {
+		while (1) {
+			if (*p == ' ') {
+				++p;
+				continue;
+			}
+			break;
+		}
 		if (*p == '(') {
 			t = push_back(&op, &n_op, &m_op); // push to the operator g_stack
 			t->op = -1, t->ttype = KET_NULL; // ->op < 0 for a left parenthsis
@@ -509,7 +509,12 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			++p;
 		} else { // output-able token
 			ke1_t v = ke_read_token(p, &p, err, last_is_val);
-			if (*err) break;
+			if (!v.realToken) {
+				break;
+			}
+			if (*err) {
+				break;
+			}
 			if (v.ttype == KET_VAL || v.ttype == KET_VCMD || v.ttype == KET_VNAME) {
 				u = push_back(&out, &n_out, &m_out);
 				*u = v;
@@ -538,9 +543,12 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			u = push_back(&out, &n_out, &m_out);
 			*u = op[--n_op];
 		}
-		if (n_op > 0) *err |= KEE_UNLP;
+		if (n_op > 0) {
+			*err |= KEE_UNLP;
+		}
 	}
 
+	/*
 	if (*err == 0) { // then check if the number of args is correct
 		int i, n;
 		for (i = n = 0; i < n_out; ++i) {
@@ -548,9 +556,11 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			if (e->ttype == KET_VAL || e->ttype == KET_VCMD || e->ttype == KET_VNAME) ++n;
 			else n -= e->n_args - 1;
 		}
-		if (n != 1) *err |= KEE_ARG;
+		if (n != 1) {
+			*err |= KEE_ARG;
+		}
 	}
-
+	*/
 	ke_free_memory(s);
 	if (op) {
         ke_free_memory(op);
@@ -563,11 +573,11 @@ void ke_free_val() {
 	for(int i = 1; i < g_gbl_field_qte; ++i) {
 		ke1_t*fieldp = g_gbl_fields[i];
         ke_free_memory(fieldp->name);
-		if (fieldp->obj.matrix && fieldp->vtype == KEV_MAT) {
+		if (fieldp->vtype == KEV_MAT && fieldp->obj.matrix) {
 			ke_matrix_freemem(fieldp);
-		} else if (fieldp->obj.vector && fieldp->vtype == KEV_VEC) {
+		} else if (fieldp->vtype == KEV_VEC && fieldp->obj.vector) {
 			ke_vector_freemem(fieldp);
-		} else if (fieldp->obj.s) {
+		} else if (fieldp->vtype == KEV_STR && fieldp->obj.s) {
             ke_free_memory(fieldp->obj.s);
 		}
         ke_free_memory(fieldp);
@@ -689,6 +699,7 @@ kexpr_t *ke_parse(char *_s, int *err)
 		//}
         return ke;
 	} else {
+		printf("Error <%d> a line <%d>", *err, sourceCodeLine);
         ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
         ke->n = n, ke->e = e;
         ke_free(ke);

@@ -5,8 +5,10 @@ void ke_plot_hash();
 
 #define PLOT "plot"
 #define PLOT_INIT "plot_init"
+#define PLOT_PLPAUSE "plot_pause"
 #define PLOT_PLSPAUSE "plot_spause"
 #define PLOT_PLENV "plot_env"
+#define PLOT_PLDEV "plot_dev"
 #define PLOT_PLSDEV "plot_sdev"
 #define PLOT_PLLINE "plot_line"
 #define PLOT_PLEND "plot_end"
