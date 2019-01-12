@@ -21,6 +21,15 @@ void ke_plot_hash();
 #define PLOT_PLBOP "plot_bop"
 #define PLOT_PLBOX "plot_box"
 #define PLOT_PLBOX3 "plot_box3"
-
+#define PLOT_PLBTIME "plot_btime"
+#define PLOT_PLCTIME "plot_ctime"
+#define PLOT_PLCALCWORLD "plot_calc_world"
+#define PLOT_PLCLEAR "plot_clear"
+#define PLOT_PLCOL0 "plot_col0"
+#define PLOT_PLCOL1 "plot_col1"
+#define PLOT_PLCOLORBAR "plot_colorbar"
+#define PLOT_PLCONFIGTIME "plot_configtime"
+#define PLOT_PLCONT "plot_cont"
+#define PLOT_PLCPSTRM "plot_cpstrm"
 
 #endif // COMPLEX_H_INCLUDED

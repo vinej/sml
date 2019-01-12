@@ -332,6 +332,7 @@ static int ke_function_acoth(ke1_t *stack, int top) {
     return top;
 }
 
+
 void ke_function_hash() {
 	ke_hash_add((fncp)&ke_function_anglem, FUNCTION_ANGLEM);
 	ke_hash_add((fncp)&ke_function_exp, FUNCTION_EXP);
