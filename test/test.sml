@@ -1,7 +1,3 @@
-
-
-;
-
 def(t)
  p = p + 23
 enddef
@@ -35,4 +31,7 @@ for
   end
 next
 print(i)
-p*2
+p.test = 12
+p.tt = 12.12
+p.my = '344343'
+print(p.test)

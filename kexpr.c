@@ -292,7 +292,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 	g_isLastTokenNop = 0;
 	tok.sourceLine = g_sourceCodeLine;
 	if (isalpha(*p) || *p == '_') { // a variable or a function
-		for (; *p && (*p == '_' || isalnum(*p)); ++p);
+		for (; *p && (*p == '_' || *p == '.' || isalnum(*p)); ++p);
 		tok.name = ke_mystrndup(q, p - q);
 		while (*p) { if (*p == ' ') ++p; else break; }  // pass over the spaces
 		if (*p == '(') {

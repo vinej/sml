@@ -5,3 +5,5 @@ enddef
 exe(abc)
 
 print('end')
+
+if
