@@ -31,5 +31,16 @@ void ke_plot_hash();
 #define PLOT_PLCONFIGTIME "plot_configtime"
 #define PLOT_PLCONT "plot_cont"
 #define PLOT_PLCPSTRM "plot_cpstrm"
+#define PLOT_PLEND1 "plot_end1"
+#define PLOT_PLENV0 "plot_env0"
+#define PLOT_PLEOP "plot_eop"
+#define PLOT_PLERRX "plot_errx"
+#define PLOT_PLERRY "plot_erry"
+#define PLOT_PLFAMADV "plot_famadv"
+#define PLOT_PLFILL "plot_fill"
+#define PLOT_PLFILL3 "plot_fill3"
+#define PLOT_PLFLUSH "plot_flush"
+#define PLOT_PLFONT "plot_font"
+#define PLOT_PLFONTLD "plot_fontld"
 
 #endif // COMPLEX_H_INCLUDED

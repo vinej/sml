@@ -333,6 +333,96 @@ static int ke_plcpstrm(ke1_t *stack, int top) {
 	return top;
 }
 
+static int ke_plend1(ke1_t *stack, int top) {
+	plend1();
+	return top;
+}
+
+static int ke_plenv0(ke1_t *stack, int top) {
+	ke1_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
+	axis = &stack[--top];
+	just = &stack[--top];
+	ymax = &stack[--top];
+	ymin = &stack[--top];
+	xmax = &stack[--top];
+	xmin = &stack[--top];
+	plenv0((PLFLT)xmin->r, (PLFLT)xmax->r, (PLFLT)ymin->r, (PLFLT)ymax->r, (PLINT)just->i, (PLINT)axis->i);
+	return top;
+}
+
+static int ke_pleop(ke1_t *stack, int top) {
+	pleop();
+	return top;
+}
+
+static int ke_plerrx(ke1_t *stack, int top) {
+	ke1_t *n, *xmin, *xmax, *y;
+	y = &stack[--top];
+	xmax = &stack[--top];
+	xmin = &stack[--top];
+	n = &stack[--top];
+	plerrx((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(xmin->obj.vector, 0),
+						(PLFLT_VECTOR)gsl_vector_const_ptr(xmax->obj.vector, 0),
+						(PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0));
+	return top;
+}
+
+static int ke_plerry(ke1_t *stack, int top) {
+	ke1_t *n, *ymin, *ymax, *y;
+	y = &stack[--top];
+	ymax = &stack[--top];
+	ymin = &stack[--top];
+	n = &stack[--top];
+	plerry((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(ymin->obj.vector, 0),
+		(PLFLT_VECTOR)gsl_vector_const_ptr(ymax->obj.vector, 0),
+		(PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0));
+	return top;
+}
+
+static int ke_plfamadv(ke1_t *stack, int top) {
+	plfamadv();
+	return top;
+}
+
+static int ke_plfill(ke1_t *stack, int top) {
+	ke1_t *n, *x, *y;
+	y = &stack[--top];
+	x = &stack[--top];
+	n = &stack[--top];
+	plfill((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, 0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0));
+	return top;
+}
+
+static int ke_plfill3(ke1_t *stack, int top) {
+	ke1_t *n, *x, *y, *z;
+	z = &stack[--top];
+	y = &stack[--top];
+	x = &stack[--top];
+	n = &stack[--top];
+	plfill3((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, 0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0), (PLFLT_VECTOR)gsl_vector_const_ptr(z->obj.vector, 0));
+	return top;
+}
+
+static int ke_plflush(ke1_t *stack, int top) {
+	plflush();
+	return top;
+}
+
+static int ke_plfont(ke1_t *stack, int top) {
+	ke1_t *ifont;
+	ifont = &stack[--top];
+	plfont((PLINT)ifont->i);
+	return top;
+}
+
+static int ke_plfontld(ke1_t *stack, int top) {
+	ke1_t *fnt;
+	fnt = &stack[--top];
+	plfontld((PLINT)fnt->i);
+	return top;
+}
+
+
 void ke_plot_hash() {
 	ke_hash_add((fncp)&ke_plinit, PLOT);
 	ke_hash_add((fncp)&ke_plinit, PLOT_INIT);
@@ -361,5 +451,17 @@ void ke_plot_hash() {
 	ke_hash_add((fncp)&ke_plconfigtime, PLOT_PLCONFIGTIME);
 	ke_hash_add((fncp)&ke_plcont, PLOT_PLCONT);
 	ke_hash_add((fncp)&ke_plcpstrm, PLOT_PLCPSTRM);
+
+	ke_hash_add((fncp)&ke_plend1, PLOT_PLEND1);
+	ke_hash_add((fncp)&ke_plenv0, PLOT_PLENV0);
+	ke_hash_add((fncp)&ke_pleop, PLOT_PLEOP);
+	ke_hash_add((fncp)&ke_plerrx, PLOT_PLERRX);
+	ke_hash_add((fncp)&ke_plerry, PLOT_PLERRY);
+	ke_hash_add((fncp)&ke_plfamadv, PLOT_PLFAMADV);
+	ke_hash_add((fncp)&ke_plfill, PLOT_PLFILL);
+	ke_hash_add((fncp)&ke_plfill3, PLOT_PLFILL3);
+	ke_hash_add((fncp)&ke_plflush, PLOT_PLFLUSH);
+	ke_hash_add((fncp)&ke_plfont, PLOT_PLFONT);
+	ke_hash_add((fncp)&ke_plfontld, PLOT_PLFONTLD);
 }
 
