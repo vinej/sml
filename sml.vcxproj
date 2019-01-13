@@ -23,7 +23,7 @@
     <ProjectGuid>{75871E0A-F05A-4DE9-9B51-42134148B2A6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>gnucalc</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>sml</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -112,7 +112,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_CRT_SECURE_NO_WARNINGS;_USE_MATH_DEFINES;DEBUG</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>c:\plplot\include;C:\plplot\build\include;C:\gsl26;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>./include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>false</ExceptionHandling>
       <EnableModules>false</EnableModules>
       <CompileAs>CompileAsC</CompileAs>

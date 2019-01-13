@@ -333,7 +333,7 @@ static int ke_function_acoth(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_function_year(ke1_t *stack, int top) {
+static int ke_function_timeyear(ke1_t *stack, int top) {
 	ke1_t *p;
 	// push into the stack a value, becase this function does not have parameters
 	p = &stack[top - 1];
@@ -346,14 +346,73 @@ static int ke_function_year(ke1_t *stack, int top) {
 	//timeinfo = localtime(&my_time);
 	p->i = localtime(&my_time)->tm_year + 1900;
 	p->vtype = KEV_INT;
-    /*
-	CCLog("year->%d", timeinfo->tm_year + 1900);
-	CCLog("month->%d", timeinfo->tm_mon + 1);
-	CCLog("date->%d", timeinfo->tm_mday);
-	CCLog("hour->%d", timeinfo->tm_hour);
-	CCLog("minutes->%d", timeinfo->tm_min);
-	CCLog("seconds->%d", timeinfo->tm_sec);
-	*/
+	p->ttype = KET_VAL;
+	return top;
+}
+
+static int ke_function_timemonth(ke1_t *stack, int top) {
+	ke1_t *p;
+	p = &stack[top - 1];
+	stack[top++] = *p;
+	// because 
+	p = &stack[top - 1];
+	time_t my_time;
+	time(&my_time);
+	p->i = localtime(&my_time)->tm_mon + 1;
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
+	return top;
+}
+
+static int ke_function_timeday(ke1_t *stack, int top) {
+	ke1_t *p;
+	p = &stack[top - 1];
+	stack[top++] = *p;
+	p = &stack[top - 1];
+	time_t my_time;
+	time(&my_time);
+	p->i = localtime(&my_time)->tm_mday;
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
+	return top;
+}
+
+static int ke_function_timehour(ke1_t *stack, int top) {
+	ke1_t *p;
+	p = &stack[top - 1];
+	stack[top++] = *p;
+	p = &stack[top - 1];
+	time_t my_time;
+	time(&my_time);
+	p->i = localtime(&my_time)->tm_hour;
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
+	return top;
+}
+
+static int ke_function_timemin(ke1_t *stack, int top) {
+	ke1_t *p;
+	p = &stack[top - 1];
+	stack[top++] = *p;
+	p = &stack[top - 1];
+	time_t my_time;
+	time(&my_time);
+	p->i = localtime(&my_time)->tm_min;
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
+	return top;
+}
+
+static int ke_function_timesec(ke1_t *stack, int top) {
+	ke1_t *p;
+	p = &stack[top - 1];
+	stack[top++] = *p;
+	p = &stack[top - 1];
+	time_t my_time;
+	time(&my_time);
+	p->i = localtime(&my_time)->tm_sec;
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
 	return top;
 }
 
@@ -393,7 +452,12 @@ void ke_function_hash() {
     ke_hash_add((fncp)&ke_function_acsch, FUNCTION_ACSCH);
     ke_hash_add((fncp)&ke_function_asech, FUNCTION_ASECH);
     ke_hash_add((fncp)&ke_function_acoth, FUNCTION_ACOTH);
-	ke_hash_add((fncp)&ke_function_year, FUNCTION_YEAR);
+	ke_hash_add((fncp)&ke_function_timeyear, FUNCTION_TIMEYEAR);
+	ke_hash_add((fncp)&ke_function_timemonth, FUNCTION_TIMEMONTH);
+	ke_hash_add((fncp)&ke_function_timeday, FUNCTION_TIMEDAY);
+	ke_hash_add((fncp)&ke_function_timehour, FUNCTION_TIMEHOUR);
+	ke_hash_add((fncp)&ke_function_timemin, FUNCTION_TIMEMIN);
+	ke_hash_add((fncp)&ke_function_timesec, FUNCTION_TIMESEC);
 }
 
 void ke_function_print(ke1_t *k) {

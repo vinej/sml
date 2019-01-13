@@ -521,12 +521,14 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 	out = op = 0;
 	n_out = m_out = n_op = m_op = 0;
 	p = s;
+	int isPreviousLeftParenthese = 0;
 	while (*p) {
 		while (1) {
 			if (*p == ' ') ++p; else break;
 		}
 
 		if (*p == '(') {
+			isPreviousLeftParenthese = 1;
 			t = push_back(&op, &n_op, &m_op); // push to the operator g_stack
 			t->op = -1, t->ttype = KET_NULL; // ->op < 0 for a left parenthsis
 			++p;
@@ -542,10 +544,15 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			if (n_op > 0 && (op[n_op-1].ttype == KET_FUNC || op[n_op - 1].ttype == KET_CMD)) { // the top of the operator g_stack is a function
 				u = push_back(&out, &n_out, &m_out); // move it to the output
 				*u = op[--n_op];
+
+				if ((u->n_args == 1) && isPreviousLeftParenthese) --u->n_args;  // no parameters
+
 				if (u->n_args == 1 && strcmp(u->name, "abs") == 0) u->f.builtin = ke_func1_abs;
 			}
 			++p;
+			isPreviousLeftParenthese = 0;
 		} else if (*p == ',') { // function arguments separator
+			isPreviousLeftParenthese = 0;
 			while (n_op > 0 && op[n_op-1].op >= 0) {
 				u = push_back(&out, &n_out, &m_out);
 				*u = op[--n_op];
@@ -557,6 +564,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			++op[n_op-2].n_args;
 			++p;
 		} else { // output-able token
+			isPreviousLeftParenthese = 0;
 			ke1_t v = ke_read_token(p, &p, err, last_is_val);
 			if (!v.realToken) {
 				break;
@@ -596,8 +604,6 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			*err |= KEE_UNLP;
 		}
 	}
-
-	// re reactivate TODO
 	/*
 	if (*err == 0) { // then check if the number of args is correct
 		int i, n;
@@ -611,7 +617,6 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 		}
 	}
 	*/
-
 	ke_free_memory(s);
 	if (op) {
         ke_free_memory(op);

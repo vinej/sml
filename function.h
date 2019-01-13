@@ -39,7 +39,12 @@ void ke_function_hash();
 #define FUNCTION_ACSCH "acsch"
 #define FUNCTION_ASECH "asech"
 #define FUNCTION_ACOTH "acoth"
-#define FUNCTION_YEAR "year"
+#define FUNCTION_TIMEYEAR "time_year"
+#define FUNCTION_TIMEMONTH "time_month"
+#define FUNCTION_TIMEDAY "time_day"
+#define FUNCTION_TIMEHOUR "time_hour"
+#define FUNCTION_TIMEMIN "time_min"
+#define FUNCTION_TIMESEC "time_sec"
 
 
 #endif // FUNCTION_H_INCLUDED
