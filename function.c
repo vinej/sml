@@ -3,6 +3,7 @@
 #include "khash.h"
 #include "kexpr.h"
 #include "function.h"
+#include "time.h"
 
 #define RADIAN 1
 #define DEGREE 2
@@ -26,7 +27,7 @@ static double convert_anglem(double value) {
 static int ke_function_anglem(ke1_t *stack, int top) {
 	ke1_t *p;
 	p = &stack[--top];
-	anglem = p->r;
+	anglem = p->i;
 	return top;
 }
 
@@ -332,6 +333,29 @@ static int ke_function_acoth(ke1_t *stack, int top) {
     return top;
 }
 
+static int ke_function_year(ke1_t *stack, int top) {
+	ke1_t *p;
+	// push into the stack a value, becase this function does not have parameters
+	p = &stack[top - 1];
+	stack[top++] = *p;
+	// because 
+	p = &stack[top - 1];
+	time_t my_time;
+	//struct tm * timeinfo;
+	time(&my_time);
+	//timeinfo = localtime(&my_time);
+	p->i = localtime(&my_time)->tm_year + 1900;
+	p->vtype = KEV_INT;
+    /*
+	CCLog("year->%d", timeinfo->tm_year + 1900);
+	CCLog("month->%d", timeinfo->tm_mon + 1);
+	CCLog("date->%d", timeinfo->tm_mday);
+	CCLog("hour->%d", timeinfo->tm_hour);
+	CCLog("minutes->%d", timeinfo->tm_min);
+	CCLog("seconds->%d", timeinfo->tm_sec);
+	*/
+	return top;
+}
 
 void ke_function_hash() {
 	ke_hash_add((fncp)&ke_function_anglem, FUNCTION_ANGLEM);
@@ -369,6 +393,7 @@ void ke_function_hash() {
     ke_hash_add((fncp)&ke_function_acsch, FUNCTION_ACSCH);
     ke_hash_add((fncp)&ke_function_asech, FUNCTION_ASECH);
     ke_hash_add((fncp)&ke_function_acoth, FUNCTION_ACOTH);
+	ke_hash_add((fncp)&ke_function_year, FUNCTION_YEAR);
 }
 
 void ke_function_print(ke1_t *k) {

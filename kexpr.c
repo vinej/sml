@@ -366,7 +366,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 						// add the current ifield to the record list
 						char * dotp = strchr(tok.name, '.');
 						if (dotp) {
-							// split at the dot. tok.name will contains only the rec name  p.test => p
+							// split at the dot. tok.name will contain only the rec name  p.test => p
 							*dotp = 0;
 							int ifield;
 							// check if the record is alreeady there
@@ -597,6 +597,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 		}
 	}
 
+	// re reactivate TODO
 	/*
 	if (*err == 0) { // then check if the number of args is correct
 		int i, n;
@@ -610,6 +611,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 		}
 	}
 	*/
+
 	ke_free_memory(s);
 	if (op) {
         ke_free_memory(op);

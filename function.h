@@ -39,6 +39,7 @@ void ke_function_hash();
 #define FUNCTION_ACSCH "acsch"
 #define FUNCTION_ASECH "asech"
 #define FUNCTION_ACOTH "acoth"
+#define FUNCTION_YEAR "year"
 
 
 #endif // FUNCTION_H_INCLUDED
