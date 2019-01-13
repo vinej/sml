@@ -32,6 +32,7 @@
 #define KEV_COMPLEX 6
 #define KEV_CMD  6
 #define KEV_FNC  7
+#define KEV_REC  8
 
 #define KEO_NULL  0
 #define KEO_POS   1
@@ -71,6 +72,7 @@
 #define KET_CONST 5
 #define KET_VAL   6
 #define KET_VNAME 7
+#define KET_REC   8
 
 #define KEF_NULL  0
 #define KEF_REAL  1
@@ -79,6 +81,7 @@
 
 struct kexpr_s;
 typedef struct kexpr_s kexpr_t;
+typedef int * reclistt;
 
 struct ke1_s;
 typedef struct ke1_s {
@@ -94,6 +97,7 @@ typedef struct ke1_s {
 		int (*deffunc)(struct ke1_s* stack, int top);
 		int (*defcmd)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
 		int (*defvcmd)(kexpr_t *ke, struct ke1_s*, int i);
+		struct ke1_s * recp;
 	} f;
 	union {  //                                                                                                     
 		gsl_vector * vector;
@@ -101,6 +105,8 @@ typedef struct ke1_s {
 	    gsl_complex complex;
 		struct ke1_s * tokp;
 		char *s;
+		char ** ms;
+		reclistt reclist;
 	} obj;
 	int line;
 	int64_t i;

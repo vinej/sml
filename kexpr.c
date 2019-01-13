@@ -37,7 +37,9 @@ int g_sourceCodeLine = 1;  // use to keep the line number to show better error t
 int g_isFirstToken = 1;    // use to remove separators at the beginning of the program
 int g_isLastTokenNop = 0;  // use to manage the command seperator, the rule is to have one separator between each comand
 char g_lastErrorMessage[256]; // 
-							//---------------------
+ke1_t * g_recp[1000];
+int g_rec_qte = 0;        // number of global fields  
+							  //---------------------
 
 
 // KHASH MAP STR DEFINITION
@@ -358,11 +360,52 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 						tok.ifield = kh_val(hname, iter);
 					}
 					else {
+						// if the name contains '.', we must create a variable for the record and
+						// add the current ifield to the record list
+						char * dotp = strchr(tok.name, '.');
+						ke1_t * recp = NULL;
+						if (dotp) {
+							// split at the dot. tok.name will contains only the rec name  p.test => p
+							*dotp = 0;
+							int ifield;
+							// check if the record is alreeady there
+							khint_t iter = kh_get(KH_FIELD, hname, tok.name);
+							if (kh_end(hname) != iter) {
+								ifield = kh_val(hname, iter);
+								recp = g_recp[ifield];
+							}
+							else {
+								int absent;
+								char * recName = ke_calloc_memory(strlen(tok.name) + 1, 1);
+								strcpy(recName, tok.name);
+								khint_t iter = kh_put(KH_FIELD, hname, recName, &absent);
+								kh_val(hname, iter) = g_rec_qte;
+								recp = (ke1_t *)ke_calloc_memory(sizeof(ke1_t), 1);
+								recp->ifield = g_rec_qte;
+								recp->name = recName;
+								recp->ttype = KET_REC;
+								recp->vtype = KEV_REC;
+								g_recp[g_rec_qte] = recp;
+								g_rec_qte++;
+							}
+							*dotp = '.';
+						}
 						int absent;
 						khint_t iter = kh_put(KH_FIELD, hname, tok.name, &absent);
 						kh_val(hname, iter) = g_gbl_field_qte;
 						tok.ifield = g_gbl_field_qte;
+						// the field of a record contains a pointer to the record
+						tok.f.recp = recp;
 						g_gbl_field_qte++;
+
+						// create the list if not done
+						if (!recp->obj.reclist) {
+							recp->obj.reclist = ke_calloc_memory(sizeof(int) * 30, 1);
+							recp->i = 0;
+						}
+						// add the new field into the list
+						recp->obj.reclist[recp->i] = tok.ifield;
+						++recp->i;
 					}
 				}
 				tok.i = 0, tok.r = 0.;
@@ -587,6 +630,13 @@ void ke_free_val() {
     }
 	ke_free_memory(g_gbl_fields);
 	g_gbl_fields = NULL;
+
+	for (int i = 0; i < g_rec_qte; ++i) {
+		ke1_t*fieldp = g_recp[i];
+		ke_free_memory(fieldp->name);
+		ke_free_memory(fieldp->obj.reclist);
+		ke_free_memory(fieldp);
+	}
 }
 
 void ke_free_tokens() {
@@ -602,10 +652,15 @@ int ke_fill_list(kexpr_t *ke)
         if (tokp->ttype == KET_VNAME) {
 			ne = g_gbl_fields[tokp->ifield];
 			if (ne == NULL) {
-                char * newname = ke_mystrndup(tokp->name, strlen(tokp->name));
-                ne = ke_malloc_memory(sizeof(ke1_t));
-                memcpy(ne, tokp, sizeof(ke1_t));
-                ne->name = newname;
+				char * newname = ke_mystrndup(tokp->name, strlen(tokp->name));
+				ne = ke_malloc_memory(sizeof(ke1_t));
+				if ((tokp->ifield < g_rec_qte) && (strcmp(g_recp[tokp->ifield]->name, tokp->name) == 0)) {
+					memcpy(ne, g_recp[tokp->ifield], sizeof(ke1_t));
+				}
+				else {
+					memcpy(ne, tokp, sizeof(ke1_t));
+				}
+				ne->name = newname;
 				g_gbl_fields[tokp->ifield] = ne;
             }
 			tokp = ne;
@@ -735,11 +790,22 @@ void ke_print_one_stack(ke1_t * tokp)
 
 void ke_print_one(ke1_t * tokp)
 {
-	if (tokp->vtype == KEV_VEC ) {
+	if (tokp->vtype == KEV_REC) {
+		for (int i = 0; i < tokp->i; i++) {
+			ke1_t * tmptokp = g_gbl_fields[tokp->obj.reclist[i]];
+			printf("%s = ",tmptokp->name);
+			ke_print_one(tmptokp);
+			printf("\n");
+		}
+	} else if (tokp->vtype == KEV_VEC ) {
 		ke_vector_print(tokp);
-	}
-	else if (tokp->vtype == KEV_MAT) {
+	} else if (tokp->vtype == KEV_MAT) {
 		ke_matrix_print(tokp);
+	} else if (tokp->vtype == KEV_REC) {
+		for (int i = 0; i < tokp->i; i++) {
+			ke1_t * tmptokp = g_gbl_fields[tokp->obj.reclist[i]];
+			ke_print_one(tmptokp);
+		}
 	} else if (tokp->vtype == KEV_COMPLEX) {
 		ke_complex_print(tokp);
 	} else if(tokp->ttype == KET_VNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL) {
