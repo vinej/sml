@@ -355,6 +355,8 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 							tok.islocal = 0;
 						}
 					}
+
+					ke1_t * recp = NULL;
 					khint_t iter = kh_get(KH_FIELD, hname, tok.name);
 					if (kh_end(hname) != iter) {
 						tok.ifield = kh_val(hname, iter);
@@ -363,7 +365,6 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 						// if the name contains '.', we must create a variable for the record and
 						// add the current ifield to the record list
 						char * dotp = strchr(tok.name, '.');
-						ke1_t * recp = NULL;
 						if (dotp) {
 							// split at the dot. tok.name will contains only the rec name  p.test => p
 							*dotp = 0;
@@ -399,13 +400,15 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 						g_gbl_field_qte++;
 
 						// create the list if not done
-						if (!recp->obj.reclist) {
-							recp->obj.reclist = ke_calloc_memory(sizeof(int) * 30, 1);
-							recp->i = 0;
+						if (recp) {
+							if (!recp->obj.reclist) {
+								recp->obj.reclist = ke_calloc_memory(sizeof(int) * 30, 1);
+								recp->i = 0;
+							}
+							// add the new field into the list
+							recp->obj.reclist[recp->i] = tok.ifield;
+							++recp->i;
 						}
-						// add the new field into the list
-						recp->obj.reclist[recp->i] = tok.ifield;
-						++recp->i;
 					}
 				}
 				tok.i = 0, tok.r = 0.;
@@ -801,11 +804,6 @@ void ke_print_one(ke1_t * tokp)
 		ke_vector_print(tokp);
 	} else if (tokp->vtype == KEV_MAT) {
 		ke_matrix_print(tokp);
-	} else if (tokp->vtype == KEV_REC) {
-		for (int i = 0; i < tokp->i; i++) {
-			ke1_t * tmptokp = g_gbl_fields[tokp->obj.reclist[i]];
-			ke_print_one(tmptokp);
-		}
 	} else if (tokp->vtype == KEV_COMPLEX) {
 		ke_complex_print(tokp);
 	} else if(tokp->ttype == KET_VNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL) {
