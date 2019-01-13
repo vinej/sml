@@ -422,6 +422,14 @@ static int ke_plfontld(ke1_t *stack, int top) {
 	return top;
 }
 
+static int ke_plGetCursor(ke1_t *stack, int top) {
+	ke1_t *gin;
+	gin = &stack[--top];
+	gin->i = plGetCursor((PLGraphicsIn *)gin->obj.gin);
+	gin->vtype = KEV_INT;
+	gin->ttype = KET_VAL;
+	return top;
+}
 
 void ke_plot_hash() {
 	ke_hash_add((fncp)&ke_plinit, PLOT);
@@ -463,5 +471,6 @@ void ke_plot_hash() {
 	ke_hash_add((fncp)&ke_plflush, PLOT_PLFLUSH);
 	ke_hash_add((fncp)&ke_plfont, PLOT_PLFONT);
 	ke_hash_add((fncp)&ke_plfontld, PLOT_PLFONTLD);
+	ke_hash_add((fncp)&ke_plGetCursor, PLOT_PLGETCURSOR);
 }
 

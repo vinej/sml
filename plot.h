@@ -42,5 +42,6 @@ void ke_plot_hash();
 #define PLOT_PLFLUSH "plot_flush"
 #define PLOT_PLFONT "plot_font"
 #define PLOT_PLFONTLD "plot_fontld"
+#define PLOT_PLGETCURSOR "plot_GetCursor"
 
 #endif // COMPLEX_H_INCLUDED

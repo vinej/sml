@@ -4,7 +4,7 @@
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
 #include <gsl/gsl_complex.h>
-
+#include <plplot/plplot.h>
 #include <stdint.h>
 
 #define LOCAL_VAR '_'
@@ -107,6 +107,7 @@ typedef struct ke1_s {
 		char *s;
 		char ** ms;
 		reclistt reclist;
+		PLGraphicsIn * gin;
 	} obj;
 	int line;
 	int64_t i;
