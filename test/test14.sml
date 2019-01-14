@@ -15,4 +15,20 @@ print(b)
 
 
 
+v = 12.0
+v = v & 12
+print(v)
+
+print(time_year())
+print(time_month())
+print(time_day())
+print(time_hour())
+print(time_min())
+print(time_sec())
+
+p.year = 12
+p.month = 23
+print(p)
+
+a = p
 

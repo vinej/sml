@@ -342,10 +342,11 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 						tok.islocal = 1;
 					}
 					else {
-						if (*g_currentDefName != 0) {
-							char * localName = ke_calloc_memory(strlen(tok.name) + strlen(g_currentDefName) + 3, 1);
-							strcpy(localName, g_currentDefName);
-							strcat(localName, "__");
+						if ( (*g_currentDefName != 0) && (strncmp(tok.name,"g_",2) != 0)) {
+							char * localName = ke_calloc_memory(strlen(tok.name) + strlen(g_currentDefName) + 4, 1);
+							strcpy(localName, "__");
+							strcat(localName, g_currentDefName);
+							strcat(localName, "_");
 							strcat(localName, tok.name);
 							ke_free_memory(tok.name);
 							tok.name = localName;
@@ -745,6 +746,12 @@ void ke_set_str_direct(int ifield, char *x)
 	ke_set_str_internal(e,x);
 }
 
+void ke_set_record(ke1_t *source, ke1_t *dest) {
+	dest->ttype = source->ttype;
+	dest->vtype = source->vtype;
+	dest->obj.reclist = source->obj.reclist;
+}
+
 kexpr_t *ke_parse(char *_s, int *err)
 {
 	int n;
@@ -921,6 +928,7 @@ void inline ke_set_val(ke1_t* e, ke1_t *q) {
 	 else if (q->vtype == KEV_VEC)	ke_set_vector(e, q->obj.vector);
 	 else if (q->vtype == KEV_MAT) 	ke_set_matrix(e, q->obj.matrix);
 	 else if (q->vtype == KEV_COMPLEX) ke_set_complex(e, q->obj.complex);
+	 else if (q->vtype == KEV_REC) ke_set_record(q, e);
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
