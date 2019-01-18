@@ -36,7 +36,8 @@ static int ke_plline(ke1_t *stack, int top) {
 	y = &stack[--top];
 	x = &stack[--top]; 
 	n = &stack[--top];
-	plline((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, (PLINT)0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, (PLINT)0));
+	plline((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, (PLINT)0), 
+		(PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, (PLINT)0));
 	return top;
 }
 
@@ -103,7 +104,8 @@ static int ke_plaxes(ke1_t *stack, int top) {
 	xopt = &stack[--top];
 	y0 = &stack[--top];
 	x0 = &stack[--top];
-	plaxes((PLFLT)x0->r, (PLFLT)y0->r, (PLCHAR_VECTOR)xopt->obj.s, (PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->obj.s, (PLFLT)ytick->r, (PLINT)nysub->i);
+	plaxes((PLFLT)x0->r, (PLFLT)y0->r, (PLCHAR_VECTOR)xopt->obj.s, (PLFLT)xtick->r, (PLINT)nxsub->i,
+		(PLCHAR_VECTOR)yopt->obj.s, (PLFLT)ytick->r, (PLINT)nysub->i);
 	return top;
 }
 
@@ -113,7 +115,8 @@ static int ke_plbin(ke1_t *stack, int top) {
 	y = &stack[--top];
 	x = &stack[--top];
 	nbin = &stack[--top];
-	plbin((PLINT)nbin->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, (PLINT)0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, (PLINT)0), (PLINT)opt->i);
+	plbin((PLINT)nbin->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, (PLINT)0), 
+		(PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, (PLINT)0), (PLINT)opt->i);
 	return top;
 }
 
@@ -148,7 +151,10 @@ static int ke_plbox3(ke1_t *stack, int top) {
 	xtick = &stack[--top];
 	xlabel = &stack[--top];
 	xopt = &stack[--top];
-	plbox3((PLCHAR_VECTOR)xopt->obj.s, (PLCHAR_VECTOR)xlabel->obj.s, (PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->obj.s, (PLCHAR_VECTOR)ylabel->obj.s, (PLFLT)ytick->r, (PLINT)nysub->i, (PLCHAR_VECTOR)zopt->obj.s, (PLCHAR_VECTOR)zlabel->obj.s, (PLFLT)ztick->r, (PLINT)nzsub->i);
+	plbox3((PLCHAR_VECTOR)xopt->obj.s, (PLCHAR_VECTOR)xlabel->obj.s, 
+		(PLFLT)xtick->r, (PLINT)nxsub->i, (PLCHAR_VECTOR)yopt->obj.s, (PLCHAR_VECTOR)ylabel->obj.s, 
+		(PLFLT)ytick->r, (PLINT)nysub->i, (PLCHAR_VECTOR)zopt->obj.s, (PLCHAR_VECTOR)zlabel->obj.s, 
+		(PLFLT)ztick->r, (PLINT)nzsub->i);
 	return top;
 }
 
@@ -161,6 +167,15 @@ static int ke_plbtime(ke1_t *stack, int top) {
 	day = &stack[--top];
 	month = &stack[--top];
 	year = &stack[--top];
+
+
+	ctime = &stack[--top];
+	g_gbl_fields[year->ifield]->vtype = KEV_INT;
+	g_gbl_fields[month->ifield]->vtype = KEV_INT;
+	g_gbl_fields[day->ifield]->vtype = KEV_INT;
+	g_gbl_fields[hour->ifield]->vtype = KEV_INT;
+	g_gbl_fields[min->ifield]->vtype = KEV_INT;
+	g_gbl_fields[sec->ifield]->vtype = KEV_REAL;
 	plbtime((PLINT_NC_SCALAR)(&(g_gbl_fields[year->ifield]->i)),
 			(PLINT_NC_SCALAR)(&(g_gbl_fields[month->ifield]->i)),
 			(PLINT_NC_SCALAR)(&(g_gbl_fields[day->ifield]->i)),
@@ -168,12 +183,6 @@ static int ke_plbtime(ke1_t *stack, int top) {
 			(PLINT_NC_SCALAR)(&(g_gbl_fields[min->ifield]->i)),
 			(PLFLT_NC_SCALAR)(&(g_gbl_fields[sec->ifield]->r)),
 			(PLFLT)ctime->r);
-	g_gbl_fields[year->ifield]->vtype = KEV_INT;
-	g_gbl_fields[month->ifield]->vtype = KEV_INT;
-	g_gbl_fields[day->ifield]->vtype = KEV_INT;
-	g_gbl_fields[hour->ifield]->vtype = KEV_INT;
-	g_gbl_fields[min->ifield]->vtype = KEV_INT;
-	g_gbl_fields[sec->ifield]->vtype = KEV_REAL;
 	return top;
 }
 
@@ -186,6 +195,7 @@ static int ke_plctime(ke1_t *stack, int top) {
 	day = &stack[--top];
 	month = &stack[--top];
 	year = &stack[--top];
+	g_gbl_fields[ctime->ifield]->vtype = KEV_REAL;
 	plctime((PLINT)year->i, (PLINT)month->i-1, (PLINT)day->i, (PLINT)hour->i, (PLINT)min->i, (PLFLT)sec->r, (PLFLT_NC_SCALAR)(&(g_gbl_fields[ctime->ifield]->r)));
 	return top;
 }
@@ -197,6 +207,9 @@ static int ke_plcalc_world(ke1_t *stack, int top) {
 	wx = &stack[--top];
 	ry = &stack[--top];
 	rx = &stack[--top];
+	g_gbl_fields[wx->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[wy->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[window->ifield]->vtype = KEV_INT;
 	plcalc_world((PLFLT)rx->r, (PLFLT)ry->r,
 		(PLFLT_NC_SCALAR)(&(g_gbl_fields[wx->ifield]->r)), 
 		(PLFLT_NC_SCALAR)(&(g_gbl_fields[wy->ifield]->r)), 
@@ -253,6 +266,8 @@ static int ke_plcolorbar(ke1_t *stack, int top) {
 	p_colorbar_height = &stack[--top];
 	p_colorbar_width = &stack[--top];
 
+	g_gbl_fields[p_colorbar_width->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_colorbar_height->ifield]->vtype = KEV_REAL;
 	plcolorbar(
 		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_colorbar_width->ifield]->r)),
 		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_colorbar_height->ifield]->r)),
@@ -399,7 +414,10 @@ static int ke_plfill3(ke1_t *stack, int top) {
 	y = &stack[--top];
 	x = &stack[--top];
 	n = &stack[--top];
-	plfill3((PLINT)n->i, (PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, 0), (PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0), (PLFLT_VECTOR)gsl_vector_const_ptr(z->obj.vector, 0));
+	plfill3((PLINT)n->i, 
+		(PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, 0), 
+		(PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0), 
+		(PLFLT_VECTOR)gsl_vector_const_ptr(z->obj.vector, 0));
 	return top;
 }
 
@@ -431,7 +449,119 @@ static int ke_plGetCursor(ke1_t *stack, int top) {
 	return top;
 }
 
+static int ke_plgchr(ke1_t *stack, int top) {
+	ke1_t *p_def, *p_ht;
+	p_ht = &stack[--top];
+	p_def = &stack[--top];
+
+	plgchr((PLFLT_NC_SCALAR)(&(g_gbl_fields[p_def->ifield]->r)), (PLFLT_NC_SCALAR)(&(g_gbl_fields[p_ht->ifield]->r)));
+	return top;
+}
+
+static int ke_plgcmap1_range(ke1_t *stack, int top) {
+	ke1_t *min_color, *max_color;
+	max_color = &stack[--top];
+	min_color = &stack[--top];
+
+	g_gbl_fields[min_color->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[max_color->ifield]->vtype = KEV_REAL;
+	plgcmap1_range((PLFLT_NC_SCALAR)(&(g_gbl_fields[min_color->ifield]->r)), (PLFLT_NC_SCALAR)(&(g_gbl_fields[max_color->ifield]->r)));
+	return top;
+}
+
+static int ke_plgcol0(ke1_t *stack, int top) {
+	ke1_t *icol0, *r, *g, *b;
+	b = &stack[--top];
+	g = &stack[--top];
+	r = &stack[--top];
+	icol0 = &stack[--top];
+
+	g_gbl_fields[r->ifield]->vtype = KEV_INT;
+	g_gbl_fields[g->ifield]->vtype = KEV_INT;
+	g_gbl_fields[b->ifield]->vtype = KEV_INT;
+	plgcol0((PLINT)icol0->i, 
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[r->ifield]->i)), 
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[g->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[b->ifield]->i)));
+	return top;
+}
+
+static int ke_plgcol0a(ke1_t *stack, int top) {
+	ke1_t *icol0, *r, *g, *b, *alpha;
+	alpha = &stack[--top];
+	b = &stack[--top];
+	g = &stack[--top];
+	r = &stack[--top];
+	icol0 = &stack[--top];
+	g_gbl_fields[r->ifield]->vtype = KEV_INT;
+	g_gbl_fields[g->ifield]->vtype = KEV_INT;
+	g_gbl_fields[b->ifield]->vtype = KEV_INT;
+	g_gbl_fields[alpha->ifield]->vtype = KEV_REAL;
+
+	plgcol0a((PLINT)icol0->i,
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[r->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[g->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[b->ifield]->i)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[alpha->ifield]->r)));
+	return top;
+}
+
+static int ke_plgcolbg(ke1_t *stack, int top) {
+	ke1_t *r, *g, *b;
+	b = &stack[--top];
+	g = &stack[--top];
+	r = &stack[--top];
+	g_gbl_fields[r->ifield]->vtype = KEV_INT;
+	g_gbl_fields[g->ifield]->vtype = KEV_INT;
+	g_gbl_fields[b->ifield]->vtype = KEV_INT;
+
+	plgcolbg(
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[r->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[g->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[b->ifield]->i)));
+	return top;
+}
+
+static int ke_plgcolbga(ke1_t *stack, int top) {
+	ke1_t *r, *g, *b, *alpha;
+	alpha = &stack[--top];
+	b = &stack[--top];
+	g = &stack[--top];
+	r = &stack[--top];
+
+	g_gbl_fields[r->ifield]->vtype = KEV_INT;
+	g_gbl_fields[g->ifield]->vtype = KEV_INT;
+	g_gbl_fields[b->ifield]->vtype = KEV_INT;
+	g_gbl_fields[alpha->ifield]->vtype = KEV_REAL;
+
+	plgcolbga(
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[r->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[g->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[b->ifield]->i)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[alpha->ifield]->r)));
+	return top;
+}
+
+static int ke_plgcompression(ke1_t *stack, int top) {
+	ke1_t *compression;
+	compression = &stack[--top];
+
+	g_gbl_fields[compression->ifield]->vtype = KEV_INT;
+	plgcompression((PLINT_NC_SCALAR)(&(g_gbl_fields[compression->ifield]->i)));
+	return top;
+}
+
 void ke_plot_hash() {
+	ke_hash_add((fncp)&ke_plgcolbg, PLOT_PLGCOLBG);
+	ke_hash_add((fncp)&ke_plgcolbga, PLOT_PLGCOLBGA);
+
+
+	ke_hash_add((fncp)&ke_plgcol0a, PLOT_PLGCOL0A);
+	ke_hash_add((fncp)&ke_plgcol0, PLOT_PLGCOL0);
+	ke_hash_add((fncp)&ke_plgcmap1_range, PLOT_PLGCMAP1RANGE);
+	ke_hash_add((fncp)&ke_plgchr, PLOT_PLGCHR);
+
+
 	ke_hash_add((fncp)&ke_plinit, PLOT);
 	ke_hash_add((fncp)&ke_plinit, PLOT_INIT);
 	ke_hash_add((fncp)&ke_plsdev, PLOT_PLSDEV);
@@ -472,5 +602,7 @@ void ke_plot_hash() {
 	ke_hash_add((fncp)&ke_plfont, PLOT_PLFONT);
 	ke_hash_add((fncp)&ke_plfontld, PLOT_PLFONTLD);
 	ke_hash_add((fncp)&ke_plGetCursor, PLOT_PLGETCURSOR);
+
+
 }
 

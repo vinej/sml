@@ -223,3 +223,21 @@ if (acoth(60) == 0.016668210133795856)
 else
 	print('failed : acoth')
 end
+
+if (12 % 5 == 2)
+	print('success : % (mod)')
+else
+	print('failed : % (mod)')
+end
+
+if (gcd(81,153) == 9)
+	print('success : gcd')
+else
+	print('failed : gcd')
+end
+
+if (lcm(72,120) == 360)
+	print('success : lcm')
+else
+	print('failed : lcm')
+end

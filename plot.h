@@ -43,5 +43,11 @@ void ke_plot_hash();
 #define PLOT_PLFONT "plot_font"
 #define PLOT_PLFONTLD "plot_fontld"
 #define PLOT_PLGETCURSOR "plot_GetCursor"
+#define PLOT_PLGCHR "plot_gchr"
+#define PLOT_PLGCMAP1RANGE "plot_gcmap1_range"
+#define PLOT_PLGCOL0 "plot_gcol0"
+#define PLOT_PLGCOL0A "plot_gcol0a"
+#define PLOT_PLGCOLBG "plot_gcolbg"
+#define PLOT_PLGCOLBGA "plot_gcolbga"
 
 #endif // COMPLEX_H_INCLUDED
