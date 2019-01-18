@@ -2,7 +2,7 @@ sml
 sml : simple math language
 
 Language exemple
-
+```
 for(j,1,10,1)
   print(j)
 next
@@ -26,5 +26,6 @@ for
   end
   j = j + 1
 next
+```
 
 
