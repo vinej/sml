@@ -3,11 +3,19 @@ sml : simple math language
 
 Language exemple
 ```
-j = 1
+def(add, v1, v2)
+  v1 + v2
+enddef
+
+print('Start of program')
+
+print(exe(add,3,4))
+
 for(j,1,10,1)
   print(j)
 next
- 
+
+# like do while
 j = 1
 for  
   j = j + 1
@@ -17,6 +25,7 @@ for
   end
 next
 
+# while do
 j = 1
 for
   if(j == 10)
@@ -30,5 +39,3 @@ for
   j = j + 1
 next
 ```
-
-
