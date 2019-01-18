@@ -41,6 +41,7 @@ for
   j = j + 1
 next
 
+#matrix & vector
 v1 = vector_alloc(3)
 v2 = vector_alloc(3)
 
@@ -53,7 +54,7 @@ print(m1)
 matrix_read('mat.dat', m1)
 print(m1)
 
-
+#vector
 vector_set(v1,0,4)
 vector_set(v1,1,5)
 vector_set(v1,2,6)
@@ -61,10 +62,19 @@ vector_set(v1,2,6)
 vector_write('v1.dat',v1)
 vector_read('v1.dat',v1)
 
+#complex
 c1 = complex(2,3)
 c2 = complex(4,3)
 c2 = complex_sqrt(c2)
 c3 = complex_add(c1,c2)
 print(c3)
 
+# plotting 32bits only version for now
+v1 = vector(2)
+vector_put(v1,4,7)
+plot_init("wingcc")
+plot_env(1,10,1,10,1,0)
+plot_line(2,v1,v1)
+plot_spause(1)
+plot_end(1)
 ```
