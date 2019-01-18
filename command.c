@@ -202,6 +202,7 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 			}
 		}
 	}
+	return 0;
 }
 
 int ke_command_if(kexpr_t *kexpr, ke1_t * tokp, ke1_t *stack, int top, int * itokp) {

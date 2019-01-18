@@ -382,7 +382,7 @@ void ke_matrix_print(ke1_t *k) {
     printf("Matrix: %s\n", k->name);
     for(size_t i = 0; i < k->obj.matrix->size1; i++)
         for(size_t j = 0; j < k->obj.matrix->size2; j++)
-            printf("%d,%d : v:%g\n", i, j, gsl_matrix_get(k->obj.matrix, i,j));
+            printf("%d,%d : v:%g\n", (int)i, (int)j, gsl_matrix_get(k->obj.matrix, i,j));
 }
 
 void ke_matrix_freemem(ke1_t *e) {

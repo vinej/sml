@@ -328,7 +328,7 @@ void ke_vector_hash() {
 void ke_vector_print(ke1_t *k) {
     printf("Vector: %s\n", k->name);
     for(size_t i = 0; i < k->obj.vector->size; i++) {
-        printf("%d : v:%g\n", i, gsl_vector_get(k->obj.vector, i));
+        printf("%d : v:%g\n", (int)i, gsl_vector_get(k->obj.vector, i));
     }
 }
 

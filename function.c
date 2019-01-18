@@ -27,7 +27,7 @@ static double convert_anglem(double value) {
 static int ke_function_anglem(ke1_t *stack, int top) {
 	ke1_t *p;
 	p = &stack[--top];
-	anglem = p->i;
+	anglem = (int)p->i;
 	return top;
 }
 
@@ -416,6 +416,53 @@ static int ke_function_timesec(ke1_t *stack, int top) {
 	return top;
 }
 
+static int ke_function_gcd(ke1_t *stack, int top) {
+	ke1_t *p, *q;
+	int64_t gcd = 0;
+	q = &stack[--top];
+	p = &stack[top - 1];
+	p->i = (p->i > 0) ? p->i : -p->i;
+	q->i = (q->i > 0) ? q->i : -q->i;
+
+	for (int64_t i = 1; i <= p->i && i <= q->i; ++i)
+	{
+		// Checks if i is factor of both integers
+		if (p->i%i == 0 && q->i%i == 0) {
+			gcd = i;
+		}
+	}
+	p->i = gcd;
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
+	return top;
+}
+
+static int ke_function_lcm(ke1_t *stack, int top) {
+	ke1_t *p, *q;
+	int64_t lcm = 0;
+	q = &stack[--top];
+	p = &stack[top - 1];
+	p->i = (p->i > 0) ? p->i : -p->i;
+	q->i = (q->i > 0) ? q->i : -q->i;
+
+	lcm = (p->i>q->i) ? p->i : q->i;
+
+	// Always true
+	while (1)
+	{
+		if (lcm%p->i == 0 && lcm%q->i == 0)
+		{
+			break;
+		}
+		++lcm;
+	}
+
+	p->i = lcm;
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
+	return top;
+}
+
 void ke_function_hash() {
 	ke_hash_add((fncp)&ke_function_anglem, FUNCTION_ANGLEM);
 	ke_hash_add((fncp)&ke_function_exp, FUNCTION_EXP);
@@ -458,6 +505,8 @@ void ke_function_hash() {
 	ke_hash_add((fncp)&ke_function_timehour, FUNCTION_TIMEHOUR);
 	ke_hash_add((fncp)&ke_function_timemin, FUNCTION_TIMEMIN);
 	ke_hash_add((fncp)&ke_function_timesec, FUNCTION_TIMESEC);
+	ke_hash_add((fncp)&ke_function_gcd, FUNCTION_GCD);
+	ke_hash_add((fncp)&ke_function_lcm, FUNCTION_LCM);
 }
 
 void ke_function_print(ke1_t *k) {

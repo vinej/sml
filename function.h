@@ -45,6 +45,8 @@ void ke_function_hash();
 #define FUNCTION_TIMEHOUR "time_hour"
 #define FUNCTION_TIMEMIN "time_min"
 #define FUNCTION_TIMESEC "time_sec"
+#define FUNCTION_GCD "gcd"
+#define FUNCTION_LCM "lcm"
 
 
 #endif // FUNCTION_H_INCLUDED
