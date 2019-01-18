@@ -3,10 +3,12 @@ sml : simple math language
 
 Language exemple
 ```
+j = 1
 for(j,1,10,1)
   print(j)
 next
  
+j = 1
 for  
   j = j + 1
   if(j == 5)
@@ -15,6 +17,7 @@ for
   end
 next
 
+j = 1
 for
   if(j == 10)
     print(j)
