@@ -10,7 +10,7 @@ SML is a small math language build around 3 open source softwares
 
 At first, I was interested only to learn how to transform an INFIX expression into a POSTFIX expression because I was playing with a HP50G emulator calculator. As an exercice to re-learn more about C developement I wanted to develop a small postfix calculator.
 
-After a while, I found the KLIB library with a more complete implementation than mine. After using the KLIB librairy, I decided that I could probably create a small math language to do the link with GSL and PLPLOT.
+After a while, I found the KLIB library with a more complete implementation than mine. After using the KLIB library, I decided that I could probably create a small math language to do the link with GSL and PLPLOT.
 
 The result : SML is born.
 
@@ -45,7 +45,7 @@ sum = exe(add,3,4)
 print('the total is ',sum)
 print('Sinus of 60 =', sin(60))
 
-# for lop from 1 to 10, increment of 1
+# for loop from 1 to 10, increment of 1
 for(j,1,10,1)
   print(j)
 next
