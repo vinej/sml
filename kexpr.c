@@ -147,21 +147,21 @@ void ke_init_memory_count() {
     g_mem_count = 0;
 }
 
-void inline ke_inc_memory() {
+void ke_inc_memory() {
     ++g_mem_count;
 }
 
-void inline ke_dec_memory() {
+void ke_dec_memory() {
     --g_mem_count;
 }
 
-inline void * ke_calloc_memory(size_t i, size_t x) {
+void * ke_calloc_memory(size_t i, size_t x) {
     void * tmp = calloc(i,x);
     ++g_mem_count;
     return tmp;
 }
 
-inline void * ke_malloc_memory(size_t i) {
+void * ke_malloc_memory(size_t i) {
     void * tmp = malloc(i);
     ++g_mem_count;
     return tmp;
@@ -172,7 +172,7 @@ void ke_free_memory(void * m) {
 	--g_mem_count;
 }
 
-inline char *ke_mystrndup(char *src, size_t n)
+char *ke_mystrndup(char *src, size_t n)
 {
 	char *dst;
 	dst = (char*)calloc(n + 1, 1);
@@ -981,6 +981,7 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 			g_stack[top++] = *tokp;
 		}
 	}
+
 	#ifdef DEBUG
         ke_print_stack(g_stack, top);
     #endif // DEBUG

@@ -31,9 +31,24 @@ extern ke1_t ** g_gbl_fields;
 
 // g_forstack max 20 level of for
 int g_forstack[20]; int g_fortop = 0;
-int inline peekfor() {	return g_forstack[g_fortop-1];}
-int inline popfor() { return g_forstack[--g_fortop]; }
-void inline pushfor(int val) { g_forstack[g_fortop++] = val;  }
+
+int peekfor() 
+{	
+	//printf("\npeek %d\n", g_fortop);
+	return g_forstack[g_fortop-1];
+}
+
+int popfor() { 
+	//printf("\npop %d\n", g_fortop);
+	//--g_fortop;
+	return g_forstack[--g_fortop]; 
+}
+
+void pushfor(int val) { 
+	//printf("\npush %d\n", g_fortop);
+	g_forstack[g_fortop++] = val;
+	//++g_fortop;
+}
 
 // g_forstack max 20 level of for
 int lastDef = -1;
@@ -319,6 +334,7 @@ int  ke_command_val_end(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 }
 
 int  ke_command_val_brk(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+
 	int ifor = popfor();
 	// tokp->i is to determine is the for was a single for or the one with 4 parameters
 	ke1_t *efor = ke_get_tokidx(ifor);
@@ -330,6 +346,7 @@ int  ke_command_val_brk(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 int  ke_command_val_for(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	if (!tokp->assigned) {
 		tokp->assigned = 1;
+		pushfor(itok);
 	}
 	return itok;
 }

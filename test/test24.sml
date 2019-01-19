@@ -1,21 +1,39 @@
-p.test = 12
-p.str = 'jean-yves'
-p.value = 12.23
-print(p)
+def(add, v1, v2)
+  v1 + v2
+enddef
 
-a = p
-print(p)
+print('Start of program')
 
-print(a)
+sum = exe(add,3,4)
+print('the total is ',sum)
+print('Sinus of 60 =', sin(60))
 
-c = 12 % 5
+# for lop from 1 to 10, increment of 1
+for(j,1,10,1)
+  print(j)
+next
 
-print(c)
+# like do while
+j = 1
+for  
+  j = j + 1
+  if(j == 5)
+    print(j)
+    break
+  end
+next
 
-g = gcd(81,153)
-
-print(g)
-
-l = lcm(72,120)
-
-print(l)
+print('bug here')
+j = 1
+print('bug here 2')
+for
+  print('bug here 3')
+  if(j == 10)
+    print('bug here 4')
+    break
+    print('bug here 4b')
+  end
+  print('bug here 5')
+  j = j + 1
+next
+print('bug here 6')
