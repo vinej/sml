@@ -45,7 +45,7 @@ sum = exe(add,3,4)
 print('the total is ',sum)
 print('Sinus of 60 =', sin(60))
 
-# for lop from 1 to 10, increment of 1
+# for loop from 1 to 10, increment of 1
 for(j,1,10,1)
   print(j)
 next
