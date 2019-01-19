@@ -22,6 +22,8 @@ To conclude, SML is only a hobby for me to learn. My goal is to link all the PLP
 
 I really don't know, because there are so many softwares around this subject, but if you program in C with GSL and PLPLOT, it could be a new usefull tool for you.
 
+## Language exemple
+
 You can:
 
 - commands separator is <new line> or <;>
@@ -32,7 +34,7 @@ You can:
 - Conditions ara manage with <if..else..end>
 - Variables are created with the equal caracter <var = expression>
 
-Language exemple
+
 ```
 def(add, v1, v2)
   v1 + v2
