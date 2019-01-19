@@ -27,7 +27,7 @@ I really don't know, because there are so many softwares around this subject, bu
 You can:
 
 - Commands separator are 'new line' or ';'
-- Line continuation caracter is '\' to create expressions spread on many lines
+- Line continuation caracter is '\\' to create expressions spread on many lines
 - The caractere '#' is used to insert comment into the code
 - Functions or sub-routines are created with 'def ....  enddef' and execute with 'exe'
 - Loops are created with 'for ... break ... continue ... next'
