@@ -1,5 +1,32 @@
-sml
-sml : simple math language
+# SML : alpha 0.0.1
+
+SML is a small math language build around 3 open source softwares
+
+1) KLIB from Attractive Chaos
+2) GNU GSL : The GNU Scientific Library
+3) PLPLOT : PLplot is a cross-platform software package for creating scientific plots
+
+At first, I was interested only to learn how to transform an INFIX expression into a POSTFIX expression because I was playing with a HP50G emulator calculator. As an exercice to re-learn more about C developement I want to develop a small postfix calculator.
+
+After a while I found the KLIB library with a more complete implementation then mine and after playing around with the KLIB librairy, I decided that I can probably create a small math language to link with GSL end PLPLOT. 
+
+The result : SML is born.
+
+So, SML it's a very small language with only the minimum needed to link with GSL and  PLPLOT. I want the language to be as simple as possible like Python. Is very far to be a complete language like Python. It more like a small implementation of GNUPLOT.
+
+To conlcude, SML is only a hobby
+
+You can:
+
+- commands separator is <new line> or <;>
+- line continuation caractere is <\> to create expressions spread on many lines
+- the caractere <#> is used to create comment into the code
+- Functions or sub-routines are created with <def ....  enddef> and execute with <exe>
+- Loops are created with <for ... break ... continue ... next>
+- Conditions ara manage with <if..else..end>
+- Variables are created with the equal caracter <var = expression>
+
+
 
 Language exemple
 ```
