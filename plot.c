@@ -551,6 +551,376 @@ static int ke_plgcompression(ke1_t *stack, int top) {
 	return top;
 }
 
+static int ke_plgdidev(ke1_t *stack, int top) {
+	ke1_t *p_mar, *p_aspect, *p_jx, *p_jy;
+	p_jy = &stack[--top];
+	p_jx = &stack[--top];
+	p_aspect = &stack[--top];
+	p_mar = &stack[--top];
+
+	g_gbl_fields[p_mar->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_aspect->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_jx->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_jy->ifield]->vtype = KEV_REAL;
+
+	plgdidev(
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_mar->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_aspect->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_jx->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_jy->ifield]->r)));
+	return top;
+}
+
+static int ke_plgdiori(ke1_t *stack, int top) {
+	ke1_t *p_rot;
+	p_rot = &stack[--top];
+
+	g_gbl_fields[p_rot->ifield]->vtype = KEV_REAL;
+
+	plgdiori((PLFLT_NC_SCALAR)(&(g_gbl_fields[p_rot->ifield]->r)));
+	return top;
+}
+
+static int ke_plgdiplt(ke1_t *stack, int top) {
+	ke1_t *p_xmin, *p_ymin, *p_xmax, *p_ymax;
+	p_ymax = &stack[--top];
+	p_xmax = &stack[--top];
+	p_ymin = &stack[--top];
+	p_xmin = &stack[--top];
+
+	g_gbl_fields[p_xmin->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_ymin->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_xmax->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_ymax->ifield]->vtype = KEV_REAL;
+
+	plgdiplt(
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_xmin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_ymin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_xmax->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_ymax->ifield]->r)));
+	return top;
+}
+
+static int ke_function_plgdrawmode(ke1_t *stack, int top) {
+	ke1_t *p;
+	p = &stack[top - 1];
+	stack[top++] = *p;
+	p = &stack[top - 1];
+	p->i = (PLINT)plgdrawmode();
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
+	return top;
+}
+
+static int ke_plgfam(ke1_t *stack, int top) {
+	ke1_t *p_fam, *p_num, *p_bmax;
+	p_bmax = &stack[--top];
+	p_num = &stack[--top];
+	p_fam = &stack[--top];
+
+	g_gbl_fields[p_fam->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_num->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_bmax->ifield]->vtype = KEV_INT;
+
+	plgfam(
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_fam->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_num->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_bmax->ifield]->i)));
+	return top;
+}
+
+static int ke_plgfci(ke1_t *stack, int top) {
+	ke1_t *p_fci;
+	p_fci = &stack[--top];
+
+	g_gbl_fields[p_fci->ifield]->vtype = KEV_INT;
+
+	plgfci((PLUNICODE_NC_SCALAR)(&(g_gbl_fields[p_fci->ifield]->i)));
+	return top;
+}
+
+static int ke_plgfnam(ke1_t *stack, int top) {
+	ke1_t *fnam;
+	fnam = &stack[--top];
+
+	g_gbl_fields[fnam->ifield]->vtype = KEV_STR;
+
+	plgfnam((PLCHAR_NC_VECTOR)(&(g_gbl_fields[fnam->ifield]->obj.s)));
+	return top;
+}
+
+static int ke_plgfont(ke1_t *stack, int top) {
+	ke1_t *p_family, *p_style, *p_weight;
+	p_weight = &stack[--top];
+	p_style = &stack[--top];
+	p_family = &stack[--top];
+
+	g_gbl_fields[p_family->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_style->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_weight->ifield]->vtype = KEV_INT;
+
+	plgfont(
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_family->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_style->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_weight->ifield]->i)));
+	return top;
+}
+
+static int ke_plglevel(ke1_t *stack, int top) {
+	ke1_t *p_level;
+	p_level = &stack[--top];
+
+	g_gbl_fields[p_level->ifield]->vtype = KEV_INT;
+
+	plglevel((PLINT_NC_SCALAR)(&(g_gbl_fields[p_level->ifield]->i)));
+	return top;
+}
+
+static int ke_plgpage(ke1_t *stack, int top) {
+	ke1_t *p_xp, *p_yp, *p_xleng, *p_yleng, *p_xoﬀ, *p_yoﬀ;
+	p_yoﬀ = &stack[--top];
+	p_xoﬀ = &stack[--top];
+	p_yleng = &stack[--top];
+	p_xleng = &stack[--top];
+	p_yp = &stack[--top];
+	p_xp = &stack[--top];
+
+	g_gbl_fields[p_xp->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_yp->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_xleng->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_yleng->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_xoﬀ->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_yoﬀ->ifield]->vtype = KEV_INT;
+
+	plgpage(
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_xp->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_yp->ifield]->r)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_xleng->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_yleng->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_xoﬀ->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_yoﬀ->ifield]->i)));
+	return top;
+}
+
+static int ke_function_plgra(ke1_t *stack, int top) {
+	plgra();
+	return top;
+}
+
+static int ke_plgradient(ke1_t *stack, int top) {
+	ke1_t *n, *x, *y, *angle;
+	angle = &stack[--top];
+	y = &stack[--top];
+	x = &stack[--top];
+	n = &stack[--top];
+	plgradient((PLINT)n->i,
+		(PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, 0),
+		(PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0),
+		(PLFLT)angle->r);
+	return top;
+}
+
+static int ke_plgriddata(ke1_t *stack, int top) {
+	ke1_t *x, *y, *z, *npts, *xg, *nptsx, *yg, *nptsy, *zg, *type, *data;
+	data = &stack[--top];
+	type = &stack[--top];
+	zg = &stack[--top];
+	nptsy = &stack[--top];
+	yg = &stack[--top];
+	nptsx = &stack[--top];
+	xg = &stack[--top];
+	npts = &stack[--top];
+	z = &stack[--top];
+	y = &stack[--top];
+	x = &stack[--top];
+
+	// must transform this matrix into a GSL matrix
+	// JYV TODO
+	PLFLT_NC_MATRIX return_matrix;
+
+	plgriddata(
+		(PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, 0),
+		(PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0),
+		(PLFLT_VECTOR)gsl_vector_const_ptr(z->obj.vector, 0),
+		(PLINT)npts->i,
+		(PLFLT_VECTOR)gsl_vector_const_ptr(xg->obj.vector, 0),
+		(PLINT)nptsx->i,
+		(PLFLT_VECTOR)gsl_vector_const_ptr(yg->obj.vector, 0),
+		(PLINT)nptsy->i,
+		(PLFLT_NC_MATRIX)&return_matrix,
+		(PLINT)type->i,
+		(PLFLT)data->r);
+	return top;
+}
+
+static int ke_plgspa(ke1_t *stack, int top) {
+	ke1_t *xmin, *xmax, *ymin, *ymax;
+	ymax = &stack[--top];
+	ymin = &stack[--top];
+	xmax = &stack[--top];
+	xmin = &stack[--top];
+
+	g_gbl_fields[xmin->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[xmax->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[ymin->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[ymax->ifield]->vtype = KEV_REAL;
+
+	plgspa(
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[xmin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[ymin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[xmax->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[ymax->ifield]->r)));
+	return top;
+}
+
+static int ke_plgstrm(ke1_t *stack, int top) {
+	ke1_t *p_strm;
+	p_strm = &stack[--top];
+
+	g_gbl_fields[p_strm->ifield]->vtype = KEV_INT;
+
+	plgstrm((PLINT_NC_SCALAR)(&(g_gbl_fields[p_strm->ifield]->i)));
+		
+	return top;
+}
+
+static int ke_plgver(ke1_t *stack, int top) {
+	ke1_t *p_ver;
+	p_ver = &stack[--top];
+
+	g_gbl_fields[p_ver->ifield]->vtype = KEV_STR;
+
+	plgver((PLCHAR_NC_VECTOR)(&(g_gbl_fields[p_ver->ifield]->obj.s)));
+
+	return top;
+}
+
+static int ke_plgvpd(ke1_t *stack, int top) {
+	ke1_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
+	p_ymax = &stack[--top];
+	p_ymin = &stack[--top];
+	p_xmax = &stack[--top];
+	p_xmin = &stack[--top];
+
+	g_gbl_fields[p_xmin->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_xmax->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_ymin->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_ymax->ifield]->vtype = KEV_REAL;
+
+	plgvpd(
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_xmin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_xmax->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_ymin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_ymax->ifield]->r)));
+	return top;
+}
+
+static int ke_plgvpw(ke1_t *stack, int top) {
+	ke1_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
+	p_ymax = &stack[--top];
+	p_ymin = &stack[--top];
+	p_xmax = &stack[--top];
+	p_xmin = &stack[--top];
+
+	g_gbl_fields[p_xmin->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_xmax->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_ymin->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_ymax->ifield]->vtype = KEV_REAL;
+
+	plgvpw(
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_xmin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_xmax->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_ymin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_ymax->ifield]->r)));
+	return top;
+}
+
+static int ke_plgxax(ke1_t *stack, int top) {
+	ke1_t *p_digmax, *p_digits;
+	p_digits = &stack[--top];
+	p_digmax = &stack[--top];
+
+	g_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+
+	plgxax(
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_digits->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_digits->ifield]->i)));
+	return top;
+}
+
+static int ke_plgyax(ke1_t *stack, int top) {
+	ke1_t *p_digmax, *p_digits;
+	p_digits = &stack[--top];
+	p_digmax = &stack[--top];
+
+	g_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+
+	plgyax(
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_digits->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_digits->ifield]->i)));
+	return top;
+}
+
+static int ke_plgzax(ke1_t *stack, int top) {
+	ke1_t *p_digmax, *p_digits;
+	p_digits = &stack[--top];
+	p_digmax = &stack[--top];
+
+	g_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+	g_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+
+	plgzax(
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_digits->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(g_gbl_fields[p_digits->ifield]->i)));
+	return top;
+}
+
+static int ke_plhist(ke1_t *stack, int top) {
+	ke1_t *n, *data, *datmin, *datmax, *nbin, *opt;
+	opt = &stack[--top];
+	nbin = &stack[--top];
+	datmax = &stack[--top];
+	datmin = &stack[--top];
+	data = &stack[--top];
+	n = &stack[--top];
+
+	plhist(
+		(PLINT)n->i, 
+		(PLFLT_VECTOR)gsl_vector_const_ptr(data->obj.vector, 0),
+		(PLFLT)datmin->r, 
+		(PLFLT)datmax->r, 
+		(PLINT)nbin->i,
+		(PLINT)opt->i);
+	return top;
+}
+
+static int ke_plhlsrgb(ke1_t *stack, int top) {
+	ke1_t *h, *l, *s, *p_r, *p_g, *p_b;
+	p_b = &stack[--top];
+	p_g = &stack[--top];
+	p_r = &stack[--top];
+	s = &stack[--top];
+	l = &stack[--top];
+	h = &stack[--top];
+
+	g_gbl_fields[p_r->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_g->ifield]->vtype = KEV_REAL;
+	g_gbl_fields[p_b->ifield]->vtype = KEV_REAL;
+
+	plhlsrgb(
+		(PLFLT)h->r, 
+		(PLFLT)l->r, 
+		(PLFLT)s->r,
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_r->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_g->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(g_gbl_fields[p_b->ifield]->r)));
+	return top;
+}
+
+
+
 void ke_plot_hash() {
 	ke_hash_add((fncp)&ke_plgcolbg, PLOT_PLGCOLBG);
 	ke_hash_add((fncp)&ke_plgcolbga, PLOT_PLGCOLBGA);
