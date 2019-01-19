@@ -26,14 +26,13 @@ I really don't know, because there are so many softwares around this subject, bu
 
 You can:
 
-- commands separator is <new line> or <;>
-- line continuation caracter is <\> to create expressions spread on many lines
+- commands separator is 'new line' or ';'
+- line continuation caracter is '\' to create expressions spread on many lines
 - the caractere <#> is used to create comment into the code
-- Functions or sub-routines are created with <def ....  enddef> and execute with <exe>
-- Loops are created with <for ... break ... continue ... next>
-- Conditions ara manage with <if..else..end>
-- Variables are created with the equal caracter <var = expression>
-
+- Functions or sub-routines are created with 'def ....  enddef' and execute with <exe>
+- Loops are created with 'for ... break ... continue ... next'
+- Conditions ara manage with 'if ... else ... end'
+- Variables are created with the equal caracter 'var = expression'
 
 ```
 def(add, v1, v2)
