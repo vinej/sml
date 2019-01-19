@@ -26,12 +26,12 @@ I really don't know, because there are so many softwares around this subject, bu
 
 You can:
 
-- commands separator is 'new line' or ';'
-- line continuation caracter is '\' to create expressions spread on many lines
-- the caractere <#> is used to create comment into the code
-- Functions or sub-routines are created with 'def ....  enddef' and execute with <exe>
+- Commands separator are 'new line' or ';'
+- Line continuation caracter is '\' to create expressions spread on many lines
+- The caractere '#' is used to insert comment into the code
+- Functions or sub-routines are created with 'def ....  enddef' and execute with 'exe'
 - Loops are created with 'for ... break ... continue ... next'
-- Conditions ara manage with 'if ... else ... end'
+- Conditions are manage with 'if ... else ... end'
 - Variables are created with the equal caracter 'var = expression'
 
 ```
@@ -43,8 +43,9 @@ print('Start of program')
 
 sum = exe(add,3,4)
 print('the total is ',sum)
-print('Sin of 60', sin(60))
+print('Sinus of 60 =', sin(60))
 
+# for lop from 1 to 10, increment of 1
 for(j,1,10,1)
   print(j)
 next
@@ -63,7 +64,6 @@ next
 j = 1
 for
   if(j == 10)
-    print(j)
     break
   else
     if (j == 3)
@@ -73,7 +73,7 @@ for
   j = j + 1
 next
 
-#matrix & vector
+#matrixs & vectors
 v1 = vector_alloc(3)
 v2 = vector_alloc(3)
 
