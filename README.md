@@ -10,7 +10,7 @@ SML is a small math language build around 3 open source softwares
 
 At first, I was interested only to learn how to transform an INFIX expression into a POSTFIX expression because I was playing with a HP50G emulator calculator. As an exercice to re-learn more about C developement I wanted to develop a small postfix calculator.
 
-After a while I found the KLIB library with a more complete implementation than mine. After using the KLIB librairy, I decided that I could probably create a small math language to do th link with GSL and PLPLOT.
+After a while, I found the KLIB library with a more complete implementation than mine. After using the KLIB librairy, I decided that I could probably create a small math language to do the link with GSL and PLPLOT.
 
 The result : SML is born.
 
