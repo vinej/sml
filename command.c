@@ -289,6 +289,7 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
         tokp->assigned = 1;
 		tokp->obj.tokp = ke_get_tokidx(*itokp - n);
 		tokp->obj.tokp->r = (min->vtype == KEV_INT ? min->i : min->r);
+		tokp->obj.tokp->i = tokp->obj.tokp->r;
 		pushfor(*itokp);
 
     } else {
@@ -300,6 +301,7 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 		} else {
 			ke1_t *inc = &stack[top - n + 3];
 			tokp->obj.tokp->r += (inc->vtype == KEV_INT ? inc->i : inc->r);
+			tokp->obj.tokp->i = tokp->obj.tokp->r;
 		}
 	}
 	return top - n;

@@ -1,19 +1,26 @@
 def(plot1)
     for(i,0,59,1)
-		print('...',i)
-        vset(g_x, i, g_xoff + g_xscale * ( i + 1 ) / 60.0)
-        vset(g_y, i, g_yoff + g_yscale * pow( vget(g_x,i), 2.0 ))
+		x = g_xoff + g_xscale * ( i + 1 ) / 60.0
+        vset(g_x, i, x)
+		y = g_yoff + g_yscale * pow( vget(g_x,i), 2.0 )
+        vset(g_y, i, y)
     next
+	print(g_x)
+	print(g_y)
 	print('first for')
-    xmin = vget(g_x,0)
-    xmax = vget(g_x,59)
-    ymin = vget(g_y,0)
-    ymax = vget(g_y,59)
+    xmin = vmin(g_x)
+    xmax = vmax(g_x)
+    ymin = vmin(g_y)
+    ymax = vmax(g_y)
+	print(xmin,' ',xmax,' ', ymin,' ', ymax)
 
     for (i,0,5,1)
-        vset(g_xs,i, vget(g_x, i * 10 + 3))
-        vset(g_ys, i, vget(g_y, i * 10 + 3))
+        vset(g_xs,i,vget(g_x, i * 10 + 3))
+        vset(g_ys,i,vget(g_y, i * 10 + 3))
     next
+	print(g_xs)
+	print(g_ys)
+
 	print('second for')
 	print('starting plotting #1')
     plcol0( 1 )
@@ -69,9 +76,9 @@ def(plot3)
 enddef
 
 # global variables used un sub routines
-g_x = vector(101)
+g_x = vector(60)
 vset_zero(g_x)
-g_y = vector(101)
+g_y = vector(60)
 vset_zero(g_y)
 g_xs = vector(6)
 vset_zero(g_xs)

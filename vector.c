@@ -58,7 +58,7 @@ static int ke_vector_int_get(ke1_t *stack, int top) {
 	p->i = gsl_vector_int_get(p->obj.vector_int, (size_t)q->i);
 	p->ttype = KET_VAL;
 	p->vtype = KEV_INT;
-	p->obj.vector = NULL;
+	p->obj.vector_int = NULL;
 	return top;
 }
 
