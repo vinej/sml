@@ -699,6 +699,13 @@ void ke_set_null_vector(int ifield)
     ftokp->obj.vector = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
 }
 
+void ke_set_null_vector_int(int ifield)
+{
+	ke1_t * ftokp = g_gbl_fields[ifield];
+	ke_vector_freemem(ftokp);
+	ftokp->obj.vector_int = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
+}
+
 void ke_set_vector(ke1_t *tokp, gsl_vector * vecp)
 {
     ke_vector_freemem(tokp);

@@ -100,6 +100,7 @@ typedef struct ke1_s {
 		struct ke1_s * recp;
 	} f;
 	union {  //                                                                                                     
+		gsl_vector_int * vector_int;
 		gsl_vector * vector;
 		gsl_matrix * matrix;
 	    gsl_complex complex;
@@ -140,6 +141,7 @@ void ke_print_one(ke1_t * u);
 void ke_fill_hash();
 
 void ke_set_real(ke1_t *e, double x);
+void ke_set_null_vector_int(int ival);
 void ke_set_null_vector(int ival);
 void ke_set_vector(ke1_t *e, gsl_vector * p);
 void ke_set_null_matrix(int ival);

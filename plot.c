@@ -286,13 +286,13 @@ static int ke_plcolorbar(ke1_t *stack, int top) {
 		(PLINT)cont_color->i,
 		(PLFLT)cont_width->r,
 		(PLINT)n_labels->i,
-		(PLINT_VECTOR)gsl_vector_const_ptr(label_opts->obj.vector,0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(label_opts->obj.vector_int,0),
 		(PLCHAR_MATRIX)labels->obj.s,
 		(PLINT)naxes->i,
 		(PLCHAR_MATRIX)axis_opts->obj.s,
 		(PLFLT_VECTOR)gsl_vector_const_ptr(ticks->obj.vector,0),
-		(PLINT_VECTOR)sub_ticks->obj.vector, 
-		(PLINT_VECTOR)n_values->obj.vector,
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(sub_ticks->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(n_values->obj.vector_int, 0),
 		(PLFLT_MATRIX)gsl_matrix_const_ptr(label_opts->obj.matrix, 0,0));
 	g_gbl_fields[p_colorbar_width->ifield]->vtype = KEV_REAL;
 	g_gbl_fields[p_colorbar_height->ifield]->vtype = KEV_REAL;
@@ -1071,23 +1071,23 @@ static int ke_pllegend(ke1_t *stack, int top) {
 		(PLINT)nrow->i,
 		(PLINT)ncolumn->i,
 		(PLINT)nlegend->i,
-		(PLINT_VECTOR)gsl_vector_const_ptr(opt_array->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(opt_array->obj.vector_int, 0),
 		(PLINT)text_oﬀset->i, 
 		(PLFLT)text_scale->r, 
 		(PLFLT)text_spacing->r, 
 		(PLFLT)text_justiﬁcation->r, 
-		(PLINT_VECTOR)gsl_vector_const_ptr(text_colors->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(text_colors->obj.vector_int, 0),
 		(PLCHAR_MATRIX)text->obj.s,
-		(PLINT_VECTOR)gsl_vector_const_ptr(box_colors->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(box_patterns->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(box_colors->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(box_patterns->obj.vector_int, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(box_scales->obj.vector, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(box_line_widths->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(line_colors->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(line_styles->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(line_colors->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(line_styles->obj.vector_int, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(line_widths->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(symbol_colors->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(symbol_colors->obj.vector_int, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(symbol_scales->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(symbol_numbers->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(symbol_numbers->obj.vector_int, 0),
 		(PLCHAR_MATRIX)symbols->obj.s );
 	return top;
 }
@@ -1168,7 +1168,7 @@ static int ke_plmapfill(ke1_t *stack, int top) {
 		(PLFLT)maxx->r,
 		(PLFLT)miny->r,
 		(PLFLT)maxy->r,
-		(PLINT_VECTOR)gsl_vector_const_ptr(plotentries->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(plotentries->obj.vector_int, 0),
 		(PLINT)nplotentries->i);
 	return top;
 }
@@ -1192,7 +1192,7 @@ static int ke_plmapline(ke1_t *stack, int top) {
 		(PLFLT)maxx->r,
 		(PLFLT)miny->r,
 		(PLFLT)maxy->r,
-		(PLINT_VECTOR)gsl_vector_const_ptr(plotentries->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(plotentries->obj.vector_int, 0),
 		(PLINT)nplotentries->i);
 	return top;
 }
@@ -1218,7 +1218,7 @@ static int ke_plmapstring(ke1_t *stack, int top) {
 		(PLFLT)maxx->r,
 		(PLFLT)miny->r,
 		(PLFLT)maxy->r,
-		(PLINT_VECTOR)gsl_vector_const_ptr(plotentries->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(plotentries->obj.vector_int, 0),
 		(PLINT)nplotentries->i);
 	return top;
 }
@@ -1431,8 +1431,8 @@ static int ke_plot3dl(ke1_t *stack, int top) {
 		(PLINT)nlevel->i,
 		(PLINT)indexxmin->i,
 		(PLINT)indexxmax->i,
-		(PLINT_VECTOR)gsl_vector_const_ptr(indexymin->obj.vector, 0), 
-		(PLINT_VECTOR)gsl_vector_const_ptr(indexymax->obj.vector, 0));
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(indexymin->obj.vector_int, 0), 
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(indexymax->obj.vector_int, 0));
 	
 	return top;
 }
@@ -1461,8 +1461,8 @@ static int ke_plpat(ke1_t *stack, int top) {
 	nlin = &stack[--top];
 
 	plpat((PLINT)nlin->i,
-		(PLINT_VECTOR)(PLINT_VECTOR)gsl_vector_const_ptr(inc->obj.vector, 0),
-		(PLINT_VECTOR)(PLINT_VECTOR)gsl_vector_const_ptr(del->obj.vector, 0));
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(inc->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(del->obj.vector_int, 0));
 
 	return top;
 }
@@ -1533,7 +1533,7 @@ static int ke_plpoly3(ke1_t *stack, int top) {
 		(PLFLT_VECTOR)gsl_vector_const_ptr(x->obj.vector, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(y->obj.vector, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(z->obj.vector, 0),
-		(PLBOOL_VECTOR)gsl_vector_const_ptr(draw->obj.vector, 0),
+		(PLBOOL_VECTOR)gsl_vector_int_const_ptr(draw->obj.vector_int, 0),
 		(PLBOOL)ifcc->i);
 
 	return top;
@@ -1660,9 +1660,9 @@ static int ke_plscmap0(ke1_t *stack, int top) {
 	r = &stack[--top];
 
 	plscmap0(
-		(PLINT_VECTOR)gsl_vector_const_ptr(r->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(g->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(b->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(r->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(g->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(b->obj.vector_int, 0),
 		(PLINT)ncol0->i);
 	return top;
 }
@@ -1676,10 +1676,10 @@ static int ke_plscmap0a(ke1_t *stack, int top) {
 	r = &stack[--top];
 
 	plscmap0a(
-		(PLINT_VECTOR)gsl_vector_const_ptr(r->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(g->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(b->obj.vector, 0),
-		(PLFLT_VECTOR)gsl_vector_const_ptr(alpha->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(r->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(g->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(b->obj.vector_int, 0),
+		(PLFLT_VECTOR)gsl_vector_int_const_ptr(alpha->obj.vector_int, 0),
 		(PLINT)ncol0->i);
 	return top;
 }
@@ -1709,9 +1709,9 @@ static int ke_plscmap1(ke1_t *stack, int top) {
 	r = &stack[--top];
 
 	plscmap1(
-		(PLINT_VECTOR)gsl_vector_const_ptr(r->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(g->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(b->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(r->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(g->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(b->obj.vector_int, 0),
 		(PLINT)ncol1->i);
 	return top;
 }
@@ -1725,9 +1725,9 @@ static int ke_plscmap1a(ke1_t *stack, int top) {
 	r = &stack[--top];
 
 	plscmap1a(
-		(PLINT_VECTOR)gsl_vector_const_ptr(r->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(g->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(b->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(r->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(g->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(b->obj.vector_int, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(alpha->obj.vector, 0),
 		(PLINT)ncol1->i);
 	return top;
@@ -1750,7 +1750,7 @@ static int ke_plscmap1l(ke1_t *stack, int top) {
 		(PLFLT_VECTOR)gsl_vector_const_ptr(coord1->obj.vector, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(coord2->obj.vector, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(coord3->obj.vector, 0),
-		(PLBOOL_VECTOR)gsl_vector_const_ptr(alt_hue_path->obj.vector, 0));
+		(PLBOOL_VECTOR)gsl_vector_int_const_ptr(alt_hue_path->obj.vector_int, 0));
 	return top;
 }
 
@@ -1773,7 +1773,7 @@ static int ke_plscmap1la(ke1_t *stack, int top) {
 		(PLFLT_VECTOR)gsl_vector_const_ptr(coord2->obj.vector, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(coord3->obj.vector, 0),
 		(PLFLT_VECTOR)gsl_vector_const_ptr(alpha->obj.vector, 0),
-		(PLBOOL_VECTOR)gsl_vector_const_ptr(alt_hue_path->obj.vector, 0));
+		(PLBOOL_VECTOR)gsl_vector_int_const_ptr(alt_hue_path->obj.vector_int, 0));
 	return top;
 }
 
@@ -2346,8 +2346,8 @@ static int ke_plstripc(ke1_t *stack, int top) {
 		(PLBOOL)acc->i,
 		(PLINT)colbox->i, 
 		(PLINT)collab->i,
-		(PLINT_VECTOR)gsl_vector_const_ptr(colline->obj.vector, 0), 
-		(PLINT_VECTOR)gsl_vector_const_ptr(styline->obj.vector, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(colline->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(styline->obj.vector_int, 0),
 		(PLCHAR_MATRIX)legline->obj.s, 
 		(PLCHAR_VECTOR)labx->obj.s,
 		(PLCHAR_VECTOR)laby->obj.s,
@@ -2371,8 +2371,8 @@ static int ke_plstyl(ke1_t *stack, int top) {
 
 	plstyl(
 		(PLINT)nms->i, 
-		(PLINT_VECTOR)gsl_vector_const_ptr(mark->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(space->obj.vector, 0));
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(mark->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(space->obj.vector_int, 0));
 	return top;
 }
 
@@ -2425,8 +2425,8 @@ static int ke_plsurf3dl(ke1_t *stack, int top) {
 		(PLINT)nlevel->i,
 		(PLINT)indexxmin->i,
 		(PLINT)indexxmax->i,
-		(PLINT_VECTOR)gsl_vector_const_ptr(indexymin->obj.vector, 0),
-		(PLINT_VECTOR)gsl_vector_const_ptr(indexymax->obj.vector, 0));
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(indexymin->obj.vector_int, 0),
+		(PLINT_VECTOR)gsl_vector_int_const_ptr(indexymax->obj.vector_int, 0));
 	return top;
 }
 
