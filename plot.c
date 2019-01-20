@@ -28,7 +28,7 @@ static int ke_plenv(ke1_t *stack, int top) {
 	ymin = &stack[--top];
 	xmax = &stack[--top];
 	xmin = &stack[--top];
-	plenv((PLINT)xmin->i, (PLINT)xmax->i, (PLINT)ymin->i, (PLINT)ymax->i, (PLINT)just->i, (PLINT)axis->i);
+	plenv((PLFLT)xmin->r, (PLFLT)xmax->r, (PLFLT)ymin->r, (PLFLT)ymax->r, (PLINT)just->i, (PLINT)axis->i);
 	return top;
 }
 

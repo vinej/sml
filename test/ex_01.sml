@@ -1,26 +1,18 @@
 def(plot1)
     for(i,0,59,1)
-		x = g_xoff + g_xscale * ( i + 1 ) / 60.0
-        vset(g_x, i, x)
-		y = g_yoff + g_yscale * pow( vget(g_x,i), 2.0 )
-        vset(g_y, i, y)
+        vset(g_x, i, g_xoff + g_xscale * ( i + 1 ) / 60.0)
+        vset(g_y, i, g_yoff + g_yscale * pow( vget(g_x,i), 2.0 ))
     next
-	print(g_x)
-	print(g_y)
-	print('first for')
-    xmin = vmin(g_x)
-    xmax = vmax(g_x)
-    ymin = vmin(g_y)
-    ymax = vmax(g_y)
+    xmin = vget(g_x,0)
+    xmax = vget(g_x,59)
+    ymin = vget(g_y,0)
+    ymax = vget(g_y,59)
 	print(xmin,' ',xmax,' ', ymin,' ', ymax)
 
     for (i,0,5,1)
         vset(g_xs,i,vget(g_x, i * 10 + 3))
         vset(g_ys,i,vget(g_y, i * 10 + 3))
     next
-	print(g_xs)
-	print(g_ys)
-
 	print('second for')
 	print('starting plotting #1')
     plcol0( 1 )
@@ -35,30 +27,34 @@ enddef
 
 def(plot2)
     plcol0( 1 )
-    plenv( -2.0, 10.0, -0.4, 1.2, 0, 1 )
+    plenv( (0-2.0) , 10.0, (0-0.4), 1.2, 0, 1 )
     plcol0( 2 )
     pllab( "(x)", "sin(x)/x", "#frPLplot Example 1 - Sinc Function" )
-    for (i,0,100,1)
+    for (i,0,99,1)
         vset(g_x, i, ( i - 19.0 ) / 6.0)
         vset(g_y, i, 1.0)
         if ( vget(g_x,i) != 0.0 )
-            vset(g_y, i, sin( vget(g_x,i) / vget(g_x,i)))
+            vset(g_y, i, sin( vget(g_x,i) ) / vget(g_x,i))
 		end
     next
     plcol0( 3 )
-    plwidth( 2 )
+    plwidth( 2.0 )
     plline( 100, g_x, g_y )
-    plwidth( 1 )
+    plwidth( 1.0 )
 enddef
 
 def(plot3)
-    space0 = 0
-    mark0 = 0
-    space1 = 1500
-    mark1 = 1500
+	space0 = vector_int(1)
+    vi_set(space0,0,0)
+	mark0 = vector_int(1)
+    vi_set(mark0,0,0)
+	space1 = vector_int(1)
+    vi_set(space1,0,1500)
+	mark1 = vector_int(1)
+    vi_set(mark1,0,1500)
     pladv( 0 )
     plvsta()
-    plwind( 0.0, 360.0, -1.2, 1.2 )
+    plwind( 0.0, 360.0, (0.0-1.2), 1.2 )
     plcol0( 1 )
     plbox( "bcnst", 60.0, 2, "bcnstv", 0.2, 2 )
     plstyl( 1, mark1, space1 )
@@ -66,7 +62,7 @@ def(plot3)
     plbox( "g", 30.0, 0, "g", 0.2, 0 )
     plstyl( 0, mark0, space0 )
     plcol0( 3 )
-    pllab( "Angle (degrees)", "sine", "#frPLplot Example 1 - Sine function" )
+    pllab( "Angle (degrees)", "sin", "#frPLplot Example 1 - Sine function" )
     for (i,0,100,1)
         vset(g_x, i, 3.6 * i)
         vset(g_y, i, sin( vget(g_x,i) * m_pi / 180.0 ))
@@ -76,15 +72,15 @@ def(plot3)
 enddef
 
 # global variables used un sub routines
-g_x = vector(60)
+g_x = vector(101)
 vset_zero(g_x)
-g_y = vector(60)
+g_y = vector(101)
 vset_zero(g_y)
 g_xs = vector(6)
 vset_zero(g_xs)
 g_ys = vector(6)
 vset_zero(g_ys)
-g_xcale - 0.0
+g_xscale = 0.0
 g_yscale = 0.0
 g_xoff = 0.0
 g_yoff = 0.0
@@ -103,19 +99,18 @@ g_yoff   = 0.0
 print('plot 1/2')
 exe(plot1)
 
+g_xscale = 1.0;
+g_yscale = 0.0014;
+g_yoff   = 0.0185;
 
-#g_xscale = 1.0;
-#g_yscale = 0.0014;
-#g_yoff   = 0.0185;
+digmax = 5
+plsyax( digmax, 0 )
 
-#digmax = 5
-#plsyax( digmax, 0 )
-
-#print('plot 2/2')
-#exe(plot1)
-#print('plot 2')
-#exe(plot2)
-#print('plot 3')
-#exe(plot3)
+print('plot 2/2')
+exe(plot1)
+print('plot 2')
+exe(plot2)
+print('plot 3')
+exe(plot3)
 plspause(1)
 plend()
