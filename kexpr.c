@@ -533,6 +533,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			t = push_back(&op, &n_op, &m_op); // push to the operator g_stack
 			t->op = -1, t->ttype = KET_NULL; // ->op < 0 for a left parenthsis
 			++p;
+			last_is_val = 0;
 		} else if (*p == ')') {
 			while (n_op > 0 && op[n_op-1].op >= 0) { // move operators to the output until we see a left parenthesis
 				u = push_back(&out, &n_out, &m_out);
@@ -552,6 +553,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			}
 			++p;
 			isPreviousLeftParenthese = 0;
+			last_is_val = 0;
 		} else if (*p == ',') { // function arguments separator
 			isPreviousLeftParenthese = 0;
 			while (n_op > 0 && op[n_op-1].op >= 0) {
