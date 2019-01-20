@@ -444,7 +444,7 @@ static int ke_plfontld(ke1_t *stack, int top) {
 static int ke_plGetCursor(ke1_t *stack, int top) {
 	ke1_t *gin;
 	gin = &stack[--top];
-	gin->i = plGetCursor((PLGraphicsIn *)gin->obj.gin);
+	gin->i = plGetCursor((PLGraphicsIn *)gin->obj.plgrin);
 	gin->vtype = KEV_INT;
 	gin->ttype = KET_VAL;
 	return top;
@@ -920,8 +920,6 @@ static int ke_plhlsrgb(ke1_t *stack, int top) {
 	return top;
 }
 
-
-// TODO (PLTRANSFORM_callback)pltr->obj.gin,(PLPointer)pltr_data->obj.gin);
 static int ke_plimagefr(ke1_t *stack, int top) {
 	ke1_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *valuemin, *valuemax, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
@@ -950,8 +948,8 @@ static int ke_plimagefr(ke1_t *stack, int top) {
 		(PLFLT)zmax->r, 
 		(PLFLT)valuemin->r, 
 		(PLFLT)valuemax->r, 
-		(PLTRANSFORM_callback)pltr->obj.gin,
-		(PLPointer)pltr_data->obj.gin);
+		(PLTRANSFORM_callback)pltr->obj.pltrcb,
+		(PLPointer)pltr_data->obj.plptr);
 	return top;
 }
 
@@ -1140,7 +1138,7 @@ static int ke_plmap(ke1_t *stack, int top) {
 	mapform = &stack[--top];
 
 	plmap(
-		(PLMAPFORM_callback)mapform->obj.gin, 
+		(PLMAPFORM_callback)mapform->obj.plmpcb, 
 		(PLCHAR_VECTOR)name->obj.s, 
 		(PLFLT)minx->r, 
 		(PLFLT)maxx->r, 
@@ -1162,7 +1160,7 @@ static int ke_plmapfill(ke1_t *stack, int top) {
 	mapform = &stack[--top];
 
 	plmapfill(
-		(PLMAPFORM_callback)mapform->obj.gin,
+		(PLMAPFORM_callback)mapform->obj.plmpcb,
 		(PLCHAR_VECTOR)name->obj.s,
 		(PLFLT)minx->r,
 		(PLFLT)maxx->r,
@@ -1186,7 +1184,7 @@ static int ke_plmapline(ke1_t *stack, int top) {
 	mapform = &stack[--top];
 
 	plmapline(
-		(PLMAPFORM_callback)mapform->obj.gin,
+		(PLMAPFORM_callback)mapform->obj.plmpcb,
 		(PLCHAR_VECTOR)name->obj.s,
 		(PLFLT)minx->r,
 		(PLFLT)maxx->r,
@@ -1211,7 +1209,7 @@ static int ke_plmapstring(ke1_t *stack, int top) {
 	mapform = &stack[--top];
 
 	plmapstring(
-		(PLMAPFORM_callback)mapform->obj.gin,
+		(PLMAPFORM_callback)mapform->obj.plmpcb,
 		(PLCHAR_VECTOR)name->obj.s,
 		(PLCHAR_VECTOR)string->obj.s,
 		(PLFLT)minx->r,
@@ -1239,7 +1237,7 @@ static int ke_plmaptex(ke1_t *stack, int top) {
 	mapform = &stack[--top];
 
 	plmaptex(
-		(PLMAPFORM_callback)mapform->obj.gin,
+		(PLMAPFORM_callback)mapform->obj.plmpcb,
 		(PLCHAR_VECTOR)name->obj.s,
 		(PLFLT)dx->r,
 		(PLFLT)dy->r,
@@ -1265,7 +1263,7 @@ static int ke_plmeridians(ke1_t *stack, int top) {
 	mapform = &stack[--top];
 
 	plmeridians(
-		(PLMAPFORM_callback)mapform->obj.gin,
+		(PLMAPFORM_callback)mapform->obj.plmpcb,
 		(PLFLT)dlong->r,
 		(PLFLT)dlat->r,
 		(PLFLT)minlong->r,
@@ -2041,7 +2039,7 @@ static int ke_plshades(ke1_t *stack, int top) {
 		(PLFLT_MATRIX)gsl_matrix_const_ptr(a->obj.matrix, 0,0),
 		(PLINT)nx->i,
 		(PLINT)ny->i,
-		(PLDEFINED_callback)defined->obj.gin, 
+		(PLDEFINED_callback)defined->obj.pldefcb, 
 		(PLFLT)xmin->r, 
 		(PLFLT)xmax->r,
 		(PLFLT)ymin->r,
@@ -2051,10 +2049,10 @@ static int ke_plshades(ke1_t *stack, int top) {
 		(PLFLT)fill_width->r,
 		(PLINT)cont_color->i,
 		(PLFLT)cont_width->r,
-		(PLFILL_callback)fill->obj.gin,
+		(PLFILL_callback)fill->obj.plfillcb,
 		(PLBOOL)rectangular->i, 
-		(PLTRANSFORM_callback)pltr->obj.gin, 
-		(PLPointer)pltr_data->obj.gin);
+		(PLTRANSFORM_callback)pltr->obj.pltrcb, 
+		(PLPointer)pltr_data->obj.plptr);
 	return top;
 }
 
@@ -2087,7 +2085,7 @@ static int ke_plshade(ke1_t *stack, int top) {
 		(PLFLT_MATRIX)gsl_matrix_const_ptr(a->obj.matrix, 0, 0),
 		(PLINT)nx->i,
 		(PLINT)ny->i,
-		(PLDEFINED_callback)defined->obj.gin,
+		(PLDEFINED_callback)defined->obj.pldefcb,
 		(PLFLT)xmin->r,
 		(PLFLT)xmax->r,
 		(PLFLT)ymin->r,
@@ -2101,10 +2099,10 @@ static int ke_plshade(ke1_t *stack, int top) {
 		(PLFLT)min_width->r,
 		(PLINT)max_color->i,
 		(PLFLT)max_width->r,
-		(PLFILL_callback)fill->obj.gin,
+		(PLFILL_callback)fill->obj.plfillcb,
 		(PLBOOL)rectangular->i,
-		(PLTRANSFORM_callback)pltr->obj.gin,
-		(PLPointer)pltr_data->obj.gin);
+		(PLTRANSFORM_callback)pltr->obj.pltrcb,
+		(PLPointer)pltr_data->obj.plptr);
 	return top;
 }
 
@@ -2114,8 +2112,8 @@ static int ke_plslabelfunc(ke1_t *stack, int top) {
 	label_func = &stack[--top];
 
 	plslabelfunc(
-		(PLLABEL_FUNC_callback)label_func->obj.gin, 
-		(PLPointer)label_data->obj.gin);
+		(PLLABEL_FUNC_callback)label_func->obj.pllblcb, 
+		(PLPointer)label_data->obj.plptr);
 	return top;
 }
 
@@ -2134,7 +2132,7 @@ static int ke_plsmem(ke1_t *stack, int top) {
 	maxy = &stack[--top];
 	maxx = &stack[--top];
 
-	plsmem( (PLINT)maxx->i, (PLINT)maxy->i, (PLPointer)plotmem->obj.gin);
+	plsmem( (PLINT)maxx->i, (PLINT)maxy->i, (PLPointer)plotmem->obj.plptr);
 	return top;
 }
 
@@ -2144,7 +2142,7 @@ static int ke_plsmema(ke1_t *stack, int top) {
 	maxy = &stack[--top];
 	maxx = &stack[--top];
 
-	plsmema((PLINT)maxx->i, (PLINT)maxy->i, (PLPointer)plotmem->obj.gin);
+	plsmema((PLINT)maxx->i, (PLINT)maxy->i, (PLPointer)plotmem->obj.plptr);
 	return top;
 }
 
@@ -2255,8 +2253,8 @@ static int ke_plstransform(ke1_t *stack, int top) {
 	coordinate_transform = &stack[--top];
 
 	plstransform(
-		(PLTRANSFORM_callback)coordinate_transform->obj.gin,
-		(PLPointer)coordinate_transform_data->obj.gin);
+		(PLTRANSFORM_callback)coordinate_transform->obj.pltrcb,
+		(PLPointer)coordinate_transform_data->obj.plptr);
 	return top;
 }
 
@@ -2539,8 +2537,8 @@ static int ke_plvect(ke1_t *stack, int top) {
 		(PLINT)nx->i, 
 		(PLINT)ny->i, 
 		(PLFLT)scale->r,
-		(PLTRANSFORM_callback)pltr->obj.gin, 
-		(PLPointer)pltr_data->obj.gin);
+		(PLTRANSFORM_callback)pltr->obj.pltrcb, 
+		(PLPointer)pltr_data->obj.plptr);
 	return top;
 }
 

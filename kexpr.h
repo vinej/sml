@@ -109,7 +109,13 @@ typedef struct ke1_s {
 		char *s;
 		char ** ms;
 		reclistt reclist;
-		PLGraphicsIn * gin;
+		PLGraphicsIn * plgrin;
+		PLPointer * plptr;
+		PLTRANSFORM_callback pltrcb;
+		PLMAPFORM_callback plmpcb;
+		PLDEFINED_callback pldefcb;
+		PLLABEL_FUNC_callback pllblcb;
+		PLFILL_callback plfillcb;
 	} obj;
 	int line;
 	int64_t i;
