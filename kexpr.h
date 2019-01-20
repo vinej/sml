@@ -33,6 +33,7 @@
 #define KEV_CMD  6
 #define KEV_FNC  7
 #define KEV_REC  8
+#define KEV_VEC_INT  9
 
 #define KEO_NULL  0
 #define KEO_POS   1

@@ -634,6 +634,9 @@ void ke_free_val() {
 			ke_matrix_freemem(fieldp);
 		} else if (fieldp->vtype == KEV_VEC && fieldp->obj.vector) {
 			ke_vector_freemem(fieldp);
+		}
+		else if (fieldp->vtype == KEV_VEC_INT && fieldp->obj.vector_int) {
+			ke_vector_int_freemem(fieldp);
 		} else if (fieldp->vtype == KEV_STR && fieldp->obj.s) {
             ke_free_memory(fieldp->obj.s);
 		}
@@ -702,7 +705,7 @@ void ke_set_null_vector(int ifield)
 void ke_set_null_vector_int(int ifield)
 {
 	ke1_t * ftokp = g_gbl_fields[ifield];
-	ke_vector_freemem(ftokp);
+	ke_vector_int_freemem(ftokp);
 	ftokp->obj.vector_int = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
 }
 
@@ -710,6 +713,12 @@ void ke_set_vector(ke1_t *tokp, gsl_vector * vecp)
 {
     ke_vector_freemem(tokp);
     tokp->obj.vector = vecp, tokp->vtype = KEV_VEC, tokp->ttype = KET_VAL, tokp->assigned = 1;
+}
+
+void ke_set_vector_int(ke1_t *tokp, gsl_vector_int * vecp)
+{
+	ke_vector_int_freemem(tokp);
+	tokp->obj.vector_int = vecp, tokp->vtype = KEV_VEC_INT, tokp->ttype = KET_VAL, tokp->assigned = 1;
 }
 
 void ke_set_null_matrix(int ifield)
@@ -823,6 +832,9 @@ void ke_print_one(ke1_t * tokp)
 		}
 	} else if (tokp->vtype == KEV_VEC ) {
 		ke_vector_print(tokp);
+	}
+	else if (tokp->vtype == KEV_VEC_INT) {
+		ke_vector_int_print(tokp);
 	} else if (tokp->vtype == KEV_MAT) {
 		ke_matrix_print(tokp);
 	} else if (tokp->vtype == KEV_COMPLEX) {
@@ -933,6 +945,7 @@ void inline ke_set_val(ke1_t* e, ke1_t *q) {
 	 else if (q->vtype == KEV_REAL)	e->r = q->r;  //e->i = (int64_t)e->r; e->assigned = 1;
 	 else if (q->vtype == KEV_STR) 	ke_set_str(e, q->obj.s);
 	 else if (q->vtype == KEV_VEC)	ke_set_vector(e, q->obj.vector);
+	 else if (q->vtype == KEV_VEC_INT)	ke_set_vector_int(e, q->obj.vector_int);
 	 else if (q->vtype == KEV_MAT) 	ke_set_matrix(e, q->obj.matrix);
 	 else if (q->vtype == KEV_COMPLEX) ke_set_complex(e, q->obj.complex);
 	 else if (q->vtype == KEV_REC) ke_set_record(q, e);

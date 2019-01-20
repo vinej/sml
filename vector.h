@@ -5,6 +5,9 @@ void ke_vector_print(ke1_t *k);
 void ke_vector_hash();
 void ke_vector_freemem(ke1_t *e);
 
+void ke_vector_int_print(ke1_t *k);
+void ke_vector_int_freemem(ke1_t *e);
+
 #define VECTOR "vector"
 #define VECTOR_ALLOC "vector_alloc"
 #define VECTOR_GET "vector_get"
@@ -40,7 +43,7 @@ void ke_vector_freemem(ke1_t *e);
 #define VECTOR_FWRITE "vector_fwrite"
 #define VECTOR_WRITE "vector_write"
 
-
+#define VECTOR_INT "vector_int"
 #define VECTOR_INT_ALLOC "vector_int_alloc"
 #define VECTOR_INT_GET "vector_int_get"
 #define VECTOR_INT_SET "vector_int_set"

@@ -15,20 +15,20 @@ static int ke_vector_alloc(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_free(ke1_t *stack, int top) {
-	ke1_t *p;
-	p = &stack[top - 1];
-	ke_set_null_vector(p->ifield);
-	--top;
-	return top;
-}
-
 static int ke_vector_int_alloc(ke1_t *stack, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	p->obj.vector_int = gsl_vector_int_alloc((size_t)p->i); ke_inc_memory();
 	p->ttype = KET_VAL;
-	p->vtype = KEV_VEC;
+	p->vtype = KEV_VEC_INT;
+	return top;
+}
+
+static int ke_vector_free(ke1_t *stack, int top) {
+	ke1_t *p;
+	p = &stack[top - 1];
+	ke_set_null_vector(p->ifield);
+	--top;
 	return top;
 }
 
@@ -606,6 +606,7 @@ void ke_vector_hash() {
     ke_hash_add((fncp)&ke_vector_fwrite, VECTOR_FWRITE);
     ke_hash_add((fncp)&ke_vector_fwrite, VECTOR_WRITE);
 
+	ke_hash_add((fncp)&ke_vector_int_alloc, VECTOR_INT);
 	ke_hash_add((fncp)&ke_vector_int_alloc, VECTOR_INT_ALLOC);
 	ke_hash_add((fncp)&ke_vector_int_get, VECTOR_INT_GET);
 	ke_hash_add((fncp)&ke_vector_int_set, VECTOR_INT_SET);
@@ -656,3 +657,16 @@ void ke_vector_freemem(ke1_t *e) {
     }
 }
 
+void ke_vector_int_print(ke1_t *k) {
+	printf("Vector: %s\n", k->name);
+	for (size_t i = 0; i < k->obj.vector_int->size; i++) {
+		printf("%d : v:%d\n", (int)i, gsl_vector_int_get(k->obj.vector_int, i));
+	}
+}
+
+void ke_vector_int_freemem(ke1_t *e) {
+	if (e->obj.vector_int && e->vtype == KEV_VEC_INT) {
+		gsl_vector_int_free(e->obj.vector_int); ke_dec_memory();
+		e->obj.vector_int = NULL;
+	}
+}
