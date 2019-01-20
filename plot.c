@@ -1,6 +1,7 @@
 ﻿#include "kexpr.h"
 #include "plot.h"
 #include <plplot/plplot.h>
+#include <plplot/plplotP.h>
 
 extern ke1_t ** g_gbl_fields;
 
@@ -1149,7 +1150,7 @@ static int ke_plmap(ke1_t *stack, int top) {
 }
 
 // TODO 
-static int ke_plmapﬁll(ke1_t *stack, int top) {
+static int ke_plmapfill(ke1_t *stack, int top) {
 	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = &stack[--top];
 	plotentries = &stack[--top];
@@ -2031,6 +2032,7 @@ static int ke_plshades(ke1_t *stack, int top) {
 	ymin = &stack[--top];
 	xmax = &stack[--top];
 	xmin = &stack[--top];
+	defined = &stack[--top];
 	ny = &stack[--top];
 	nx = &stack[--top];
 	a = &stack[--top];
@@ -2643,7 +2645,148 @@ static int ke_plxormod(ke1_t *stack, int top) {
 	return top;
 }
 
+static int ke_plabort(ke1_t *stack, int top) {
+	ke1_t *message;
+	message = &stack[--top];
+
+	plabort((PLCHAR_VECTOR)message->obj.s);
+	return top;
+}
+
 void ke_plot_hash() {
+
+
+	ke_hash_add((fncp)&ke_plgcompression, PLOT_PLGCOMPRESSION);
+	ke_hash_add((fncp)&ke_plgdidev, PLOT_PLGDIDEV);
+	ke_hash_add((fncp)&ke_plgdiori, PLOT_PLGDIORI);
+	ke_hash_add((fncp)&ke_plgdiplt, PLOT_PLGDIPL);
+	ke_hash_add((fncp)&ke_function_plgdrawmode, PLOT_FUNCTION_PLGDRAWMODE);
+	ke_hash_add((fncp)&ke_plgfam, PLOT_PLGFAM);
+	ke_hash_add((fncp)&ke_plgfci, PLOT_PLGFCI);
+	ke_hash_add((fncp)&ke_plgfnam, PLOT_PLGFNAM);
+	ke_hash_add((fncp)&ke_plgfont, PLOT_PLGFONT);
+	ke_hash_add((fncp)&ke_plglevel, PLOT_PLGLEVEL);
+	ke_hash_add((fncp)&ke_plgpage, PLOT_PLGPAGE);
+	ke_hash_add((fncp)&ke_function_plgra, PLOT_FUNCTION_PLGRA);
+	ke_hash_add((fncp)&ke_plgradient, PLOT_PLGRADIENT);
+	ke_hash_add((fncp)&ke_plgriddata, PLOT_PLGRIDDATA);
+	ke_hash_add((fncp)&ke_plgspa, PLOT_PLGSPA);
+	ke_hash_add((fncp)&ke_plgstrm, PLOT_PLGSTRM);
+	ke_hash_add((fncp)&ke_plgver, PLOT_PLGVER);
+	ke_hash_add((fncp)&ke_plgvpd, PLOT_PLGVPD);
+	ke_hash_add((fncp)&ke_plgvpw, PLOT_PLGVPW);
+	ke_hash_add((fncp)&ke_plgxax, PLOT_PLGXAX);
+	ke_hash_add((fncp)&ke_plgyax, PLOT_PLGYAX);
+	ke_hash_add((fncp)&ke_plgzax, PLOT_PLGZAX);
+	ke_hash_add((fncp)&ke_plhist, PLOT_PLHIST);
+	ke_hash_add((fncp)&ke_plhlsrgb, PLOT_PLHLSRGB);
+	ke_hash_add((fncp)&ke_plimagefr, PLOT_PLIMAGEFR);
+	ke_hash_add((fncp)&ke_plimage, PLOT_PLIMAGE);
+	ke_hash_add((fncp)&ke_pljoin, PLOT_PLJOIN);
+	ke_hash_add((fncp)&ke_pllab, PLOT_PLLAB);
+	ke_hash_add((fncp)&ke_pllegend, PLOT_PLLEGEND);
+	ke_hash_add((fncp)&ke_pllightsource, PLOT_PLLIGHTSOURCE);
+	ke_hash_add((fncp)&ke_plline3, PLOT_PLLINE3);
+	ke_hash_add((fncp)&ke_pllsty, PLOT_PLLSTY);
+	ke_hash_add((fncp)&ke_plmap, PLOT_PLMAP);
+	ke_hash_add((fncp)&ke_plmapfill, PLOT_PLMAPFILL);
+	ke_hash_add((fncp)&ke_plmapline, PLOT_PLMAPLINE);
+	ke_hash_add((fncp)&ke_plmapstring, PLOT_PLMAPSTRING);
+	ke_hash_add((fncp)&ke_plmaptex, PLOT_PLMAPTEX);
+	ke_hash_add((fncp)&ke_plmeridians, PLOT_PLMERIDIANS);
+	ke_hash_add((fncp)&ke_plmesh, PLOT_PLMESH);
+	ke_hash_add((fncp)&ke_plmeshc, PLOT_PLMESHC);
+	ke_hash_add((fncp)&ke_plmkstrm, PLOT_PLMKSTRM);
+	ke_hash_add((fncp)&ke_plmtex, PLOT_PLMTEX);
+	ke_hash_add((fncp)&ke_plmtex3, PLOT_PLMTEX3);
+	ke_hash_add((fncp)&ke_plot3d, PLOT_PLOT3D);
+	ke_hash_add((fncp)&ke_plot3dc, PLOT_PLOT3DC);
+	ke_hash_add((fncp)&ke_plot3dl, PLOT_PLOT3DL);
+	ke_hash_add((fncp)&ke_plparseopts, PLOT_PLPARSEOPTS);
+	ke_hash_add((fncp)&ke_plpat, PLOT_PLPAT);
+	ke_hash_add((fncp)&ke_plpath, PLOT_PLPATH);
+	ke_hash_add((fncp)&ke_plpoin, PLOT_PLPOIN);
+	ke_hash_add((fncp)&ke_plpoin3, PLOT_PLPOIN3);
+	ke_hash_add((fncp)&ke_plpoly3, PLOT_PLPOLY3);
+	ke_hash_add((fncp)&ke_plprec, PLOT_PLPREC);
+	ke_hash_add((fncp)&ke_plpsty, PLOT_PLPSTY);
+	ke_hash_add((fncp)&ke_plptex, PLOT_PLPTEX);
+	ke_hash_add((fncp)&ke_plptex3, PLOT_PLPTEX3);
+	ke_hash_add((fncp)&ke_plrandd, PLOT_PLRANDD);
+	ke_hash_add((fncp)&ke_plreplot, PLOT_PLREPLOT);
+	ke_hash_add((fncp)&ke_plrgbhls, PLOT_PLRGBHLS);
+	ke_hash_add((fncp)&ke_plschr, PLOT_PLSCHR);
+	ke_hash_add((fncp)&ke_plscmap0, PLOT_PLSCMAP0);
+	ke_hash_add((fncp)&ke_plscmap0a, PLOT_PLSCMAP0A);
+	ke_hash_add((fncp)&ke_plscmap0n, PLOT_PLSCMAP0N);
+	ke_hash_add((fncp)&ke_plscmap1_range, PLOT_PLSCMAP1_RANGE);
+	ke_hash_add((fncp)&ke_plscmap1, PLOT_PLSCMAP1);
+	ke_hash_add((fncp)&ke_plscmap1a, PLOT_PLSCMAP1A);
+	ke_hash_add((fncp)&ke_plscmap1l, PLOT_PLSCMAP1L);
+	ke_hash_add((fncp)&ke_plscmap1la, PLOT_PLSCMAP1LA);
+	ke_hash_add((fncp)&ke_plscmap1n, PLOT_PLSCMAP1N);
+	ke_hash_add((fncp)&ke_plscol0, PLOT_PLSCOL0);
+	ke_hash_add((fncp)&ke_plscol0a, PLOT_PLSCOL0A);
+	ke_hash_add((fncp)&ke_plscolbg, PLOT_PLSCOLBG);
+	ke_hash_add((fncp)&ke_plscolbga, PLOT_PLSCOLBGA);
+	ke_hash_add((fncp)&ke_plscolor, PLOT_PLSCOLOR);
+	ke_hash_add((fncp)&ke_plscompression, PLOT_PLSCOMPRESSION);
+	ke_hash_add((fncp)&ke_plsdidev, PLOT_PLSDIDEV);
+	ke_hash_add((fncp)&ke_plsdimap, PLOT_PLSDIMAP);
+	ke_hash_add((fncp)&ke_plsdiori, PLOT_PLSDIORI);
+	ke_hash_add((fncp)&ke_plsdiplt, PLOT_PLSDIPLT);
+	ke_hash_add((fncp)&ke_plsdiplz, PLOT_PLSDIPLZ);
+	ke_hash_add((fncp)&ke_plsdrawmode, PLOT_PLSDRAWMODE);
+	ke_hash_add((fncp)&ke_plseed, PLOT_PLSEED);
+	ke_hash_add((fncp)&ke_plsesc, PLOT_PLSESC);
+	ke_hash_add((fncp)&ke_plsetopt, PLOT_PLSETOPT);
+	ke_hash_add((fncp)&ke_plsfam, PLOT_PLSFAM);
+	ke_hash_add((fncp)&ke_plsfci, PLOT_PLSFCI);
+	ke_hash_add((fncp)&ke_plsfnam, PLOT_PLSFNAM);
+	ke_hash_add((fncp)&ke_plsfont, PLOT_PLSFONT);
+	ke_hash_add((fncp)&ke_plshades, PLOT_PLSHADES);
+	ke_hash_add((fncp)&ke_plshade, PLOT_PLSHADE);
+	ke_hash_add((fncp)&ke_plslabelfunc, PLOT_PLSLABELFUNC);
+	ke_hash_add((fncp)&ke_plsmaj, PLOT_PLSMAJ);
+	ke_hash_add((fncp)&ke_plsmem, PLOT_PLSMEM);
+	ke_hash_add((fncp)&ke_plsmema, PLOT_PLSMEMA);
+	ke_hash_add((fncp)&ke_plsmin, PLOT_PLSMIN);
+	ke_hash_add((fncp)&ke_plsori, PLOT_PLSORI);
+	ke_hash_add((fncp)&ke_plspage, PLOT_PLSPAGE);
+	ke_hash_add((fncp)&ke_plspal0, PLOT_PLSPAL0);
+	ke_hash_add((fncp)&ke_plspal1, PLOT_PLSPAL1);
+	ke_hash_add((fncp)&ke_plsstrm, PLOT_PLSSTRM);
+	ke_hash_add((fncp)&ke_plssub, PLOT_PLSSUB);
+	ke_hash_add((fncp)&ke_plssym, PLOT_PLSSYM);
+	ke_hash_add((fncp)&ke_plstar, PLOT_PLSTAR);
+	ke_hash_add((fncp)&ke_plstart, PLOT_PLSTART);
+	ke_hash_add((fncp)&ke_plstransform, PLOT_PLSTRANSFORM);
+	ke_hash_add((fncp)&ke_plstring, PLOT_PLSTRING);
+	ke_hash_add((fncp)&ke_plstring3, PLOT_PLSTRING3);
+	ke_hash_add((fncp)&ke_plstripa, PLOT_PLSTRIPA);
+	ke_hash_add((fncp)&ke_plstripc, PLOT_PLSTRIPC);
+	ke_hash_add((fncp)&ke_plstripd, PLOT_PLSTRIPD);
+	ke_hash_add((fncp)&ke_plstyl, PLOT_PLSTYL);
+	ke_hash_add((fncp)&ke_plsurf3d, PLOT_PLSURF3D);
+	ke_hash_add((fncp)&ke_plsurf3dl, PLOT_PLSURF3DL);
+	ke_hash_add((fncp)&ke_plsvect, PLOT_PLSVECT);
+	ke_hash_add((fncp)&ke_plsvpa, PLOT_PLSVPA);
+	ke_hash_add((fncp)&ke_plsxax, PLOT_PLSXAX);
+	ke_hash_add((fncp)&ke_plsyax, PLOT_PLSYAX);
+	ke_hash_add((fncp)&ke_plsym, PLOT_PLSYM);
+	ke_hash_add((fncp)&ke_plszax, PLOT_PLSZAX);
+	ke_hash_add((fncp)&ke_pltext, PLOT_PLTEXT);
+	ke_hash_add((fncp)&ke_pltimefmt, PLOT_PLTIMEFMT);
+	ke_hash_add((fncp)&ke_plvasp, PLOT_PLVASP);
+	ke_hash_add((fncp)&ke_plvect, PLOT_PLVECT);
+	ke_hash_add((fncp)&ke_plvpas, PLOT_PLVPAS);
+	ke_hash_add((fncp)&ke_plvpor, PLOT_PLVPOR);
+	ke_hash_add((fncp)&ke_plvsta, PLOT_PLVSTA);
+	ke_hash_add((fncp)&ke_plwidth, PLOT_PLWIDTH);
+	ke_hash_add((fncp)&ke_plwind, PLOT_PLWIND);
+	ke_hash_add((fncp)&ke_plxormod, PLOT_PLXORMOD);
+	ke_hash_add((fncp)&ke_plabort, PLOT_PLABORT);
+
 	ke_hash_add((fncp)&ke_plgcolbg, PLOT_PLGCOLBG);
 	ke_hash_add((fncp)&ke_plgcolbga, PLOT_PLGCOLBGA);
 
