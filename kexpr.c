@@ -564,6 +564,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			}
 			++op[n_op-2].n_args;
 			++p;
+			last_is_val = 0;
 		} else { // output-able token
 			isPreviousLeftParenthese = 0;
 			ke1_t v = ke_read_token(p, &p, err, last_is_val);

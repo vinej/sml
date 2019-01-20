@@ -53,6 +53,17 @@ void pushfor(int val) {
 // g_forstack max 20 level of for
 int lastDef = -1;
 
+int ifind_backward_defname(ke1_t ** tokens, int starti, ke1_t * tokp) {
+	for (int i = starti+1; i > -1; --i) {
+		ke1_t *f = tokens[i];
+		if (f->vtype == KEV_DEF) {
+			return i;
+		}
+	}
+	printf("SML: ERROR: Command <defname> not found at line <%d>\n", tokp->sourceLine);
+	return -1;
+}
+
 int ifind_forward_rtn(kexpr_t *kexpr, int starti, ke1_t * tokp) {
 	int i = -1;
 	for (int i = starti + 1; i < kexpr->n; i++) {
@@ -145,19 +156,23 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				break;
 			case CMD_IEXE:
 				if (!tokp->ijmp) {
-					ke1_t *def_name = tokens[itok - tokp->n_args];
-					khint_t iter = kh_get(KH_IDEF, hidefcommand, def_name->ifield);
-					if (kh_end(hidefcommand) == iter) {
-						printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_name->name, tokp->sourceLine);
-						return -1;
+					int idefname = ifind_backward_defname(tokens, itok, tokp);
+					if (idefname != -1) {
+						ke1_t *def_name = tokens[idefname];
+						khint_t iter = kh_get(KH_IDEF, hidefcommand, def_name->ifield);
+						if (kh_end(hidefcommand) == iter) {
+							printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_name->name, tokp->sourceLine);
+							return -1;
+						}
+						tokp->ijmp = (int)kh_val(hidefcommand, iter);
 					}
-					tokp->ijmp = (int)kh_val(hidefcommand, iter);
 				}
 				break;
 			case CMD_IDEF:
 				lastDef = itok;
 				int absent;
 				ke1_t *def_name = tokens[itok - tokp->n_args];
+				def_name->vtype = KEV_DEF;
 				khint_t iter = kh_put(KH_IDEF, hidefcommand, def_name->ifield, &absent);
 				kh_val(hidefcommand, iter) = ((itok) - tokp->n_args - 1);
 
@@ -289,7 +304,7 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
         tokp->assigned = 1;
 		tokp->obj.tokp = ke_get_tokidx(*itokp - n);
 		tokp->obj.tokp->r = (min->vtype == KEV_INT ? min->i : min->r);
-		tokp->obj.tokp->i = tokp->obj.tokp->r;
+		tokp->obj.tokp->i = (int64_t)tokp->obj.tokp->r;
 		pushfor(*itokp);
 
     } else {
@@ -301,7 +316,7 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 		} else {
 			ke1_t *inc = &stack[top - n + 3];
 			tokp->obj.tokp->r += (inc->vtype == KEV_INT ? inc->i : inc->r);
-			tokp->obj.tokp->i = tokp->obj.tokp->r;
+			tokp->obj.tokp->i = (int64_t)tokp->obj.tokp->r;
 		}
 	}
 	return top - n;
