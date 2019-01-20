@@ -2203,7 +2203,7 @@ static int ke_plsstrm(ke1_t *stack, int top) {
 	ke1_t *strm;
 	strm = &stack[--top];
 
-	plsstrm((PLINT)strm);
+	plsstrm((PLINT)strm->i);
 	return top;
 }
 
@@ -2212,7 +2212,7 @@ static int ke_plssub(ke1_t *stack, int top) {
 	ny = &stack[--top];
 	nx = &stack[--top];
 
-	plssub((PLINT)nx, (PLINT)ny);
+	plssub((PLINT)nx->i, (PLINT)ny->i);
 	return top;
 }
 
