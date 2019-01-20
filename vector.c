@@ -575,6 +575,8 @@ void ke_vector_hash() {
     ke_hash_add((fncp)&ke_vector_alloc, VECTOR_ALLOC);
     ke_hash_add((fncp)&ke_vector_get, VECTOR_GET);
     ke_hash_add((fncp)&ke_vector_set, VECTOR_SET);
+	ke_hash_add((fncp)&ke_vector_get, VECTOR_SGET);
+	ke_hash_add((fncp)&ke_vector_set, VECTOR_SSET);
 	ke_hash_add((fncp)&ke_vector_put, VECTOR_PUT);
 	ke_hash_add((fncp)&ke_vector_free, VECTOR_FREE);
     ke_hash_add((fncp)&ke_vector_set_all, VECTOR_SET_ALL);

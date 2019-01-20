@@ -10,6 +10,8 @@ void ke_vector_int_freemem(ke1_t *e);
 
 #define VECTOR "vector"
 #define VECTOR_ALLOC "valloc"
+#define VECTOR_SGET "vg"
+#define VECTOR_SSET "vs"
 #define VECTOR_GET "vget"
 #define VECTOR_SET "vset"
 #define VECTOR_PUT "vput"
