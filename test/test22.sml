@@ -1,9 +1,5 @@
 def(test)
- a + b
+ print('test')
 enddef
 
-exe(abc)
-
-print('end')
-
-if
+exe(test)

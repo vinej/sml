@@ -280,11 +280,12 @@ int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 
 
 int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
+	// field min, max inc
 	int n = tokp->n_args;
 	ke1_t *p = &stack[top - n]; // copy of the real variable into the stack
 
     if (!tokp->assigned) {
-		ke1_t *min = &stack[top - n + 3];
+		ke1_t *min = &stack[top - n + 1];
         tokp->assigned = 1;
 		tokp->obj.tokp = ke_get_tokidx(*itokp - n);
 		tokp->obj.tokp->r = (min->vtype == KEV_INT ? min->i : min->r);
@@ -297,7 +298,7 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 			popfor();
 			*itokp = tokp->ijmp;
 		} else {
-			ke1_t *inc = &stack[top - n + 1];
+			ke1_t *inc = &stack[top - n + 3];
 			tokp->obj.tokp->r += (inc->vtype == KEV_INT ? inc->i : inc->r);
 		}
 	}
