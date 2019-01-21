@@ -301,21 +301,21 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 
     if (!tokp->assigned) {
 		ke1_t *min = &stack[top - n + 1];
-        tokp->assigned = 1;
+		tokp->assigned = 1;
 		tokp->obj.tokp = ke_get_tokidx(*itokp - n);
-		tokp->obj.tokp->r = (min->vtype == KEV_INT ? min->i : min->r);
-		tokp->obj.tokp->i = (int64_t)tokp->obj.tokp->r;
+		struct ke1_s * t = tokp->obj.tokp;
+		t->r = min->r;
+		t->i = (int64_t)t->r;
 		pushfor(*itokp);
-
     } else {
 		ke1_t *max = &stack[top - n + 2];
-		if (p->r >= (max->vtype == KEV_INT ? max->i : max->r)) {  
+		if (p->r >= max->r) {
 	        tokp->assigned = 0;
 			popfor();
 			*itokp = tokp->ijmp;
 		} else {
 			ke1_t *inc = &stack[top - n + 3];
-			tokp->obj.tokp->r += (inc->vtype == KEV_INT ? inc->i : inc->r);
+			tokp->obj.tokp->r += inc->r;
 			tokp->obj.tokp->i = (int64_t)tokp->obj.tokp->r;
 		}
 	}
