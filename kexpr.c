@@ -321,14 +321,19 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 				}
 			}
 		}
-		else if (*p == '[') {
+		else if (*p == '[' || *p == '{') {
 			// it's a propery
 			tok.n_args = 1;
 			tok.sourceLine = g_sourceCodeLine;
 			tok.ijmp = 0;
 			tok.ttype = KET_PROP;
 			tok.vtype = KEV_REAL;
-			tok.prop = 1;
+			if (*p == '[') {
+				tok.propget = 1;
+			}
+			else {
+				tok.propset = 1;
+			}
 			tok.i = 0, tok.r = 0.;
 			khint_t iter = kh_get(KH_FIELD, hname, tok.name);
 			if (kh_end(hname) != iter) {
@@ -547,13 +552,13 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			if (*p == ' ') ++p; else break;
 		}
 
-		if (*p == '(' || *p == '[') {
+		if (*p == '(' || *p == '[' || *p == '{') {
 			isPreviousLeftParenthese = 1;
 			t = push_back(&op, &n_op, &m_op); // push to the operator g_stack
 			t->op = -1, t->ttype = KET_NULL; // ->op < 0 for a left parenthsis
 			++p;
 			last_is_val = 0;
-		} else if (*p == ')' || *p == ']') {
+		} else if (*p == ')' || *p == ']' || *p == '}') {
 			while (n_op > 0 && op[n_op-1].op >= 0) { // move operators to the output until we see a left parenthesis
 				u = push_back(&out, &n_out, &m_out);
 				*u = op[--n_op];
@@ -685,7 +690,7 @@ int ke_fill_list(kexpr_t *ke)
 	ke1_t * ne = NULL;
 	for (int i = 0; i < ke->n; ++i) {
         ke1_t *tokp = &ke->e[i];
-        if (tokp->ttype == KET_VNAME || tokp->ttype == KET_PROP) {
+        if (tokp->ttype == KET_VNAME) {
 			ne = g_gbl_fields[tokp->ifield];
 			if (ne == NULL) {
 				char * newname = ke_mystrndup(tokp->name, strlen(tokp->name));
@@ -1000,7 +1005,9 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 			if (tokp->op == KEO_NOP) continue;
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
 				e = &g_stack[1];
-				if (e->prop) {
+				if (e->propset) {
+					g_gbl_fields[e->ifield]->n_args = e->n_args;
+					g_stack[1] = *g_gbl_fields[e->ifield];
 					top = ke_poperty_set(g_stack, e, top);
 				}
 				else {
@@ -1025,25 +1032,17 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 		case KET_FUNC:
 			top = (tokp->f.deffunc)(g_stack, top);
 			break;
-		default:
-			e = &kexpr->e[itok];
-			// execute the property only if it's not for an equal
-			if (e->prop) {
-				if (top - e->n_args > 0) {
-					// push the property into the stack
-					g_stack[top++] = *tokp;
-					// call the property router
-					top = ke_poperty_get(g_stack, e, top);
-				}
-				else {
-					g_stack[top++] = *tokp;
-					g_stack[top - 1].prop = 1;
-					g_stack[top - 1].n_args = e->n_args;
-				}
+		case KET_PROP:
+			if (tokp->propget) {
+				g_stack[top++] = *g_gbl_fields[tokp->ifield];
+				top = ke_poperty_get(g_stack, tokp, top);
 			}
 			else {
 				g_stack[top++] = *tokp;
 			}
+			break;
+		default:
+			g_stack[top++] = *tokp;
 			break;
 		}
 	}

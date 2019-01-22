@@ -88,7 +88,7 @@ typedef int * reclistt;
 
 struct ke1_s;
 typedef struct ke1_s {
-	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, prop:1, futur:2, islocal:1; // ttype: token type; vtype: value type  
+	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, propget:1, propset:1, futur:2, islocal:1; // ttype: token type; vtype: value type  
 	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
 	int32_t ijmp; // fast jmp  
 	int32_t sourceLine; // fast jmp  

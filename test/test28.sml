@@ -1,12 +1,19 @@
 v = vector(2)
-vput(v,2,4)
-v[1] = v[0]
+vput(v,2,44.5)
+
+v{1} = 333.33
 print(v)
 
-v[0] = 234.23
-v[1] = 12
-print(v)
+if (v[1] == 333.33)
+  print('ok')
+end
 
-v[0] = v[1]
-print(v)
+a = v[0]
+print(a)
+
+t = vector(3)
+t{0} = 12.12
+t{1} = 12 == t[0]
+t{2} = 44
+print(t)
 
