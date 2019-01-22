@@ -15,6 +15,7 @@
 #include "plot.h"
 #include "constants.h"
 #include "function.h"
+#include "property.h"
 #include "str.h"
 #include "command.h"
 #include <gsl/gsl_complex.h>
@@ -320,6 +321,23 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 				}
 			}
 		}
+		else if (*p == '[') {
+			// it's a propery
+			tok.n_args = 1;
+			tok.sourceLine = g_sourceCodeLine;
+			tok.ijmp = 0;
+			tok.ttype = KET_PROP;
+			tok.vtype = KEV_REAL;
+			tok.prop = 1;
+			tok.i = 0, tok.r = 0.;
+			khint_t iter = kh_get(KH_FIELD, hname, tok.name);
+			if (kh_end(hname) != iter) {
+				tok.ifield = kh_val(hname, iter);
+			}
+			else {
+				*err |= KEE_UNVAR;
+			}
+		}
 		else {
 			tok.r = ke_constants(tok.name);
 			if (tok.r != 0) {
@@ -523,18 +541,19 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 	n_out = m_out = n_op = m_op = 0;
 	p = s;
 	int isPreviousLeftParenthese = 0;
+	int isPreviousLeftbraket = 0;
 	while (*p) {
 		while (1) {
 			if (*p == ' ') ++p; else break;
 		}
 
-		if (*p == '(') {
+		if (*p == '(' || *p == '[') {
 			isPreviousLeftParenthese = 1;
 			t = push_back(&op, &n_op, &m_op); // push to the operator g_stack
 			t->op = -1, t->ttype = KET_NULL; // ->op < 0 for a left parenthsis
 			++p;
 			last_is_val = 0;
-		} else if (*p == ')') {
+		} else if (*p == ')' || *p == ']') {
 			while (n_op > 0 && op[n_op-1].op >= 0) { // move operators to the output until we see a left parenthesis
 				u = push_back(&out, &n_out, &m_out);
 				*u = op[--n_op];
@@ -543,7 +562,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 				*err |= KEE_UNRP;
 				break;
 			} else --n_op; // pop out '('
-			if (n_op > 0 && (op[n_op-1].ttype == KET_FUNC || op[n_op - 1].ttype == KET_CMD)) { // the top of the operator g_stack is a function
+			if (n_op > 0 && (op[n_op-1].ttype == KET_FUNC || op[n_op - 1].ttype == KET_PROP || op[n_op - 1].ttype == KET_CMD)) { // the top of the operator g_stack is a function
 				u = push_back(&out, &n_out, &m_out); // move it to the output
 				*u = op[--n_op];
 
@@ -560,7 +579,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 				u = push_back(&out, &n_out, &m_out);
 				*u = op[--n_op];
 			}
-			if (n_op < 2 || (op[n_op-2].ttype != KET_FUNC && op[n_op- 2].ttype != KET_CMD)) { // we should at least see a function and a left parenthesis
+			if (n_op < 2 || (op[n_op-2].ttype != KET_FUNC && op[n_op - 2].ttype != KET_PROP && op[n_op- 2].ttype != KET_CMD)) { // we should at least see a function and a left parenthesis
 				*err |= KEE_FUNC;
 				break;
 			}
@@ -580,7 +599,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 				u = push_back(&out, &n_out, &m_out);
 				*u = v;
 				last_is_val = 1;
-			} else if (v.ttype == KET_FUNC || v.ttype == KET_CMD) {
+			} else if (v.ttype == KET_FUNC || v.ttype == KET_PROP || v.ttype == KET_CMD) {
 				t = push_back(&op, &n_op, &m_op);
 				*t = v;
 				last_is_val = 0;
@@ -666,7 +685,7 @@ int ke_fill_list(kexpr_t *ke)
 	ke1_t * ne = NULL;
 	for (int i = 0; i < ke->n; ++i) {
         ke1_t *tokp = &ke->e[i];
-        if (tokp->ttype == KET_VNAME) {
+        if (tokp->ttype == KET_VNAME || tokp->ttype == KET_PROP) {
 			ne = g_gbl_fields[tokp->ifield];
 			if (ne == NULL) {
 				char * newname = ke_mystrndup(tokp->name, strlen(tokp->name));
@@ -810,7 +829,7 @@ kexpr_t *ke_parse(char *_s, int *err)
 
 void ke_print_one_stack(ke1_t * tokp)
 {
-    if (tokp->ttype == KET_VNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL) {
+    if (tokp->ttype == KET_VNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL ) {
         if (tokp->name != NULL) printf("%s", tokp->name);
         else {
             if (tokp->vtype == KEV_STR) printf("'%s'", tokp->obj.s);
@@ -819,7 +838,7 @@ void ke_print_one_stack(ke1_t * tokp)
         }
     } else if (tokp->ttype == KET_OP) {
         printf("%s", ke_opstr[tokp->op]);
-    } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_CMD) {
+    } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_PROP || tokp->ttype == KET_CMD) {
         printf("%s(%d)", tokp->name, tokp->n_args);
     }
 }
@@ -857,7 +876,7 @@ void ke_print_one(ke1_t * tokp)
     #ifdef DEBUG
         if (tokp->ttype == KET_OP) {
             printf("%s ", ke_opstr[tokp->op]);
-        } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_CMD) {
+        } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_CMD || tokp->ttype == KET_PROP) {
             printf("%s(%d) ", tokp->name, tokp->n_args);
         }
     #endif // DEBUG
@@ -959,7 +978,7 @@ void inline ke_set_val(ke1_t* e, ke1_t *q) {
 
 int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 {
-	ke1_t *p, *q;
+	ke1_t *p, *q, *e;
 	int top = 0, err = 0;
 	*_i = 0, *_r = 0., *ret_type = 0;
 	g_stack = (ke1_t*)ke_malloc_memory(kexpr->n * sizeof(ke1_t));
@@ -980,9 +999,15 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 		case KET_OP:
 			if (tokp->op == KEO_NOP) continue;
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
-				q = &g_stack[--top];
-				p = &g_stack[--top];
-				ke_set_val(g_gbl_fields[p->ifield], q);
+				e = &g_stack[1];
+				if (e->prop) {
+					ke_poperty_set(g_stack, e, top);
+				}
+				else {
+					q = &g_stack[--top];
+					p = &g_stack[--top];
+					ke_set_val(g_gbl_fields[p->ifield], q);
+				}
 			}
 			else {
 				if (tokp->n_args == 2) {
@@ -1001,7 +1026,25 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 			top = (tokp->f.deffunc)(g_stack, top);
 			break;
 		default:
-			g_stack[top++] = *tokp;
+			e = &kexpr->e[itok];
+			// execute the property only if it's not for an equal
+			if (e->prop) {
+				if (top - e->n_args > 0) {
+					// push the property into the stack
+					g_stack[top++] = *tokp;
+					// call the property router
+					top = ke_poperty_get(g_stack, e, top);
+				}
+				else {
+					g_stack[top++] = *tokp;
+					g_stack[top - 1].prop = 1;
+					g_stack[top - 1].n_args = e->n_args;
+				}
+			}
+			else {
+				g_stack[top++] = *tokp;
+			}
+			break;
 		}
 	}
 

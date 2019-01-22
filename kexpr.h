@@ -75,6 +75,7 @@
 #define KET_VAL   6
 #define KET_VNAME 7
 #define KET_REC   8
+#define KET_PROP  9
 
 #define KEF_NULL  0
 #define KEF_REAL  1
@@ -87,7 +88,7 @@ typedef int * reclistt;
 
 struct ke1_s;
 typedef struct ke1_s {
-	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, futur:3, islocal:1; // ttype: token type; vtype: value type  
+	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, prop:1, futur:2, islocal:1; // ttype: token type; vtype: value type  
 	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
 	int32_t ijmp; // fast jmp  
 	int32_t sourceLine; // fast jmp  
@@ -96,6 +97,7 @@ typedef struct ke1_s {
 		void (*builtin)(struct ke1_s *a, struct ke1_s *b); // execution function
 		double (*real_func1)(double);
 		double (*real_func2)(double, double);
+		int (*defprop)(struct ke1_s* stack, struct ke1_s* prop, int top);
 		int (*deffunc)(struct ke1_s* stack, int top);
 		int (*defcmd)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
 		int (*defvcmd)(kexpr_t *ke, struct ke1_s*, int i);

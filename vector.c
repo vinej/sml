@@ -40,18 +40,18 @@ static int ke_vector_int_free(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_get(ke1_t *stack, int top) {
+int ke_vector_get(ke1_t *stack, int top) {
    	ke1_t *p, *q;
-    q = &stack[--top],
-    p = &stack[top-1];
-    p->r = gsl_vector_get(p->obj.vector, (size_t)q->i);
-    p->ttype = KET_VAL;
-    p->vtype = KEV_REAL;
-    p->obj.vector = NULL;
+	p = &stack[--top];
+	q = &stack[top - 1];
+    q->r = gsl_vector_get(p->obj.vector, (size_t)q->i);
+    q->ttype = KET_VAL;
+    q->vtype = KEV_REAL;
+    q->obj.vector = NULL;
     return top;
 }
 
-static int ke_vector_int_get(ke1_t *stack, int top) {
+int ke_vector_int_get(ke1_t *stack, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -62,7 +62,16 @@ static int ke_vector_int_get(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_set(ke1_t *stack, int top) {
+int ke_vector_prop_set(ke1_t *stack, int top) {
+	ke1_t *p, *q, *v;
+	v = &stack[--top],
+	p = &stack[--top];
+	q = &stack[--top],
+	gsl_vector_set(p->obj.vector, (size_t)q->i, v->r);
+	return top;
+}
+
+int ke_vector_set(ke1_t *stack, int top) {
    	ke1_t *p, *q, *v;
     v = &stack[--top],
     q = &stack[--top],
@@ -71,7 +80,7 @@ static int ke_vector_set(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_set(ke1_t *stack, int top) {
+int ke_vector_int_set(ke1_t *stack, int top) {
 	ke1_t *p, *q, *v;
 	v = &stack[--top],
 		q = &stack[--top],
@@ -80,7 +89,7 @@ static int ke_vector_int_set(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_put(ke1_t *stack, int top) {
+int ke_vector_put(ke1_t *stack, int top) {
 	ke1_t *p, *q;
 	ke1_t *e = ke_get_tok();
 	int n = e->n_args;

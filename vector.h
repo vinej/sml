@@ -8,6 +8,15 @@ void ke_vector_freemem(ke1_t *e);
 void ke_vector_int_print(ke1_t *k);
 void ke_vector_int_freemem(ke1_t *e);
 
+int ke_vector_get(ke1_t *stack, int top);
+int ke_vector_int_get(ke1_t *stack, int top);
+int ke_vector_set(ke1_t *stack, int top);
+int ke_vector_int_set(ke1_t *stack, int top);
+int ke_vector_put(ke1_t *stack, int top);
+int ke_vector_prop_set(ke1_t *stack, int top);
+
+
+
 #define VECTOR "vector"
 #define VECTOR_ALLOC "valloc"
 #define VECTOR_SGET "vg"
