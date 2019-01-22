@@ -1001,7 +1001,7 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
 				e = &g_stack[1];
 				if (e->prop) {
-					ke_poperty_set(g_stack, e, top);
+					top = ke_poperty_set(g_stack, e, top);
 				}
 				else {
 					q = &g_stack[--top];
