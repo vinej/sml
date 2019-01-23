@@ -1,5 +1,5 @@
 a = 'bonjour'
 
-for(i,0,6,1)
+for(i,0,2+4,1)
   print(a[i])
 next

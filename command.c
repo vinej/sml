@@ -210,7 +210,7 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				break;
 			case CMD_IFOR:
 				if (tokp->ttype == KET_CMD) {
-					pushfor(itok - 5);
+					pushfor(lastNop);
 				}
 				else
 				{
@@ -304,7 +304,7 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
     if (!tokp->assigned) {
 		ke1_t *min = &stack[top - n + 1];
 		tokp->assigned = 1;
-		tokp->obj.tokp = ke_get_tokidx(*itokp - n);
+		tokp->obj.tokp = g_gbl_fields[p->ifield];
 		struct ke1_s * t = tokp->obj.tokp;
 		t->r = min->r;
 		t->i = (int64_t)t->r;

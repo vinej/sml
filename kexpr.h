@@ -134,7 +134,7 @@ typedef struct ke1_t* ke1_p;
 typedef int(*cmdp)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
 typedef int(*fncp)(struct ke1_s* s, int);
 typedef int(*vcmdp)(struct kexpr_s*, struct ke1_s*, int);
-
+char *ke_mystr(char *src, size_t n);
 void ke_hash_add(fncp key, char * name);
 
 // parse an expression and return errors in $err

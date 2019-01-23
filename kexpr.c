@@ -182,6 +182,15 @@ char *ke_mystrndup(char *src, size_t n)
 	return dst;
 }
 
+char *ke_mystr(char *src, size_t n)
+{
+	char *dst;
+	dst = (char*)calloc(n + 10, 1);
+	++g_mem_count;
+	strcpy(dst, "1+1;1+1;");
+	strcat(dst, src);
+	return dst;
+}
 //****************************
 
 
@@ -543,7 +552,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 
 	// remove remark, and normalize line seperator
 	char *s;
-	s = ke_mystrndup(_s, strlen(_s)); // make a copy
+	s = ke_mystr(_s, strlen(_s) + 1); // make a copy
 	//ke_normalize_code(s);
 	*err = 0;
  	*_n = 0;
@@ -894,7 +903,7 @@ void ke_print_one(ke1_t * tokp)
 }
 
 void ke_print_stack(ke1_t *stack, int top) {
-    if (top > 1) {
+    if (top > 3) {
         printf("\n%s", "*****************************");
         printf("\n%s\n", "Stack has more than one value");
         while(top) {
