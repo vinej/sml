@@ -1,18 +1,17 @@
 def(plot1)
     print('string plot1')
     for(i,0,59,1)
-        vs(g_x, i, g_xoff + g_xscale * ( i + 1 ) / 60.0)
-        vs(g_y, i, g_yoff + g_yscale * pow( vg(g_x,i), 2.0 ))
+        g_x{i} = g_xoff + g_xscale * ( i + 1 ) / 60.0
+        g_y{i} = g_yoff + g_yscale * pow( g_x[i], 2.0 )
     next
-    xmin = vg(g_x,0)
-    xmax = vg(g_x,59)
-    ymin = vg(g_y,0)
-    ymax = vg(g_y,59)
+    xmin = g_x[0]
+    xmax = g_x[59]
+    ymin = g_y[0]
+    ymax = g_y[59]
 	print(xmin,' ',xmax,' ', ymin,' ', ymax)
-
     for (i,0,5,1)
-        vs(g_xs,i,vg(g_x, i * 10 + 3))
-        vs(g_ys,i,vg(g_y, i * 10 + 3))
+        g_xs{i} = g_x[i * 10 + 3]
+        g_ys{i} = g_y[i * 10 + 3]
     next
 	print('second for')
 	print('starting plotting #1')
@@ -32,10 +31,10 @@ def(plot2)
     plcol0( 2 )
     pllab( "(x)", "sin(x)/x", "#frPLplot Example 1 - Sinc Function" )
     for (i,0,99,1)
-        vs(g_x, i, ( i - 19.0 ) / 6.0)
-        vs(g_y, i, 1.0)
-        if ( vg(g_x,i) != 0.0 )
-            vs(g_y, i, sin( vg(g_x,i) ) / vg(g_x,i))
+        g_x{i} = (i - 19.0) / 6.0
+        g_y{i} = 1.0
+        if ( g_x[i] != 0.0 )
+            g_y{i} = sin( g_x[i] ) / g_x[i]
 		end
     next
     plcol0( 3 )
@@ -65,8 +64,8 @@ def(plot3)
     plcol0( 3 )
     pllab( "Angle (degrees)", "sin", "#frPLplot Example 1 - Sine function" )
     for (i,0,100,1)
-        vs(g_x, i, 3.6 * i)
-        vs(g_y, i, sin( vg(g_x,i) * m_pi / 180.0 ))
+        g_x{i} = 3.6 * i
+        g_y{i} = sin(g_x[i]) * m_pi / 180.0 
     next	
     plcol0( 4 )
     plline( 101, g_x, g_y )

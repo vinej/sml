@@ -340,7 +340,12 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 				tok.ifield = kh_val(hname, iter);
 			}
 			else {
-				*err |= KEE_UNVAR;
+				int absent;
+				khint_t iter = kh_put(KH_FIELD, hname, tok.name, &absent);
+				kh_val(hname, iter) = g_gbl_field_qte;
+				tok.ifield = g_gbl_field_qte;
+				g_gbl_field_qte++;
+				//*err |= KEE_UNVAR;
 			}
 		}
 		else {
@@ -825,6 +830,7 @@ kexpr_t *ke_parse(char *_s, int *err)
 		if (*err & KEE_UNQU) printf("SML: ERROR: Unmatched quotation marks at line <%d>\n", g_sourceCodeLine);
 		if (*err & KEE_FUNC) printf("SML: ERROR: Wrong function syntax at line <%d>\n", g_sourceCodeLine);
 		if (*err & KEE_NUM) printf("SML: ERROR: Failed to parse number at line <%d>\n", g_sourceCodeLine);
+		if (*err & KEE_UNVAR) printf("SML: ERROR: Variable in line <%d>\n", g_sourceCodeLine);
 		ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
         ke->n = n, ke->e = e;
         ke_free(ke);

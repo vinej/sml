@@ -59,7 +59,7 @@ int ke_poperty_set(struct ke1_s* stack, struct ke1_s* prop, int top) {
 	case KEV_STR:
 		break;
 	default:
-		printf("Property not implemented for %d\n", prop->vtype);
+		printf("Property not implemented for type %d\n", prop->vtype);
 		break;
 	}
 	return top;
