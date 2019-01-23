@@ -133,13 +133,17 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 	ke1_t *tokp = NULL;
 	int n = kexpr->n;
 	int lastForCmd = 0;
+	int lastNop = 0;
 	for (int itok = 0; itok < n; ++itok) {
 		tokp = tokens[itok];
+
+		if (tokp->ttype == KET_OP && tokp->op == KEO_NOP) {
+			lastNop = itok;
+		}
+
 		if (tokp->ttype == KET_CMD || tokp->ttype == KET_VCMD) {
 			switch (tokp->icmd) {
 			case CMD_IBRK:
-				// use for find the for token to set assigned to 0
-				tokp->i = lastForCmd;
 				if (!tokp->ijmp) {
 					tokp->ijmp = ifind_forward_next(kexpr, itok, tokp);
 					if (tokp->ijmp == -1) return -1;
@@ -206,12 +210,10 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				break;
 			case CMD_IFOR:
 				if (tokp->ttype == KET_CMD) {
-					lastForCmd = 5;
 					pushfor(itok - 5);
 				}
 				else
 				{
-					lastForCmd = 1;
 					pushfor(itok - 1);
 				}
 				if (!tokp->ijmp) {
@@ -309,7 +311,7 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 		pushfor(*itokp);
     } else {
 		ke1_t *max = &stack[top - n + 2];
-		if (p->r >= max->r) {
+		if (tokp->obj.tokp->r >= max->r) {
 	        tokp->assigned = 0;
 			popfor();
 			*itokp = tokp->ijmp;
@@ -354,7 +356,6 @@ int  ke_command_val_end(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 int  ke_command_val_brk(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 
 	int ifor = popfor();
-	// tokp->i is to determine is the for was a single for or the one with 4 parameters
 	ke1_t *efor = ke_get_tokidx(ifor);
 	efor->assigned = 0;
 	return tokp->ijmp;

@@ -2,6 +2,12 @@
 #define STR_H_INCLUDED
 
 void ke_str_hash();
+int ke_str_prop_get_0par(ke1_t *stack, int top);
+int ke_str_prop_get_1par(ke1_t *stack, int top);
+int ke_str_prop_set_1par(ke1_t *stack, int top);
+int ke_str_prop_get_2par(ke1_t *stack, int top);
+int ke_str_prop_set_2par(ke1_t *stack, int top);
+
 
 #define STR_STRCPY "strcpy"
 #define STR_STRCAT "strcat"

@@ -14,7 +14,7 @@ int ke_vector_set(ke1_t *stack, int top);
 int ke_vector_int_set(ke1_t *stack, int top);
 int ke_vector_put(ke1_t *stack, int top);
 int ke_vector_prop_set(ke1_t *stack, int top);
-
+int ke_vector_prop_int_set(ke1_t *stack, int top);
 
 
 #define VECTOR "vector"

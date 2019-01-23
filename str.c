@@ -3,6 +3,68 @@
 #include "kexpr.h"
 #include "str.h"
 
+int ke_str_prop_get_0par(ke1_t *stack, int top) {
+	// b = a[1]  =>  1 a(1) =
+	ke1_t *prop;
+	prop = &stack[top - 1];
+	prop->i = strlen(prop->obj.s);
+	prop->r = prop->i;
+	prop->ttype = KET_VAL;
+	prop->vtype = KEV_INT;
+	return top;
+}
+
+int ke_str_prop_get_1par(ke1_t *stack, int top) {
+	// b = a[1]  =>  1 a(1) =
+	ke1_t *prop, *indice;
+	prop = &stack[--top];
+	indice = &stack[top - 1];
+
+	char * sub = ke_calloc_memory(2, 1);
+	*sub = prop->obj.s[indice->i];
+	indice->obj.s = sub;
+	indice->ttype = KET_VAL;
+	indice->vtype = KEV_STR;
+	return top;
+}
+
+int ke_str_prop_get_2par(ke1_t *stack, int top) {
+	// b = a[1,2]  =>  1 2 a(2) =
+	ke1_t *prop, *from, *to;
+	prop = &stack[--top];
+	to = &stack[--top];
+	from = &stack[top - 1];
+
+	char * sub = ke_calloc_memory((size_t)(to->i - from->i) + 2, 1);
+	memcpy(sub, &(prop->obj.s[from->i]), to->i - from->i + 1);
+	from->obj.s = sub;
+	from->ttype = KET_VAL;
+	from->vtype = KEV_STR;
+	return top;
+}
+
+int ke_str_prop_set_1par(ke1_t *stack, int top) {
+	// a[2] = 'z' =>  2 a(1) 'z' =
+	ke1_t *p, *q, *v;
+	v = &stack[--top];
+	p = &stack[--top];
+	q = &stack[--top];
+
+	p->obj.s[q->i] = v->obj.s[0];
+	return top;
+}
+
+int ke_str_prop_set_2par(ke1_t *stack, int top) {
+	// a{1,2} = 'as'    1 2 a(2) 'sd' =
+	ke1_t *prop, *from, *to, *v;
+	v = &stack[--top];
+	prop = &stack[--top];
+	to = &stack[--top];
+	from = &stack[--top];
+	memcpy(&(prop->obj.s[from->i]), v->obj.s, (size_t)(to->i - from->i + 1));
+	return top;
+}
+
 static int ke_strcpy(ke1_t *stack, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];

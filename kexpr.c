@@ -582,7 +582,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			}
 			++p;
 			isPreviousLeftParenthese = 0;
-			last_is_val = 0;
+			last_is_val = 1;
 		} else if (*p == ',') { // function arguments separator
 			isPreviousLeftParenthese = 0;
 			while (n_op > 0 && op[n_op-1].op >= 0) {
@@ -1010,10 +1010,10 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 		case KET_OP:
 			if (tokp->op == KEO_NOP) continue;
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
-				e = &g_stack[1];
+				e = &g_stack[top-2];
 				if (e->propset) {
 					g_gbl_fields[e->ifield]->n_args = e->n_args;
-					g_stack[1] = *g_gbl_fields[e->ifield];
+					g_stack[top-2] = *g_gbl_fields[e->ifield];
 					top = ke_poperty_set(g_stack, e, top);
 				}
 				else {
