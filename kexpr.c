@@ -330,19 +330,15 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 				}
 			}
 		}
-		else if (*p == '[' || *p == '{') {
+		else if (*p == '[') {
 			// it's a propery
 			tok.n_args = 1;
 			tok.sourceLine = g_sourceCodeLine;
 			tok.ijmp = 0;
 			tok.ttype = KET_PROP;
 			tok.vtype = KEV_REAL;
-			if (*p == '[') {
-				tok.propget = 1;
-			}
-			else {
-				tok.propset = 1;
-			}
+			tok.propget = 1;
+			tok.propset = 0;
 			tok.i = 0, tok.r = 0.;
 			khint_t iter = kh_get(KH_FIELD, hname, tok.name);
 			if (kh_end(hname) != iter) {
@@ -550,6 +546,10 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 	int n_out, m_out, n_op, m_op, last_is_val = 0;
 	ke1_t *out, *op, *t, *u;
 
+	t = NULL;
+		
+	ke1_t * last = NULL;
+
 	// remove remark, and normalize line seperator
 	char *s;
 	s = ke_mystr(_s, strlen(_s) + 1); // make a copy
@@ -559,20 +559,22 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 	out = op = 0;
 	n_out = m_out = n_op = m_op = 0;
 	p = s;
+	int isLastLeftBraket = 0;
 	int isPreviousLeftParenthese = 0;
 	int isPreviousLeftbraket = 0;
 	while (*p) {
 		while (1) {
 			if (*p == ' ') ++p; else break;
 		}
-
-		if (*p == '(' || *p == '[' || *p == '{') {
+		if (*p == '(' || *p == '[') {
 			isPreviousLeftParenthese = 1;
 			t = push_back(&op, &n_op, &m_op); // push to the operator g_stack
 			t->op = -1, t->ttype = KET_NULL; // ->op < 0 for a left parenthsis
 			++p;
 			last_is_val = 0;
-		} else if (*p == ')' || *p == ']' || *p == '}') {
+			isLastLeftBraket = 0;
+		} else if (*p == ')' || *p == ']') {
+			if (*p == ']') isLastLeftBraket = 1; else isLastLeftBraket = 0;
 			while (n_op > 0 && op[n_op-1].op >= 0) { // move operators to the output until we see a left parenthesis
 				u = push_back(&out, &n_out, &m_out);
 				*u = op[--n_op];
@@ -593,6 +595,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			isPreviousLeftParenthese = 0;
 			last_is_val = 1;
 		} else if (*p == ',') { // function arguments separator
+			isLastLeftBraket = 0;
 			isPreviousLeftParenthese = 0;
 			while (n_op > 0 && op[n_op-1].op >= 0) {
 				u = push_back(&out, &n_out, &m_out);
@@ -608,12 +611,26 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 		} else { // output-able token
 			isPreviousLeftParenthese = 0;
 			ke1_t v = ke_read_token(p, &p, err, last_is_val);
+
+			// SET PROPERTY FOR EQUAL
+			if (v.ttype == KET_OP && v.op == KEO_LET && isLastLeftBraket) {
+				// must set
+				for (int i = n_out-1; i > -1; i++) {
+					if (out[i].ttype == KET_PROP) {
+						out[i].propset = 1;
+						out[i].propget = 0;
+						break;
+					}
+				}
+			}
+			isLastLeftBraket = 0;
 			if (!v.realToken) {
 				break;
 			}
 			if (*err) {
 				break;
 			}
+
 			if (v.ttype == KET_VAL || v.ttype == KET_VCMD || v.ttype == KET_VNAME) {
 				u = push_back(&out, &n_out, &m_out);
 				*u = v;
