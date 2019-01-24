@@ -21,6 +21,13 @@ static int ke_poperty_str_get(struct ke1_s* stack, struct ke1_s* prop, int top) 
 }
 
 static int ke_poperty_matrix_get(struct ke1_s* stack, struct ke1_s* prop, int top) {
+	int narg = prop->n_args;
+	if (narg == 2) {
+		top = ke_matrix_prop_get(stack, top);
+	}
+	else {
+		printf("Property not implemented for %d\n", prop->vtype);
+	}
 	return top;
 }
 
@@ -36,6 +43,13 @@ static int ke_poperty_vector_get(struct ke1_s* stack, struct ke1_s* prop, int to
 }
 
 static int ke_poperty_matrix_set(struct ke1_s* stack, struct ke1_s* prop, int top) {
+	int narg = prop->n_args;
+	if (narg == 2) {
+		top = ke_matrix_prop_set(stack, top);
+	}
+	else {
+		printf("Property not implemented for %d\n", prop->vtype);
+	}
 	return top;
 }
 

@@ -4,6 +4,9 @@
 void ke_matrix_print(ke1_t *e);
 void ke_matrix_hash();
 void ke_matrix_freemem(ke1_t*e);
+int ke_matrix_get(ke1_t *stack, int top);
+int ke_matrix_prop_set(ke1_t *stack, int top);
+
 
 #define MATRIX "matrix"
 #define MATRIX_ALLOC "malloc"

@@ -15,7 +15,19 @@ static int ke_matrix_alloc(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_get(ke1_t *stack, int top) {
+int ke_matrix_prop_get(ke1_t *stack, int top) {
+	ke1_t *p, *q, *v;
+	p = &stack[--top];
+	v = &stack[--top];
+	q = &stack[top - 1];
+	q->r = gsl_matrix_get(p->obj.matrix, (size_t)q->i, (size_t)v->i);
+	q->ttype = KET_VAL;
+	q->vtype = KEV_REAL;
+	q->obj.matrix = NULL;
+	return top;
+}
+
+int ke_matrix_get(ke1_t *stack, int top) {
    	ke1_t *p, *q, *v;
     v = &stack[--top],
     q = &stack[--top],
@@ -27,14 +39,23 @@ static int ke_matrix_get(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_set(ke1_t *stack, int top) {
+int ke_matrix_prop_set(ke1_t *stack, int top) {
+	ke1_t *p, *q, *v, *x;
+	x = &stack[--top];
+	p = &stack[--top];
+	v = &stack[--top];
+	q = &stack[--top];
+	gsl_matrix_set(p->obj.matrix, (size_t)q->i, (size_t)v->i, x->r);
+	return top;
+}
+
+int ke_matrix_set(ke1_t *stack, int top) {
    	ke1_t *p, *q, *v, *x;
     x = &stack[--top],
     v = &stack[--top],
     q = &stack[--top],
-    p = &stack[top-1];
+    p = &stack[--top];
     gsl_matrix_set(p->obj.matrix, (size_t)q->i, (size_t)v->i, x->r);
-    --top;
     return top;
 }
 
