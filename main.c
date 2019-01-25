@@ -100,7 +100,7 @@ int main(int argc, char *argv[])
         char str[1000];
 
         while(1) {
-            printf( "jyv>>> : ");
+            printf( "jyv>>> : Vava2019");
             gets( str );
             char * p = str;
             while(*p) {

@@ -7,3 +7,15 @@ print(a)
 
 b = a[0,1+5-5]
 print(b)
+
+s = 'test.pdf'
+ext = s[-1,-3]
+path = s[0,-5]
+print(path,':',ext)
+print(s[0,-1])
+print(s[0,-2])
+print(s[])
+
+print(s[s['.']+1,-1])
+
+
