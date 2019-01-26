@@ -299,30 +299,63 @@ int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
 	// field min, max inc
 	int n = tokp->n_args;
-	ke1_t *p = &stack[top - n]; // copy of the real variable into the stack
-
-    if (!tokp->assigned) {
-		ke1_t *min = &stack[top - n + 1];
+	int top_m1 = top - n;
+	if (!tokp->assigned) {
+		ke1_t *p = &stack[top_m1]; // copy of the real variable into the stack
+		ke1_t *min = &stack[top_m1 + 1];
 		tokp->assigned = 1;
 		tokp->obj.tokp = g_gbl_fields[p->ifield];
 		struct ke1_s * t = tokp->obj.tokp;
 		t->r = min->r;
 		t->i = (int64_t)t->r;
 		pushfor(*itokp);
-    } else {
-		ke1_t *max = &stack[top - n + 2];
-		if (tokp->obj.tokp->r >= max->r) {
-	        tokp->assigned = 0;
+	}
+	else {
+		ke1_t *p = tokp->obj.tokp; // copy of the real variable into the stack
+		if (p->r >= stack[top_m1 + 2].r) {
+			tokp->assigned = 0;
 			popfor();
 			*itokp = tokp->ijmp;
-		} else {
-			ke1_t *inc = &stack[top - n + 3];
-			tokp->obj.tokp->r += inc->r;
-			tokp->obj.tokp->i = (int64_t)tokp->obj.tokp->r;
+		}
+		else {
+			p->r += stack[top_m1 + 3].r;
+			p->i += stack[top_m1 + 3].i;
 		}
 	}
 	return top - n;
 }
+
+/*
+int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
+	// field min, max inc
+	int n = tokp->n_args;
+	ke1_t *p = &stack[top - n]; // copy of the real variable into the stack
+	int top_n = top - n;
+	if (!tokp->assigned) {
+		tokp->assigned = 1;
+		tokp->obj.tokp = g_gbl_fields[p->ifield];
+		tokp->obj.tokp->r = stack[top_n + 1].r;
+		tokp->obj.tokp->i = stack[top_n + 1].r;
+		pushfor(*itokp);
+	}
+	else {
+		p = tokp->obj.tokp;
+		if (p->r >= stack[top_n + 2].r) {
+			p->assigned = 0;
+			popfor();
+			*itokp = tokp->ijmp;
+		}
+		else {
+			ke1_t *inc = &stack[top - n + 3];
+			tokp->obj.tokp->r += inc->r;
+			tokp->obj.tokp->i = (int64_t)tokp->obj.tokp->r;
+			//p->r += stack[top_n + 3].r;
+			//p->i += stack[top_n + 3].i;
+		}
+	}
+	return top_n;
+}
+*/
 
 int ke_command_print_nonl(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
     int ntmp = tokp->n_args;

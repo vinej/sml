@@ -10,7 +10,7 @@ void ht_timing(void (*f)(void))
 {
 	clock_t t = clock();
 	(*f)();
-	printf("[ht_timing] %.3lf sec\n", (double)(clock() - t) / CLOCKS_PER_SEC);
+	printf("[ht_timing] %.3lf sec\n", (double)((double)clock() - t) / CLOCKS_PER_SEC);
 }
 
 int main(int argc, char *argv[])
@@ -47,6 +47,12 @@ int main(int argc, char *argv[])
         fseek(fp, 0L, SEEK_END);
         int sz = ftell(fp);
         str = calloc(sz+1,1);
+		if (str == NULL) {
+			printf("out of memory at main");
+			printf("TODO clean up the memory");
+			abort();
+		}
+
         rewind(fp);
         fread (str, 1, sz, fp);
         fclose(fp);
@@ -74,7 +80,7 @@ int main(int argc, char *argv[])
                 clock_t start_t = clock();
                 err |= ke_eval(ke, &vi, &vr, &vs, &ret_type);
                 clock_t end_t = clock();
-                double total_t = (double)(end_t - start_t) / CLOCKS_PER_SEC;
+                double total_t = (double)((double)end_t - start_t) / CLOCKS_PER_SEC;
                 printf("Total time taken by CPU: %.6lf second\n", total_t );
                 //printf("\n[ht_timing] %.6lf sec\n", (double)(clock() - t) / CLOCKS_PER_SEC);
                 if (err) {

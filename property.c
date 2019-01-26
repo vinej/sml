@@ -64,6 +64,7 @@ static int ke_poperty_str_set(struct ke1_s* stack, struct ke1_s* prop, int top) 
 	else {
 		printf("Property not implemented for %d\n", prop->vtype);
 	}
+	return top;
 }
 
 static int ke_poperty_vector_set(struct ke1_s* stack, struct ke1_s* prop, int top) {

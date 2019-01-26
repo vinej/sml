@@ -177,6 +177,11 @@ char *ke_mystrndup(char *src, size_t n)
 {
 	char *dst;
 	dst = (char*)calloc(n + 1, 1);
+	if (dst == NULL) {
+		printf("out of memory at ke_mystrndup");
+		printf("TODO clean up the memory");
+		abort();
+	}
 	++g_mem_count;
 	strncpy(dst, src, n);
 	return dst;
@@ -186,6 +191,11 @@ char *ke_mystr(char *src, size_t n)
 {
 	char *dst;
 	dst = (char*)calloc(n + 10, 1);
+	if (dst == NULL) {
+		printf("out of memory at ke_mystr");
+		printf("TODO clean up the memory");
+		abort();
+	}
 	++g_mem_count;
 	strcpy(dst, "1+1;1+1;");
 	strcat(dst, src);
@@ -535,6 +545,12 @@ static inline ke1_t *push_back(ke1_t **a, int *n, int *m)
 		// first timae allocation
 		if (*a == 0) ke_inc_memory();
 		*a = (ke1_t*)realloc(*a, *m * sizeof(ke1_t));
+		if (*a == NULL) {
+			printf("out of memory at push_back");
+			printf("TODO clean up the memory");
+			abort();
+		}
+
 		memset(*a + old_m, 0, (*m - old_m) * sizeof(ke1_t));
 	}
 	return &(*a)[(*n)++];
@@ -615,7 +631,7 @@ ke1_t *ke_parse_core(char *_s, int *_n, int *err)
 			// SET PROPERTY FOR EQUAL
 			if (v.ttype == KET_OP && v.op == KEO_LET && isLastLeftBraket) {
 				// must set
-				for (int i = n_out-1; i > -1; i++) {
+				for (int i = n_out-1; i > -1; --i) {
 					if (out[i].ttype == KET_PROP) {
 						out[i].propset = 1;
 						out[i].propget = 0;
@@ -726,6 +742,11 @@ int ke_fill_list(kexpr_t *ke)
 			if (ne == NULL) {
 				char * newname = ke_mystrndup(tokp->name, strlen(tokp->name));
 				ne = ke_malloc_memory(sizeof(ke1_t));
+				if (ne == NULL) {
+					printf("out of memory at ke_fill_list");
+					printf("TODO clean up the memory");
+					abort();
+				}
 				if ((tokp->ifield < g_rec_qte) && (strcmp(g_recp[tokp->ifield]->name, tokp->name) == 0)) {
 					memcpy(ne, g_recp[tokp->ifield], sizeof(ke1_t));
 				}
@@ -902,10 +923,9 @@ void ke_print_one(ke1_t * tokp)
 		#ifdef DEBUG
 			if (tokp->name != NULL) printf("%s=", tokp->name);
 		#endif // DEBUG
-        if (tokp->obj.s == NULL) {
-            if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
-            if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
-        } else {
+        if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
+        else if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
+        else if (tokp->obj.s != NULL) {
             printf("%s", tokp->obj.s);
         }
     }
@@ -1000,7 +1020,7 @@ void ke_set_val_index(int i, ke1_t *tokp) {
 
 void inline ke_set_val(ke1_t* e, ke1_t *q) {
 	 e->vtype = q->vtype;
-     if (q->vtype == KEV_INT)  e->i = q->i; //, e->assigned = 1; //double yy = (double)q->i; e->r = yy,
+	 if (q->vtype == KEV_INT)  e->i = q->i; //, e->assigned = 1; //double yy = (double)q->i; e->r = yy,
 	 else if (q->vtype == KEV_REAL)	e->r = q->r;  //e->i = (int64_t)e->r; e->assigned = 1;
 	 else if (q->vtype == KEV_STR) 	ke_set_str(e, q->obj.s);
 	 else if (q->vtype == KEV_VEC)	ke_set_vector(e, q->obj.vector);
@@ -1036,8 +1056,8 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 		case KET_OP:
 			if (tokp->op == KEO_NOP) continue;
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
-				e = &g_stack[top-2];
-				if (e->propset) {
+				if (g_stack[top - 2].propset) {
+					e = &g_stack[top - 2];
 					g_gbl_fields[e->ifield]->n_args = e->n_args;
 					g_stack[top-2] = *g_gbl_fields[e->ifield];
 					top = ke_poperty_set(g_stack, e, top);

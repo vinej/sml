@@ -85,7 +85,7 @@ int ke_vector_prop_int_set(ke1_t *stack, int top) {
 	v = &stack[--top],
 	p = &stack[--top];
 	q = &stack[--top],
-	gsl_vector_int_set(p->obj.vector_int, (size_t)q->i, v->i);
+	gsl_vector_int_set(p->obj.vector_int, (size_t)q->i, (int)v->i);
 	return top;
 }
 

@@ -344,7 +344,7 @@ static int ke_function_timeyear(ke1_t *stack, int top) {
 	//struct tm * timeinfo;
 	time(&my_time);
 	//timeinfo = localtime(&my_time);
-	p->i = localtime(&my_time)->tm_year + 1900;
+	p->i = (int)localtime(&my_time)->tm_year + (int)1900;
 	p->vtype = KEV_INT;
 	p->ttype = KET_VAL;
 	return top;
@@ -358,7 +358,7 @@ static int ke_function_timemonth(ke1_t *stack, int top) {
 	p = &stack[top - 1];
 	time_t my_time;
 	time(&my_time);
-	p->i = localtime(&my_time)->tm_mon + 1;
+	p->i = (int)localtime(&my_time)->tm_mon + (int)1;
 	p->vtype = KEV_INT;
 	p->ttype = KET_VAL;
 	return top;

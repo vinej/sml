@@ -71,11 +71,11 @@
 #define KET_VCMD  2
 #define KET_OP    3
 #define KET_FUNC  4
-#define KET_CONST 5
-#define KET_VAL   6
-#define KET_VNAME 7
-#define KET_REC   8
-#define KET_PROP  9
+#define KET_PROP  5
+#define KET_CONST 6
+#define KET_VAL   7
+#define KET_VNAME 8
+#define KET_REC   9
 
 #define KEF_NULL  0
 #define KEF_REAL  1
@@ -88,11 +88,12 @@ typedef int * reclistt;
 
 struct ke1_s;
 typedef struct ke1_s {
+	int64_t i;
+	double r;
+	int32_t ijmp; // fast jmp  
 	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, propget:1, propset:1, futur:2, islocal:1; // ttype: token type; vtype: value type  
 	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
-	int32_t ijmp; // fast jmp  
 	int32_t sourceLine; // fast jmp  
-	char *name; // variable name or function name                                                                 
 	union {    //                                                                                                 
 		void (*builtin)(struct ke1_s *a, struct ke1_s *b); // execution function
 		double (*real_func1)(double);
@@ -121,8 +122,7 @@ typedef struct ke1_s {
 		PLFILL_callback plfillcb;
 	} obj;
 	int line;
-	int64_t i;
-	double r;
+	char *name; // variable name or function name                                                                 
 } ke1_t;
 
 struct kexpr_s {

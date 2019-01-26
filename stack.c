@@ -16,6 +16,12 @@ stack_t * stack_create(int size) {
 
 	// alloc the struct
 	stack = calloc(1, sizeof(*stack));
+	if (stack == NULL) {
+		printf("out of memory at stack_create");
+		printf("TODO clean up the memory");
+		abort();
+	}
+
 	// alloc data
 	stack->size = size;
 	stack->data = malloc(stack->size * sizeof(void *));

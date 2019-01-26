@@ -8,7 +8,7 @@ int ke_str_prop_get_0par(ke1_t *stack, int top) {
 	ke1_t *prop;
 	prop = &stack[top - 1];
 	prop->i = strlen(prop->obj.s);
-	prop->r = prop->i;
+	prop->r = (double)prop->i;
 	prop->ttype = KET_VAL;
 	prop->vtype = KEV_INT;
 	prop->obj.s = NULL;
@@ -24,7 +24,7 @@ int ke_str_prop_get_1par(ke1_t *stack, int top) {
 	if (indice->vtype == KEV_STR) {
 		char * pos = strstr(prop->obj.s, indice->obj.s);
 		indice->i = pos - prop->obj.s;
-		indice->r = indice->i;
+		indice->r = (double)indice->i;
 		indice->ttype = KET_VAL;
 		indice->vtype = KEV_INT;
 	}
@@ -50,9 +50,9 @@ int ke_str_prop_get_2par(ke1_t *stack, int top) {
 	prop = &stack[--top];
 	to = &stack[--top];
 	from = &stack[top - 1];
-	int len = strlen(prop->obj.s);
+	int len = (int)strlen(prop->obj.s);
 	if (from->i < 0 && to->i < 0) {
-		int t = from->i;
+		int64_t t = from->i;
 		from->i = to->i;
 		to->i = t;
 	}
@@ -64,7 +64,7 @@ int ke_str_prop_get_2par(ke1_t *stack, int top) {
 	}
 
 	char * sub = ke_calloc_memory((size_t)(to->i - from->i) + 2, 1);
-	memcpy(sub, &(prop->obj.s[from->i]), to->i - from->i + 1);
+	memcpy(sub, &(prop->obj.s[from->i]), (size_t)(to->i - from->i + 1));
 	from->obj.s = sub;
 	from->ttype = KET_VAL;
 	from->vtype = KEV_STR;
@@ -109,12 +109,14 @@ static int ke_strcat(ke1_t *stack, int top) {
     q = &stack[--top];
     p = &stack[top-1];
     size_t plen = (p->obj.s == NULL ? 0 : strlen(p->obj.s));
-	size_t qlen = strlen(q->obj.s);
+	size_t qlen = (q->obj.s == NULL ? 0 : strlen(q->obj.s));
    	char * tmp = (char*)ke_calloc_memory(plen + qlen + 1,1);
    	if (plen) {
         strcpy(tmp, p->obj.s);
    	}
-    strcat(tmp, q->obj.s);
+	if (q->obj.s != NULL) {
+		strcat(tmp, q->obj.s);
+	}
     ke_set_str_direct(p->ifield, tmp);
     --top;
     return top;
