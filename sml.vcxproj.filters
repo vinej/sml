@@ -54,9 +54,6 @@
     <ClInclude Include="vector.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="plot.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="property.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -90,9 +87,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="vector.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="plot.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="property.c">

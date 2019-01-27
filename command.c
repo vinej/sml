@@ -237,13 +237,16 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 	return 0;
 }
 
+int ke_command_import(kexpr_t *kexpr, ke1_t * tokp, ke1_t *stack, int top, int * itokp) {
+	return top - 1;
+}
+
 int ke_command_if(kexpr_t *kexpr, ke1_t * tokp, ke1_t *stack, int top, int * itokp) {
     ke1_t *p;
     p = NULL;
 	*itokp = (&stack[--top])->i ? *itokp : tokp->ijmp;
     return top;
 }
-
 
 int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * itokp) {
 	ke1_t * p;
@@ -324,38 +327,6 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 	}
 	return top - n;
 }
-
-/*
-int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
-	// field min, max inc
-	int n = tokp->n_args;
-	ke1_t *p = &stack[top - n]; // copy of the real variable into the stack
-	int top_n = top - n;
-	if (!tokp->assigned) {
-		tokp->assigned = 1;
-		tokp->obj.tokp = g_gbl_fields[p->ifield];
-		tokp->obj.tokp->r = stack[top_n + 1].r;
-		tokp->obj.tokp->i = stack[top_n + 1].r;
-		pushfor(*itokp);
-	}
-	else {
-		p = tokp->obj.tokp;
-		if (p->r >= stack[top_n + 2].r) {
-			p->assigned = 0;
-			popfor();
-			*itokp = tokp->ijmp;
-		}
-		else {
-			ke1_t *inc = &stack[top - n + 3];
-			tokp->obj.tokp->r += inc->r;
-			tokp->obj.tokp->i = (int64_t)tokp->obj.tokp->r;
-			//p->r += stack[top_n + 3].r;
-			//p->i += stack[top_n + 3].i;
-		}
-	}
-	return top_n;
-}
-*/
 
 int ke_command_print_nonl(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
     int ntmp = tokp->n_args;
@@ -438,7 +409,8 @@ void ke_command_hash() {
 
     ke_command_hash_add((cmdp)&ke_command_if, CMD_IF);
     ke_command_hash_add((cmdp)&ke_command_print, CMD_PRINT);
-    ke_command_hash_add((cmdp)&ke_command_print_nonl, CMD_PRINTNOLN);
+	ke_command_hash_add((cmdp)&ke_command_import, CMD_IMPORT);
+	ke_command_hash_add((cmdp)&ke_command_print_nonl, CMD_PRINTNOLN);
     ke_command_hash_add((cmdp)&ke_command_def, CMD_DEF);
     ke_command_hash_add((cmdp)&ke_command_exe, CMD_EXE);
     ke_command_hash_add((cmdp)&ke_command_for, CMD_FOR);

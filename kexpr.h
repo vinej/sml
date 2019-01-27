@@ -88,8 +88,8 @@ typedef int * reclistt;
 
 struct ke1_s;
 typedef struct ke1_s {
-	int64_t i;
 	double r;
+	int64_t i;
 	int32_t ijmp; // fast jmp  
 	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, propget:1, propset:1, futur:2, islocal:1; // ttype: token type; vtype: value type  
 	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
@@ -104,14 +104,14 @@ typedef struct ke1_s {
 		int (*defvcmd)(kexpr_t *ke, struct ke1_s*, int i);
 		struct ke1_s * recp;
 	} f;
-	union {  //                                                                                                     
+	union {  //               
+		struct ke1_s * tokp;
+		char *s;
+		char ** ms;
 		gsl_vector_int * vector_int;
 		gsl_vector * vector;
 		gsl_matrix * matrix;
 	    gsl_complex complex;
-		struct ke1_s * tokp;
-		char *s;
-		char ** ms;
 		reclistt reclist;
 		PLGraphicsIn * plgrin;
 		PLPointer * plptr;
@@ -132,7 +132,7 @@ struct kexpr_s {
 
 typedef struct ke1_t* ke1_p;
 typedef int(*cmdp)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
-typedef int(*fncp)(struct ke1_s* s, int);
+typedef int(__cdecl *fncp)(struct ke1_s* s, int);
 typedef int(*vcmdp)(struct kexpr_s*, struct ke1_s*, int);
 char *ke_mystr(char *src, size_t n);
 void ke_hash_add(fncp key, char * name);

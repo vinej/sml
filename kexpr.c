@@ -12,7 +12,7 @@
 #include "vector.h"
 #include "matrix.h"
 #include "complex.h"
-#include "plot.h"
+//#include "plot.h"
 #include "constants.h"
 #include "function.h"
 #include "property.h"
@@ -22,6 +22,10 @@
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_vector.h>
 #include <stdio.h>
+#include <stdio.h>
+#include <Windows.h>
+
+HMODULE libHandle;
 
 // GLOBAL VARIABLE USED BY ALL FUNCTIONS
 ke1_t ** g_gbl_fields = NULL; // array of all global fields of the program to exectue
@@ -226,6 +230,29 @@ fncp ke_function(char * name) {
 	}
 }
 
+typedef int(*DLLPROC)();
+void import(char * s) {
+	// load the dll
+	// call method ke_dll_hash(voir * hash_method, global_field)
+	if ((libHandle = LoadLibrary(TEXT(s))) == NULL)
+	{
+		printf("load failed\n");
+		return;
+	}
+	DLLPROC fp = (DLLPROC)GetProcAddress(libHandle, "ke_dll_hash_add");
+	if (fp == NULL)
+	{
+		printf("GetProcAddress failed\n");
+		printf("%d\n", GetLastError());
+		return;
+	}
+
+	fp(ke_hash_add, g_gbl_fields);
+
+	// FREE HANDLE
+}
+
+
 // parse a token except "(", ")" and ","
 ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't parse parentheses
 {
@@ -319,6 +346,18 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 		while (*p) { if (*p == ' ') ++p; else break; }  // pass over the spaces
 		if (*p == '(') {
 			// find 
+			char *t = p;
+			if (strcmp(tok.name, "import") == 0) {
+				while (*t != '"' && *t != '\'') ++t;
+				++t;
+				char * end = t + 1;
+				while (*end != '"' && *end != '\'') ++end;
+				char old = *end;
+				*end = 0;
+				import(t);
+				*end = old;
+			}
+
 			tok.n_args = 1;
 			tok.sourceLine = g_sourceCodeLine;
 			tok.f.defcmd = (cmdp)ke_command(tok.name);
@@ -1002,7 +1041,7 @@ void ke_fill_hash() {
 	hname = kh_init(KH_FIELD); ke_inc_memory();
 	ke_command_hash();
     ke_vector_hash();
-	ke_plot_hash();
+	//ke_plot_hash();
 	ke_complex_hash();
     ke_matrix_hash();
     ke_function_hash();

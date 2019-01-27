@@ -1,11 +1,11 @@
+import('plplotdll.dll')
+
 def(plot1)
     print('string plot1')
     for(i,0,59,1)
         g_x[i] = g_xoff + g_xscale * ( i + 1.0 ) / 60.0
         g_y[i] = g_yoff + g_yscale * pow( g_x[i], 2.0 )
     next
-	print(g_x)
-	print(g_y)
     xmin = g_x[0]
     xmax = g_x[59]
     ymin = g_y[0]
