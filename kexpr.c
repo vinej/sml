@@ -12,7 +12,6 @@
 #include "vector.h"
 #include "matrix.h"
 #include "complex.h"
-//#include "plot.h"
 #include "constants.h"
 #include "function.h"
 #include "property.h"
@@ -305,7 +304,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 		}
 
 		// do not accept control caracter and space
-		if (*p <= 32) {
+		if (*p < 32) {
 			++p;
 			continue;
 		}
@@ -524,7 +523,9 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 	} else if (*p == '"' || *p == '\'') { // a string value
 		int c = *p;
 		for (++p; *p && *p != c; ++p)
-			if (*p == '\\') ++p; // escaping
+			if (*p == '\\') {
+				++p; // escaping
+			}
 		if (*p == c) {
 			tok.ttype = KET_VAL, tok.vtype = KEV_STR;
 			tok.obj.s = ke_mystrndup(q + 1, p - q - 1);
@@ -888,11 +889,20 @@ void ke_set_record(ke1_t *source, ke1_t *dest) {
 	dest->obj.reclist = source->obj.reclist;
 }
 
+void ke_set_image(ke1_t *source, ke1_t *dest) {
+	dest->ttype = source->ttype;
+	dest->vtype = source->vtype;
+	dest->obj.image = source->obj.image;
+}
+
 kexpr_t *ke_parse(char *_s, int *err)
 {
 	int n;
 	ke1_t *e;
 	kexpr_t *ke;
+	if (g_gbl_fields == NULL) {
+		g_gbl_fields = ke_calloc_memory(sizeof(ke1_t *) * 1000, 1);
+	}
 	e = ke_parse_core(_s, &n, err);
 	if (*err == 0) {
 		ke = (kexpr_t*)ke_calloc_memory(1, sizeof(kexpr_t));
@@ -900,9 +910,6 @@ kexpr_t *ke_parse(char *_s, int *err)
 		//#ifdef DEBUG
 		ke_print(ke);
 		//#endif // DEBUG
-		if (g_gbl_fields == NULL) {
-			g_gbl_fields = ke_calloc_memory(sizeof(ke1_t *) * 1000, 1);
-		}
 		//else {} {
 		//	g_gbl_fields = realloc(g_gbl_fields, sizeof(ke1_t *) * g_gbl_field_qte);
 		//	memset(g_gbl_fields + old_m, 0, (*m - old_m) * sizeof(ke1_t));
@@ -1069,6 +1076,7 @@ void inline ke_set_val(ke1_t* e, ke1_t *q) {
 	 else if (q->vtype == KEV_MAT) 	ke_set_matrix(e, q->obj.matrix);
 	 else if (q->vtype == KEV_COMPLEX) ke_set_complex(e, q->obj.complex);
 	 else if (q->vtype == KEV_REC) ke_set_record(q, e);
+	 else if (q->vtype == KEV_IMAGE) ke_set_image(q, e);
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
@@ -1163,6 +1171,12 @@ void ke_push_stack(ke1_t * tokp, int *top) {
 }
 
 void ke_free_dll() {
+	for (int i = 0; i < g_libhandle_qte; ++i) {
+		FreeLibrary(g_libhandle[i]);
+	}
+}
+
+void ke_free_image() {
 	for (int i = 0; i < g_libhandle_qte; ++i) {
 		FreeLibrary(g_libhandle[i]);
 	}

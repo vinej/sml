@@ -35,6 +35,7 @@
 #define KEV_REC  8
 #define KEV_VEC_INT  9
 #define KEV_DEF  10
+#define KEV_IMAGE 11
 
 #define KEO_NULL  0
 #define KEO_POS   1
@@ -107,6 +108,7 @@ typedef struct ke1_s {
 	union {  //               
 		struct ke1_s * tokp;
 		char *s;
+		char* image;
 		char ** ms;
 		gsl_vector_int * vector_int;
 		gsl_vector * vector;

@@ -3,6 +3,11 @@
 
 void ke_plot_hash();
 
+#define PLOT_IMLOAD "plimload"
+#define PLOT_IMFREE "plimfree"
+#define PLOT_IMWRITE "plimwrite"
+#define PLOT_IMRESIZE "plimresize"
+
 #define PLOT "plot"
 #define PLOT_INIT "plinit"
 #define PLOT_PLPAUSE "plpause"

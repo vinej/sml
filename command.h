@@ -21,6 +21,8 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens);
 #define CMD_BRK "break"
 #define CMD_CNT "continue"
 #define CMD_PRINT "print"
+#define CMD_PRINTF "printf"
+#define CMD_SPRINTF "sprintf"
 #define CMD_PRINTNOLN "printn"
 #define CMD_IMPORT "import"
 #define CMD_CONSTANTS "M_"

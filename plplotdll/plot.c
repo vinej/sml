@@ -5,7 +5,16 @@
 #include <stdio.h>
 #include <Windows.h>
 
-static ke1_t ** dllg_gbl_fields = NULL;
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_RESIZE_IMPLEMENTATION
+#include "..\stb\stb_image.h"
+#include "..\stb\stb_image_write.h"
+#include "..\stb\stb_image_resize.h"
+//#include "..\stb\stb_image_resize.h"
+
+
+ke1_t ** dllg_gbl_fields = NULL;
 typedef int(*hashptr_t)(fncp key, char * name);
 int(*dllke_hash_add)(fncp key, char * name) = NULL;
 void dllke_plot_hash();
@@ -15,6 +24,90 @@ __declspec(dllexport) int __cdecl ke_dll_hash_add(hashptr_t hashfncPtr, ke1_t **
 	dllke_hash_add = hashfncPtr;
 	dllke_plot_hash();
 	return 0;
+}
+
+__declspec(dllexport) int __cdecl ke_plimload(ke1_t *stack, int top) {
+	ke1_t *filename, *x, *y, *n, *zero;
+	zero = &stack[--top];
+	n = &stack[--top];
+	y = &stack[--top];
+	x = &stack[--top];
+	filename = &stack[top-1];
+
+	int xx,yy,nn;
+
+	unsigned char *data = stbi_load(filename->obj.s,&xx,&yy,&nn,(int)zero->i);
+	//ke_inc_memory();
+	filename->vtype = KEV_IMAGE;
+	filename->obj.image = data;
+	dllg_gbl_fields[x->ifield]->i = xx;
+	dllg_gbl_fields[y->ifield]->i = yy;
+	dllg_gbl_fields[n->ifield]->i = nn;
+	dllg_gbl_fields[x->ifield]->r = xx;
+	dllg_gbl_fields[y->ifield]->r = yy;
+	dllg_gbl_fields[n->ifield]->r = nn;
+	dllg_gbl_fields[x->ifield]->vtype = KEV_INT;
+	dllg_gbl_fields[y->ifield]->vtype = KEV_INT;
+	dllg_gbl_fields[n->ifield]->vtype = KEV_INT;
+	return top;
+}
+
+__declspec(dllexport) int __cdecl ke_plimfree(ke1_t *stack, int top) {
+	ke1_t *p = &stack[--top];
+	stbi_image_free(p->obj.image);
+	//ke_dec_memory();
+	return top;
+}
+
+__declspec(dllexport) int __cdecl ke_plimwrite(ke1_t *stack, int top) {
+	ke1_t *filename, *w, *h, *comp, *data, *quality, *type;
+
+	type = &stack[--top];
+	quality = &stack[--top];
+	data = &stack[--top];
+	comp = &stack[--top];
+	h = &stack[--top];
+	w = &stack[--top];
+	filename = &stack[--top];
+	stbi_flip_vertically_on_write(1);
+	int st;
+	char * name = type->obj.s;
+	if (strcmp(name, "png") == 0) {
+		st = stbi_write_png(filename->obj.s, (int)w->i, (int)h->i, (int)comp->i, data->obj.image, (int)quality->i);
+	} else if (strcmp(name, "bmp") == 0) {
+		st = stbi_write_bmp(filename->obj.s, (int)w->i, (int)h->i, (int)comp->i, data->obj.image);
+	}
+	else if (strcmp(name, "tga") == 0) {
+		st = stbi_write_tga(filename->obj.s, (int)w->i, (int)h->i, (int)comp->i, data->obj.image);
+	} 
+	else if (strcmp(name, "jpg") == 0) {
+		st = stbi_write_jpg(filename->obj.s, (int)w->i, (int)h->i, (int)comp->i, data->obj.image, (int)quality->i);
+	}
+	else if (strcmp(name, "hdr") == 0) {
+		st = stbi_write_hdr(filename->obj.s, (int)w->i, (int)h->i, (int)comp->i, (float *)data->obj.image);
+	}
+	return top;
+}
+
+__declspec(dllexport) int __cdecl ke_plimresize(ke1_t *stack, int top) {
+	ke1_t *in, *in_w, *in_h, *in_stride, *out_w, *out_h, *out_stride, *nb_channel;
+
+	nb_channel = &stack[--top];
+	out_stride = &stack[--top];
+	out_h = &stack[--top];
+	out_w = &stack[--top];
+	in_stride = &stack[--top];
+	in_h = &stack[--top];
+	in_w = &stack[--top];
+	in = &stack[top-1];
+
+	char *tout = malloc(out_h->i * out_w->i * nb_channel->i);
+	stbir_resize_uint8(in->obj.image, (int)in_w->i, (int)in_h->i, (int)in_stride->i,
+		tout, (int)out_w->i, (int)out_h->i, (int)out_stride->i, (int)nb_channel->i);
+	in->vtype = KEV_IMAGE;
+	in->ttype = KET_VAL;
+	in->obj.image = tout;
+	return top;
 }
 
 __declspec(dllexport) int __cdecl ke_plsdev(ke1_t *stack, int top) {
@@ -2664,6 +2757,12 @@ __declspec(dllexport) int __cdecl ke_plabort(ke1_t *stack, int top) {
 }
 
 void dllke_plot_hash() {
+
+	dllke_hash_add((fncp)&ke_plimload, PLOT_IMLOAD);
+	dllke_hash_add((fncp)&ke_plimfree, PLOT_IMFREE);
+	dllke_hash_add((fncp)&ke_plimwrite, PLOT_IMWRITE);
+	dllke_hash_add((fncp)&ke_plimresize, PLOT_IMRESIZE);
+
 	dllke_hash_add((fncp)&ke_plgcompression, PLOT_PLGCOMPRESSION);
 	dllke_hash_add((fncp)&ke_plgdidev, PLOT_PLGDIDEV);
 	dllke_hash_add((fncp)&ke_plgdiori, PLOT_PLGDIORI);
