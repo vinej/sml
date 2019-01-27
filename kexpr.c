@@ -25,7 +25,9 @@
 #include <stdio.h>
 #include <Windows.h>
 
-HMODULE libHandle;
+HMODULE g_libhandle[40];
+int g_libhandle_qte = 0;      // number of global fields  
+
 
 // GLOBAL VARIABLE USED BY ALL FUNCTIONS
 ke1_t ** g_gbl_fields = NULL; // array of all global fields of the program to exectue
@@ -234,12 +236,12 @@ typedef int(*DLLPROC)();
 void import(char * s) {
 	// load the dll
 	// call method ke_dll_hash(voir * hash_method, global_field)
-	if ((libHandle = LoadLibrary(TEXT(s))) == NULL)
+	if ((g_libhandle[g_libhandle_qte] = LoadLibrary(TEXT(s))) == NULL)
 	{
 		printf("load failed\n");
 		return;
 	}
-	DLLPROC fp = (DLLPROC)GetProcAddress(libHandle, "ke_dll_hash_add");
+	DLLPROC fp = (DLLPROC)GetProcAddress(g_libhandle[g_libhandle_qte], "ke_dll_hash_add");
 	if (fp == NULL)
 	{
 		printf("GetProcAddress failed\n");
@@ -248,7 +250,7 @@ void import(char * s) {
 	}
 
 	fp(ke_hash_add, g_gbl_fields);
-
+	++g_libhandle_qte;
 	// FREE HANDLE
 }
 
@@ -1160,10 +1162,17 @@ void ke_push_stack(ke1_t * tokp, int *top) {
     (*top)++;
 }
 
+void ke_free_dll() {
+	for (int i = 0; i < g_libhandle_qte; ++i) {
+		FreeLibrary(g_libhandle[i]);
+	}
+}
+
 void ke_destroy(kexpr_t *kexpr)
 {
     ke_free(kexpr);
 	ke_free_hash();
+	ke_free_dll();
 }
 
 void ke_free_hash()
