@@ -23,7 +23,7 @@
     <ProjectGuid>{75871E0A-F05A-4DE9-9B51-42134148B2A6}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>gnucalc</RootNamespace>
-    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
     <ProjectName>sml</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -204,6 +204,7 @@
     <ClInclude Include="command.h" />
     <ClInclude Include="complex.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="file.h" />
     <ClInclude Include="function.h" />
     <ClInclude Include="kdq.h" />
     <ClInclude Include="kexpr.h" />
@@ -220,6 +221,7 @@
     <ClCompile Include="command.c" />
     <ClCompile Include="complex.c" />
     <ClCompile Include="constants.c" />
+    <ClCompile Include="file.c" />
     <ClCompile Include="function.c" />
     <ClCompile Include="kexpr.c" />
     <ClCompile Include="main.c" />

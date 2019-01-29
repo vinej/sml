@@ -57,6 +57,9 @@
     <ClInclude Include="property.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="file.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="command.c">
@@ -90,6 +93,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="property.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="file.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

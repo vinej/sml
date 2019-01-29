@@ -101,7 +101,7 @@ typedef struct ke1_s {
 		double (*real_func2)(double, double);
 		int (*defprop)(struct ke1_s* stack, struct ke1_s* prop, int top);
 		int (*deffunc)(struct ke1_s* stack, int top);
-		int (*defcmd)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
+		int (*deffile)(ke1_t *tokp, ke1_t *stack, int top);
 		int (*defvcmd)(kexpr_t *ke, struct ke1_s*, int i);
 		struct ke1_s * recp;
 	} f;

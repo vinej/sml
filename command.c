@@ -287,35 +287,40 @@ int ke_command_sprintf(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  
 	// list of parameter
 	ke1_t *p, *q;
 	p = &stack[top - tokp->n_args];   //fmt
-	va_list m = (char*)ke_calloc_memory(1000, 1); /* prepare enough memory*/
-	void* va = m; /* copies the pointer */
-	size_t narg = tokp->n_args;
-	size_t total_size = strlen(p->obj.s) + 1;
-	for (int i = top - tokp->n_args + 1; i < top; i++) {
-		q = &stack[i];
-		if (q->vtype == KEV_STR) {
-			(*(char**)m) = q->obj.s; /* puts the next value */
-			m += sizeof(char*); /* move forward again*/
-			total_size += strlen(q->obj.s) + 1;
+	if (tokp->n_args > 1) {
+		va_list m = (char*)ke_calloc_memory(1000, 1); /* prepare enough memory*/
+		void* va = m; /* copies the pointer */
+		size_t narg = tokp->n_args;
+		size_t total_size = strlen(p->obj.s) + 1;
+		for (int i = top - tokp->n_args + 1; i < top; i++) {
+			q = &stack[i];
+			if (q->vtype == KEV_STR) {
+				(*(char**)m) = q->obj.s; /* puts the next value */
+				m += sizeof(char*); /* move forward again*/
+				total_size += strlen(q->obj.s) + 1;
+			}
+			else if (q->vtype == KEV_INT) {
+				(*(int*)m) = (int)q->i; /* puts the third element */
+				m += sizeof(int); /* unneeded, but here for clarity. */
+				total_size += (size_t)20;
+			}
+			else if (q->vtype == KEV_REAL) {
+				(*(double*)m) = q->r; /* puts the third element */
+				m += sizeof(double); /* unneeded, but here for clarity. */
+				total_size += (size_t)20;
+			}
 		}
-		else if (q->vtype == KEV_INT) {
-			(*(int*)m) = (int)q->i; /* puts the third element */
-			m += sizeof(int); /* unneeded, but here for clarity. */
-			total_size += (size_t)20;
-		}
-		else if (q->vtype == KEV_REAL) {
-			(*(double*)m) = q->r; /* puts the third element */
-			m += sizeof(double); /* unneeded, but here for clarity. */
-			total_size += (size_t)20;
-		}
+		char * buf = (char*)ke_calloc_memory(total_size, 1);
+		int st = stbsp_vsprintf(buf, p->obj.s, va);
+		p->vtype = KEV_STR;
+		p->ttype = KET_VAL;
+		p->obj.s = buf;
+		ke_free_memory(va);
+		return top - tokp->n_args + 1;
 	}
-	char * buf = (char*)ke_calloc_memory(total_size, 1);
-	int st = stbsp_vsprintf(buf, p->obj.s, va);
-	p->vtype = KEV_STR;
-	p->ttype = KET_VAL;
-	p->obj.s = buf;
-	ke_free_memory(va);
-	return top - tokp->n_args + 1;
+	else {
+		return top;
+	}
 }
 
 void strrepl(char *str, const char *a, const char *b) {
