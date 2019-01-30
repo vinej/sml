@@ -1,4 +1,4 @@
-#include "./stb/stb_sprintf.h"
+//#include "./stb/stb_sprintf.h"
 
 #include "stdafx.h"
 #include "khash.h"
@@ -283,30 +283,31 @@ int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * it
     }
 }
 
+/*
 int ke_command_sprintf(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * itokp) {
 	// list of parameter
 	ke1_t *p, *q;
 	p = &stack[top - tokp->n_args];   //fmt
 	if (tokp->n_args > 1) {
-		va_list m = (char*)ke_calloc_memory(1000, 1); /* prepare enough memory*/
-		void* va = m; /* copies the pointer */
+		va_list va = (char*)ke_calloc_memory(1000, 1); 
+		va_list m = va;
 		size_t narg = tokp->n_args;
 		size_t total_size = strlen(p->obj.s) + 1;
 		for (int i = top - tokp->n_args + 1; i < top; i++) {
 			q = &stack[i];
 			if (q->vtype == KEV_STR) {
-				(*(char**)m) = q->obj.s; /* puts the next value */
-				m += sizeof(char*); /* move forward again*/
+				(*(char**)m) = q->obj.s; 
+				m += sizeof(char*); 
 				total_size += strlen(q->obj.s) + 1;
 			}
 			else if (q->vtype == KEV_INT) {
-				(*(int*)m) = (int)q->i; /* puts the third element */
-				m += sizeof(int); /* unneeded, but here for clarity. */
+				(*(int*)m) = (int)q->i; 
+				m += sizeof(int); 
 				total_size += (size_t)20;
 			}
 			else if (q->vtype == KEV_REAL) {
-				(*(double*)m) = q->r; /* puts the third element */
-				m += sizeof(double); /* unneeded, but here for clarity. */
+				(*(double*)m) = (double)q->r; 
+				m += sizeof(double); 
 				total_size += (size_t)20;
 			}
 		}
@@ -343,6 +344,7 @@ int ke_command_printf(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  *
 	}
 	return top;
 }
+*/
 
 int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
 	ke1_t *p, *q;
@@ -472,8 +474,8 @@ void ke_command_hash() {
 
     ke_command_hash_add((cmdp)&ke_command_if, CMD_IF);
     ke_command_hash_add((cmdp)&ke_command_print, CMD_PRINT);
-	ke_command_hash_add((cmdp)&ke_command_printf, CMD_PRINTF);
-	ke_command_hash_add((cmdp)&ke_command_sprintf, CMD_SPRINTF);
+	//ke_command_hash_add((cmdp)&ke_command_printf, CMD_PRINTF);
+	//ke_command_hash_add((cmdp)&ke_command_sprintf, CMD_SPRINTF);
 	ke_command_hash_add((cmdp)&ke_command_import, CMD_IMPORT);
 	ke_command_hash_add((cmdp)&ke_command_print_nonl, CMD_PRINTNOLN);
     ke_command_hash_add((cmdp)&ke_command_def, CMD_DEF);
