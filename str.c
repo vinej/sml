@@ -34,6 +34,7 @@ int ke_str_prop_get_1par(ke1_t *stack, ke1_t *tokp, int top) {
 		indice->obj.s = sub;
 		indice->ttype = KET_VAL;
 		indice->vtype = KEV_STR;
+		indice->tofree = 1;
 	}
 	return top;
 }
@@ -66,6 +67,7 @@ int ke_str_prop_get_2par(ke1_t *stack, ke1_t *tokp, int top) {
 	char * sub = ke_calloc_memory((size_t)(to->i - from->i) + 2, 1);
 	memcpy(sub, &(prop->obj.s[from->i]), (size_t)(to->i - from->i + 1));
 	from->obj.s = sub;
+	from->tofree = 1;
 	from->ttype = KET_VAL;
 	from->vtype = KEV_STR;
 	return top;

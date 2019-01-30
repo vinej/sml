@@ -1,5 +1,7 @@
+import('plplotdll.dll')
+
 v1 = vector(2)
-vector_put(v1,4,7)
+vput(v1,4,7)
 
 plinit("wingcc")
 plenv(1,10,1,10,1,0)

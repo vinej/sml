@@ -305,7 +305,7 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 		}
 
 		// do not accept control caracter and space
-		if (*p < 32) {
+		if (*p <= 32) {
 			++p;
 			continue;
 		}
@@ -980,11 +980,15 @@ void ke_print_one(ke1_t * tokp)
 		#endif // DEBUG
         if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
         else if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
-        else if (tokp->obj.s != NULL) {
+        else if (tokp->vtype == KEV_STR && tokp->obj.s != NULL) {
             printf("%s", tokp->obj.s);
         }
     }
-
+	if (tokp->tofree == 1) {
+		if (tokp->vtype == KEV_STR) {
+			ke_free_memory(tokp->obj.s);
+		}
+	}
     #ifdef DEBUG
         if (tokp->ttype == KET_OP) {
             printf("%s ", ke_opstr[tokp->op]);
@@ -1088,6 +1092,12 @@ void inline ke_set_val(ke1_t* e, ke1_t *q) {
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
+	 if (q->tofree == 1) {
+		 if (q->vtype == KEV_STR) {
+			 ke_free_memory(q->obj.s);
+			 q->tofree = 0;
+		 }
+	 }
 }
 
 int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)

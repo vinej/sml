@@ -1,3 +1,5 @@
+import('plplotdll.dll')
+
 v1 = vector(2)
 vput(v1,4,7)
 

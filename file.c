@@ -293,6 +293,17 @@ va_list gen_valist(size_t n_args, int top) {
 	return va;
 }
 
+void gen_freelist(size_t n_args, int top) {
+	ke1_t *q;
+	for (int i = top - (int)n_args + 1; i < top; i++) {
+		q = &g_stack[i];
+		if (q->vtype == KEV_STR && q->tofree == 1) {
+			ke_free_memory(q->obj.s);
+			q->tofree == 0;
+		}
+	}
+}
+
 void strrepl(char *str, const char *a, const char *b) {
 	for (char *cursor = str; (cursor = strstr(cursor, a)) != NULL;) {
 		memmove(cursor + strlen(b), cursor + strlen(a), strlen(cursor) - strlen(a) + 1);
@@ -322,6 +333,7 @@ static int ke_file_vfprintf(ke1_t *stack, ke1_t *tokp, int top) {
 		strrepl(format->obj.s, "\\n", "\n");
 		fputs(format->obj.s, stream->obj.file);
 	}
+	gen_freelist((size_t)tokp->n_args - 1, top);
 	return top - tokp->n_args;
 }
 
@@ -339,34 +351,37 @@ static int ke_file_vprintf(ke1_t *stack, ke1_t *tokp, int top) {
 		fputs(buf, stdout);
 		ke_free_memory(buf);
 		ke_free_memory(va);
+		gen_freelist((size_t)tokp->n_args - 1, top);
 	}
 	else {
 		strrepl(format->obj.s, "\\n", "\n");
 		fputs(format->obj.s, stdout);
 	}
+	gen_freelist((size_t)tokp->n_args, top);
 	return top - tokp->n_args;
 }
 
 // Sends formatted output to a string using an argument list.
 // int vsprintf(char *str, const char *format, va_list arg)
 static int ke_file_vsprintf(ke1_t *stack, ke1_t *tokp, int top) {
-	ke1_t  *format;
-	format = &stack[top - tokp->n_args];
+	ke1_t  *format, *str;
+	format = &stack[top - tokp->n_args + 1];
+	str = &stack[top - tokp->n_args];
 	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
-	if (tokp->n_args > 1) {
-		int total_size = 0;
-		va_list va = gen_valist((size_t)tokp->n_args, top);
+	if (tokp->n_args > 2) {
+		va_list va = gen_valist((size_t)tokp->n_args - 1, top);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		ke_free_memory(va);
 	}
 	else {
-		vsprintf(buf, format->obj.s, NULL);
+		memcpy(buf, format->obj.s, strlen(format->obj.s) + 1);
 	}
 	size_t len = strlen(buf);
-	char * str = ke_malloc_memory(len + 1);
-	memcpy(str, buf, len + 1);
+	char * str2 = ke_malloc_memory(len + 1);
+	memcpy(str2, buf, len + 1);
 	ke_free_memory(buf);
-	format->obj.s = str;
+	format->obj.s = str2;
+	gen_freelist((size_t)tokp->n_args, top);
 	return top - tokp->n_args;
 }
 

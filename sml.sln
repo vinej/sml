@@ -32,6 +32,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{100DBD8D-D
 		test\test29.sml = test\test29.sml
 		test\test3.sml = test\test3.sml
 		test\test30.sml = test\test30.sml
+		test\test31.sml = test\test31.sml
 		test\test32.sml = test\test32.sml
 		test\test33.sml = test\test33.sml
 		test\test34.sml = test\test34.sml

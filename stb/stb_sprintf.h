@@ -23,11 +23,6 @@
 #ifndef STB_SPRINTF_H_INCLUDE
 #define STB_SPRINTF_H_INCLUDE
 
-#define myva_arg(ap, t)                                               \
-        ((sizeof(t) > sizeof(__int64) || (sizeof(t) & (sizeof(t) - 1)) != 0) \
-            ? **(t**)((ap += sizeof(t)) - sizeof(t))             \
-            :  *(t* )((ap += sizeof(t)) - sizeof(t)))
-
 /*
 Single file sprintf replacement.
 
@@ -164,6 +159,15 @@ PERFORMANCE vs MSVC 2008 32-/64-bit (GCC is even slower than MSVC):
 #endif
 
 #include <stdarg.h> // for va_list()
+
+#ifdef _WIN32 
+#define myva_arg va_arg
+#else
+#define myva_arg(ap, t)                                               \
+        ((sizeof(t) > sizeof(__int64) || (sizeof(t) & (sizeof(t) - 1)) != 0) \
+            ? **(t**)((ap += sizeof(t)) - sizeof(t))             \
+            :  *(t* )((ap += sizeof(t)) - sizeof(t)))
+#endif
 
 #ifndef STB_SPRINTF_MIN
 #define STB_SPRINTF_MIN 512 // how many characters per callback
