@@ -125,7 +125,9 @@ static int ke_strcat(ke1_t *stack, ke1_t *tokp, int top) {
 static int ke_strbuf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
-	p->obj.s = ke_calloc_memory((size_t)p->i, 1);
+	p->obj.s = ke_malloc_memory((size_t)p->i);
+	memset(p->obj.s, 65, p->i - 2);
+	p->obj.s[p->i - 1] = 0;
 	p->ttype = KET_VAL;
 	p->vtype = KEV_STR;
 	return top;

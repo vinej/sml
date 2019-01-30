@@ -1157,7 +1157,7 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 	}
 
 	#ifdef DEBUG
-        ke_print_stack(g_stack, top);
+        ke_print_stack(g_stack, tokp, top);
     #endif // DEBUG
 
 	*ret_type = g_stack->vtype;

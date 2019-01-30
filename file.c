@@ -49,11 +49,10 @@ static int ke_file_clearerr(ke1_t *stack, ke1_t *tokp, int top) {
 static int ke_file_feof(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
-	int st = feof(p->obj.file);
 	p->vtype = KEV_INT;
 	p->ttype = KET_VAL;
-	p->i = st;
-	p->r = st;
+	p->i = feof(p->obj.file);
+	p->r = (double)p->i;
 	return top;
 }
 
@@ -96,12 +95,12 @@ static int ke_file_fgetpos(ke1_t *stack, ke1_t *tokp, int top) {
 // Opens the filename pointed to by filename using the given mode.
 // FILE *fopen(const char *filename, const char *mode)
 static int ke_file_fopen(ke1_t *stack, ke1_t *tokp, int top) {
-	ke1_t *filename, *mode;
+	ke1_t *p, *mode;
 	mode = &stack[--top];
-	filename = &stack[top - 1];
-	filename->obj.file = fopen(filename->obj.s, mode->obj.s);
-	filename->vtype = KEV_FILE;
-	filename->ttype = KET_VAL;
+	p = &stack[top - 1];
+	p->obj.file = fopen(p->obj.s, mode->obj.s);
+	p->vtype = KEV_FILE;
+	p->ttype = KET_VAL;
 	return top;
 }
 
@@ -364,7 +363,7 @@ static int ke_file_fgets(ke1_t *stack, ke1_t *tokp, int top) {
 	stream = &stack[--top];
 	n = &stack[--top];
 	str = &stack[--top];
-	//memset(g_gbl_fields[str->ifield]->obj.s, 0, n->i);
+	memset(g_gbl_fields[str->ifield]->obj.s, 0, n->i);
 	fgets(g_gbl_fields[str->ifield]->obj.s, (int)n->i, stream->obj.file);
 	return top;
 }

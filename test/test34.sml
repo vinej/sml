@@ -7,11 +7,11 @@ for
     break
   end
   fgets(buf, 999, file)
-  printf(buf)
+  print(buf)
 next
 fclose(file)
 
-print("end")
+print("end\n")
 
 
 

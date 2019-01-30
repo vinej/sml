@@ -319,7 +319,7 @@ int ke_command_sprintf(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  
 		return top - tokp->n_args + 1;
 	}
 	else {
-		return top;
+		return top - 1;
 	}
 }
 
@@ -333,12 +333,14 @@ void strrepl(char *str, const char *a, const char *b) {
 }
 
 int ke_command_printf(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * itokp) {
+	ke1_t *p = &stack[top - tokp->n_args];   //fmt
 	top = ke_command_sprintf(kexpr, tokp, stack, top, itokp);
-	ke1_t *p = &stack[--top];
 	strrepl(p->obj.s, "\\n", "\n");
 	printf("%s",p->obj.s);
-	//ke_free_memory(p->obj.s);
-	//p->obj.s = NULL;
+	if (tokp->n_args > 1) {
+		ke_free_memory(p->obj.s);
+		p->obj.s = NULL;
+	}
 	return top;
 }
 
