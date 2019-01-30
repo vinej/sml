@@ -16,6 +16,7 @@
 #include "function.h"
 #include "property.h"
 #include "str.h"
+#include "file.h"
 #include "command.h"
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
@@ -895,6 +896,12 @@ void ke_set_image(ke1_t *source, ke1_t *dest) {
 	dest->obj.image = source->obj.image;
 }
 
+void ke_set_file(ke1_t *source, ke1_t *dest) {
+	dest->ttype = source->ttype;
+	dest->vtype = source->vtype;
+	dest->obj.file = source->obj.file;
+}
+
 kexpr_t *ke_parse(char *_s, int *err)
 {
 	int n;
@@ -987,7 +994,7 @@ void ke_print_one(ke1_t * tokp)
     #endif // DEBUG
 }
 
-void ke_print_stack(ke1_t *stack, int top) {
+void ke_print_stack(ke1_t *stack, ke1_t *tokp, int top) {
     if (top > 3) {
         printf("\n%s", "*****************************");
         printf("\n%s\n", "Stack has more than one value");
@@ -1050,7 +1057,7 @@ void ke_fill_hash() {
 	hname = kh_init(KH_FIELD); ke_inc_memory();
 	ke_command_hash();
     ke_vector_hash();
-	//ke_plot_hash();
+	ke_file_hash();
 	ke_complex_hash();
     ke_matrix_hash();
     ke_function_hash();
@@ -1077,6 +1084,7 @@ void inline ke_set_val(ke1_t* e, ke1_t *q) {
 	 else if (q->vtype == KEV_COMPLEX) ke_set_complex(e, q->obj.complex);
 	 else if (q->vtype == KEV_REC) ke_set_record(q, e);
 	 else if (q->vtype == KEV_IMAGE) ke_set_image(q, e);
+	 else if (q->vtype == KEV_FILE) ke_set_file(q, e);
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
@@ -1131,7 +1139,7 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 			}
 			break;
 		case KET_FUNC:
-			top = (tokp->f.deffunc)(g_stack, top);
+			top = (tokp->f.deffunc)(g_stack, tokp, top);
 			break;
 		case KET_PROP:
 			if (tokp->propget) {

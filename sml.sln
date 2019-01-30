@@ -34,6 +34,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{100DBD8D-D
 		test\test30.sml = test\test30.sml
 		test\test32.sml = test\test32.sml
 		test\test33.sml = test\test33.sml
+		test\test34.sml = test\test34.sml
 		test\test4.sml = test\test4.sml
 		test\test5.sml = test\test5.sml
 		test\test6.sml = test\test6.sml
@@ -45,9 +46,6 @@ EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plplotdll", "plplotdll\plplotdll.vcxproj", "{3B58EB87-6B7F-49F8-BAD5-300EC58D2F43}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{AD18A675-1F1D-42F6-989F-758000F946D1}"
-	ProjectSection(SolutionItems) = preProject
-		test\test34.sml = test\test34.sml
-	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -5,7 +5,7 @@
 #include "khash.h"
 #include <gsl/gsl_matrix.h>
 
-static int ke_matrix_alloc(ke1_t *stack, int top) {
+static int ke_matrix_alloc(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -15,7 +15,7 @@ static int ke_matrix_alloc(ke1_t *stack, int top) {
     return top;
 }
 
-int ke_matrix_prop_get(ke1_t *stack, int top) {
+int ke_matrix_prop_get(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q, *v;
 	p = &stack[--top];
 	v = &stack[--top];
@@ -27,7 +27,7 @@ int ke_matrix_prop_get(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_matrix_get(ke1_t *stack, int top) {
+int ke_matrix_get(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q, *v;
     v = &stack[--top],
     q = &stack[--top],
@@ -39,7 +39,7 @@ int ke_matrix_get(ke1_t *stack, int top) {
     return top;
 }
 
-int ke_matrix_prop_set(ke1_t *stack, int top) {
+int ke_matrix_prop_set(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q, *v, *x;
 	x = &stack[--top];
 	p = &stack[--top];
@@ -49,7 +49,7 @@ int ke_matrix_prop_set(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_matrix_set(ke1_t *stack, int top) {
+int ke_matrix_set(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q, *v, *x;
     x = &stack[--top],
     v = &stack[--top],
@@ -59,7 +59,7 @@ int ke_matrix_set(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_put_row(ke1_t *stack, int top) {
+static int ke_matrix_put_row(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	ke1_t *e = ke_get_tok();
 	int n = e->n_args;
@@ -74,7 +74,7 @@ static int ke_matrix_put_row(ke1_t *stack, int top) {
 	return top - e->n_args;
 }
 
-static int ke_matrix_put_col(ke1_t *stack, int top) {
+static int ke_matrix_put_col(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	ke1_t *e = ke_get_tok();
 	int n = e->n_args;
@@ -89,7 +89,7 @@ static int ke_matrix_put_col(ke1_t *stack, int top) {
 	return top - e->n_args;
 }
 
-static int ke_matrix_free(ke1_t *stack, int top) {
+static int ke_matrix_free(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.matrix = NULL;
@@ -98,7 +98,7 @@ static int ke_matrix_free(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_set_all(ke1_t *stack, int top) {
+static int ke_matrix_set_all(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -107,7 +107,7 @@ static int ke_matrix_set_all(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_set_zero(ke1_t *stack, int top) {
+static int ke_matrix_set_zero(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     gsl_matrix_set_zero(p->obj.matrix);
@@ -115,7 +115,7 @@ static int ke_matrix_set_zero(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_set_identity(ke1_t *stack, int top) {
+static int ke_matrix_set_identity(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     gsl_matrix_set_identity(p->obj.matrix);
@@ -123,7 +123,7 @@ static int ke_matrix_set_identity(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_swap_rows(ke1_t *stack, int top) {
+static int ke_matrix_swap_rows(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q, *v;
     v = &stack[--top],
     q = &stack[--top],
@@ -133,7 +133,7 @@ static int ke_matrix_swap_rows(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_swap_columns(ke1_t *stack, int top) {
+static int ke_matrix_swap_columns(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q, *v;
     v = &stack[--top],
     q = &stack[--top],
@@ -143,7 +143,7 @@ static int ke_matrix_swap_columns(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_rowcol(ke1_t *stack, int top) {
+static int ke_matrix_rowcol(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q, *v;
     v = &stack[--top],
     q = &stack[--top],
@@ -153,7 +153,7 @@ static int ke_matrix_rowcol(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_transpose_memcpy(ke1_t *stack, int top) {
+static int ke_matrix_transpose_memcpy(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -162,7 +162,7 @@ static int ke_matrix_transpose_memcpy(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_transpose(ke1_t *stack, int top) {
+static int ke_matrix_transpose(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     gsl_matrix_transpose(p->obj.matrix);
@@ -170,7 +170,7 @@ static int ke_matrix_transpose(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_add(ke1_t *stack, int top) {
+static int ke_matrix_add(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -179,7 +179,7 @@ static int ke_matrix_add(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_sub(ke1_t *stack, int top) {
+static int ke_matrix_sub(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -188,7 +188,7 @@ static int ke_matrix_sub(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_mul_elements(ke1_t *stack, int top) {
+static int ke_matrix_mul_elements(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -197,7 +197,7 @@ static int ke_matrix_mul_elements(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_div_elements(ke1_t *stack, int top) {
+static int ke_matrix_div_elements(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -206,7 +206,7 @@ static int ke_matrix_div_elements(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_scale(ke1_t *stack, int top) {
+static int ke_matrix_scale(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],  p = &stack[top-1];
     gsl_matrix_scale(p->obj.matrix, q->r);
@@ -214,7 +214,7 @@ static int ke_matrix_scale(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_add_constant(ke1_t *stack, int top) {
+static int ke_matrix_add_constant(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -223,7 +223,7 @@ static int ke_matrix_add_constant(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_memcpy(ke1_t *stack, int top) {
+static int ke_matrix_memcpy(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -232,7 +232,7 @@ static int ke_matrix_memcpy(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_swap(ke1_t *stack, int top) {
+static int ke_matrix_swap(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -241,7 +241,7 @@ static int ke_matrix_swap(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_min(ke1_t *stack, int top) {
+static int ke_matrix_min(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->r = gsl_matrix_min(p->obj.matrix);
@@ -251,7 +251,7 @@ static int ke_matrix_min(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_max(ke1_t *stack, int top) {
+static int ke_matrix_max(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->r = gsl_matrix_max(p->obj.matrix);
@@ -261,7 +261,7 @@ static int ke_matrix_max(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_isnull(ke1_t *stack, int top) {
+static int ke_matrix_isnull(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = gsl_matrix_isnull(p->obj.matrix);
@@ -271,7 +271,7 @@ static int ke_matrix_isnull(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_ispos(ke1_t *stack, int top) {
+static int ke_matrix_ispos(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = gsl_matrix_ispos(p->obj.matrix);
@@ -281,7 +281,7 @@ static int ke_matrix_ispos(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_isneg(ke1_t *stack, int top) {
+static int ke_matrix_isneg(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = gsl_matrix_isneg(p->obj.matrix);
@@ -291,7 +291,7 @@ static int ke_matrix_isneg(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_isnonneg(ke1_t *stack, int top) {
+static int ke_matrix_isnonneg(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = gsl_matrix_isnonneg(p->obj.matrix);
@@ -301,7 +301,7 @@ static int ke_matrix_isnonneg(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_equal(ke1_t *stack, int top) {
+static int ke_matrix_equal(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -312,7 +312,7 @@ static int ke_matrix_equal(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_fscanf(ke1_t *stack, int top) {
+static int ke_matrix_fscanf(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
@@ -323,7 +323,7 @@ static int ke_matrix_fscanf(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_fprintf(ke1_t *stack, int top) {
+static int ke_matrix_fprintf(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
@@ -334,7 +334,7 @@ static int ke_matrix_fprintf(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_fread(ke1_t *stack, int top) {
+static int ke_matrix_fread(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
@@ -345,7 +345,7 @@ static int ke_matrix_fread(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_matrix_fwrite(ke1_t *stack, int top) {
+static int ke_matrix_fwrite(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];

@@ -6,7 +6,7 @@
 #include "complex.h"
 #include "khash.h"
 
-static int ke_complex_alloc(ke1_t *stack, int top) {
+static int ke_complex_alloc(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -16,7 +16,7 @@ static int ke_complex_alloc(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_set_real(ke1_t *stack, int top) {
+static int ke_complex_set_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -24,7 +24,7 @@ static int ke_complex_set_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_set_imag(ke1_t *stack, int top) {
+static int ke_complex_set_imag(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -32,7 +32,7 @@ static int ke_complex_set_imag(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_arg(ke1_t *stack, int top) {
+static int ke_complex_arg(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->r = gsl_complex_arg(p->obj.complex);
@@ -41,7 +41,7 @@ static int ke_complex_arg(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_abs(ke1_t *stack, int top) {
+static int ke_complex_abs(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->r = gsl_complex_abs(p->obj.complex);
@@ -50,7 +50,7 @@ static int ke_complex_abs(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_abs2(ke1_t *stack, int top) {
+static int ke_complex_abs2(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->r = gsl_complex_abs2(p->obj.complex);
@@ -59,7 +59,7 @@ static int ke_complex_abs2(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_logabs(ke1_t *stack, int top) {
+static int ke_complex_logabs(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->r = gsl_complex_logabs(p->obj.complex);
@@ -68,7 +68,7 @@ static int ke_complex_logabs(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_add(ke1_t *stack, int top) {
+static int ke_complex_add(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -76,7 +76,7 @@ static int ke_complex_add(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_sub(ke1_t *stack, int top) {
+static int ke_complex_sub(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -84,7 +84,7 @@ static int ke_complex_sub(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_mul(ke1_t *stack, int top) {
+static int ke_complex_mul(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -92,7 +92,7 @@ static int ke_complex_mul(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_div(ke1_t *stack, int top) {
+static int ke_complex_div(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -100,7 +100,7 @@ static int ke_complex_div(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_add_real(ke1_t *stack, int top) {
+static int ke_complex_add_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -108,7 +108,7 @@ static int ke_complex_add_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_sub_real(ke1_t *stack, int top) {
+static int ke_complex_sub_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -116,7 +116,7 @@ static int ke_complex_sub_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_mul_real(ke1_t *stack, int top) {
+static int ke_complex_mul_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -124,7 +124,7 @@ static int ke_complex_mul_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_div_real(ke1_t *stack, int top) {
+static int ke_complex_div_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -132,7 +132,7 @@ static int ke_complex_div_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_add_imag(ke1_t *stack, int top) {
+static int ke_complex_add_imag(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -140,7 +140,7 @@ static int ke_complex_add_imag(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_sub_imag(ke1_t *stack, int top) {
+static int ke_complex_sub_imag(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -148,7 +148,7 @@ static int ke_complex_sub_imag(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_mul_imag(ke1_t *stack, int top) {
+static int ke_complex_mul_imag(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -156,7 +156,7 @@ static int ke_complex_mul_imag(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_div_imag(ke1_t *stack, int top) {
+static int ke_complex_div_imag(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -164,35 +164,35 @@ static int ke_complex_div_imag(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_conjugate(ke1_t *stack, int top) {
+static int ke_complex_conjugate(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_conjugate(p->obj.complex);
     return top;
 }
 
-static int ke_complex_inverse(ke1_t *stack, int top) {
+static int ke_complex_inverse(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_inverse(p->obj.complex);
     return top;
 }
 
-static int ke_complex_negative(ke1_t *stack, int top) {
+static int ke_complex_negative(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_negative(p->obj.complex);
     return top;
 }
 
-static int ke_complex_sqrt(ke1_t *stack, int top) {
+static int ke_complex_sqrt(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_sqrt(p->obj.complex);
     return top;
 }
 
-static int ke_complex_sqrt_real(ke1_t *stack, int top) {
+static int ke_complex_sqrt_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_sqrt_real(p->r);
@@ -201,7 +201,7 @@ static int ke_complex_sqrt_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_pow(ke1_t *stack, int top) {
+static int ke_complex_pow(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -209,7 +209,7 @@ static int ke_complex_pow(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_pow_real(ke1_t *stack, int top) {
+static int ke_complex_pow_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -219,28 +219,28 @@ static int ke_complex_pow_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_exp(ke1_t *stack, int top) {
+static int ke_complex_exp(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_exp(p->obj.complex);
     return top;
 }
 
-static int ke_complex_log(ke1_t *stack, int top) {
+static int ke_complex_log(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_log(p->obj.complex);
     return top;
 }
 
-static int ke_complex_log10(ke1_t *stack, int top) {
+static int ke_complex_log10(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_log10(p->obj.complex);
     return top;
 }
 
-static int ke_complex_log_b(ke1_t *stack, int top) {
+static int ke_complex_log_b(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -248,56 +248,56 @@ static int ke_complex_log_b(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_sin(ke1_t *stack, int top) {
+static int ke_complex_sin(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_sin(p->obj.complex);
     return top;
 }
 
-static int ke_complex_cos(ke1_t *stack, int top) {
+static int ke_complex_cos(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_cos(p->obj.complex);
     return top;
 }
 
-static int ke_complex_tan(ke1_t *stack, int top) {
+static int ke_complex_tan(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_tan(p->obj.complex);
     return top;
 }
 
-static int ke_complex_sec(ke1_t *stack, int top) {
+static int ke_complex_sec(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_sec(p->obj.complex);
     return top;
 }
 
-static int ke_complex_csc(ke1_t *stack, int top) {
+static int ke_complex_csc(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_csc(p->obj.complex);
     return top;
 }
 
-static int ke_complex_cot(ke1_t *stack, int top) {
+static int ke_complex_cot(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_cot(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arcsin(ke1_t *stack, int top) {
+static int ke_complex_arcsin(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arcsin(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arcsin_real(ke1_t *stack, int top) {
+static int ke_complex_arcsin_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arcsin_real(p->r);
@@ -306,14 +306,14 @@ static int ke_complex_arcsin_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_arccos(ke1_t *stack, int top) {
+static int ke_complex_arccos(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arccos(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arccos_real(ke1_t *stack, int top) {
+static int ke_complex_arccos_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arccos_real(p->r);
@@ -322,21 +322,21 @@ static int ke_complex_arccos_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_arctan(ke1_t *stack, int top) {
+static int ke_complex_arctan(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arctan(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arcsec(ke1_t *stack, int top) {
+static int ke_complex_arcsec(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arcsec(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arcsec_real(ke1_t *stack, int top) {
+static int ke_complex_arcsec_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arcsec_real(p->r);
@@ -345,14 +345,14 @@ static int ke_complex_arcsec_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_arccsc(ke1_t *stack, int top) {
+static int ke_complex_arccsc(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arccsc(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arccsc_real(ke1_t *stack, int top) {
+static int ke_complex_arccsc_real(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arccsc_real(p->r);
@@ -361,91 +361,91 @@ static int ke_complex_arccsc_real(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_complex_arccot(ke1_t *stack, int top) {
+static int ke_complex_arccot(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arccot(p->obj.complex);
     return top;
 }
 
-static int ke_complex_sinh(ke1_t *stack, int top) {
+static int ke_complex_sinh(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_sinh(p->obj.complex);
     return top;
 }
 
-static int ke_complex_cosh(ke1_t *stack, int top) {
+static int ke_complex_cosh(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_cosh(p->obj.complex);
     return top;
 }
 
-static int ke_complex_tanh(ke1_t *stack, int top) {
+static int ke_complex_tanh(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_tanh(p->obj.complex);
     return top;
 }
 
-static int ke_complex_sech(ke1_t *stack, int top) {
+static int ke_complex_sech(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_sech(p->obj.complex);
     return top;
 }
 
-static int ke_complex_csch(ke1_t *stack, int top) {
+static int ke_complex_csch(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_csch(p->obj.complex);
     return top;
 }
 
-static int ke_complex_coth(ke1_t *stack, int top) {
+static int ke_complex_coth(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_coth(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arcsinh(ke1_t *stack, int top) {
+static int ke_complex_arcsinh(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arcsinh(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arccosh(ke1_t *stack, int top) {
+static int ke_complex_arccosh(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arccosh(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arctanh(ke1_t *stack, int top) {
+static int ke_complex_arctanh(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arctanh(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arcsech(ke1_t *stack, int top) {
+static int ke_complex_arcsech(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arcsech(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arccsch(ke1_t *stack, int top) {
+static int ke_complex_arccsch(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arccsch(p->obj.complex);
     return top;
 }
 
-static int ke_complex_arccoth(ke1_t *stack, int top) {
+static int ke_complex_arccoth(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.complex = gsl_complex_arccoth(p->obj.complex);

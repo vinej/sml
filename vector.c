@@ -6,7 +6,7 @@
 #include "khash.h"
 #include <gsl/gsl_vector.h>
 
-static int ke_vector_alloc(ke1_t *stack, int top) {
+static int ke_vector_alloc(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->obj.vector = gsl_vector_alloc((size_t)p->i); ke_inc_memory();
@@ -15,7 +15,7 @@ static int ke_vector_alloc(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_alloc(ke1_t *stack, int top) {
+static int ke_vector_int_alloc(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	p->obj.vector_int = gsl_vector_int_alloc((size_t)p->i); ke_inc_memory();
@@ -24,7 +24,7 @@ static int ke_vector_int_alloc(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_free(ke1_t *stack, int top) {
+static int ke_vector_free(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	ke_set_null_vector(p->ifield);
@@ -32,7 +32,7 @@ static int ke_vector_free(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_int_free(ke1_t *stack, int top) {
+static int ke_vector_int_free(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	ke_set_null_vector_int(p->ifield);
@@ -40,7 +40,7 @@ static int ke_vector_int_free(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_vector_get(ke1_t *stack, int top) {
+int ke_vector_get(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
 	p = &stack[--top];
 	q = &stack[top - 1];
@@ -51,7 +51,7 @@ int ke_vector_get(ke1_t *stack, int top) {
     return top;
 }
 
-int ke_vector_int_get(ke1_t *stack, int top) {
+int ke_vector_int_get(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -62,7 +62,7 @@ int ke_vector_int_get(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_vector_prop_set(ke1_t *stack, int top) {
+int ke_vector_prop_set(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q, *v;
 	v = &stack[--top],
 	p = &stack[--top];
@@ -71,7 +71,7 @@ int ke_vector_prop_set(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_vector_int_set(ke1_t *stack, int top) {
+int ke_vector_int_set(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q, *v;
 	v = &stack[--top],
 		q = &stack[--top],
@@ -80,7 +80,7 @@ int ke_vector_int_set(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_vector_prop_int_set(ke1_t *stack, int top) {
+int ke_vector_prop_int_set(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q, *v;
 	v = &stack[--top],
 	p = &stack[--top];
@@ -89,7 +89,7 @@ int ke_vector_prop_int_set(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_vector_set(ke1_t *stack, int top) {
+int ke_vector_set(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q, *v;
     v = &stack[--top],
     q = &stack[--top],
@@ -98,7 +98,7 @@ int ke_vector_set(ke1_t *stack, int top) {
     return top;
 }
 
-int ke_vector_put(ke1_t *stack, int top) {
+int ke_vector_put(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	ke1_t *e = ke_get_tok();
 	int n = e->n_args;
@@ -112,7 +112,7 @@ int ke_vector_put(ke1_t *stack, int top) {
 	return top - e->n_args;
 }
 
-int ke_vector_int_put(ke1_t *stack, int top) {
+int ke_vector_int_put(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	ke1_t *e = ke_get_tok();
 	int n = e->n_args;
@@ -126,7 +126,7 @@ int ke_vector_int_put(ke1_t *stack, int top) {
 	return top - e->n_args;
 }
 
-static int ke_vector_set_all(ke1_t *stack, int top) {
+static int ke_vector_set_all(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -135,7 +135,7 @@ static int ke_vector_set_all(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_set_all(ke1_t *stack, int top) {
+static int ke_vector_int_set_all(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -144,7 +144,7 @@ static int ke_vector_int_set_all(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_set_zero(ke1_t *stack, int top) {
+static int ke_vector_set_zero(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     gsl_vector_set_zero(p->obj.vector);
@@ -152,7 +152,7 @@ static int ke_vector_set_zero(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_set_zero(ke1_t *stack, int top) {
+static int ke_vector_int_set_zero(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	gsl_vector_int_set_zero(p->obj.vector_int);
@@ -160,7 +160,7 @@ static int ke_vector_int_set_zero(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_set_basis(ke1_t *stack, int top) {
+static int ke_vector_set_basis(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -169,7 +169,7 @@ static int ke_vector_set_basis(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_set_basis(ke1_t *stack, int top) {
+static int ke_vector_int_set_basis(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -178,7 +178,7 @@ static int ke_vector_int_set_basis(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_add(ke1_t *stack, int top) {
+static int ke_vector_add(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -187,7 +187,7 @@ static int ke_vector_add(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_add(ke1_t *stack, int top) {
+static int ke_vector_int_add(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -196,7 +196,7 @@ static int ke_vector_int_add(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_sub(ke1_t *stack, int top) {
+static int ke_vector_sub(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -205,7 +205,7 @@ static int ke_vector_sub(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_sub(ke1_t *stack, int top) {
+static int ke_vector_int_sub(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -214,7 +214,7 @@ static int ke_vector_int_sub(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_mul(ke1_t *stack, int top) {
+static int ke_vector_mul(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -223,7 +223,7 @@ static int ke_vector_mul(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_mul(ke1_t *stack, int top) {
+static int ke_vector_int_mul(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -232,7 +232,7 @@ static int ke_vector_int_mul(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_div(ke1_t *stack, int top) {
+static int ke_vector_div(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -241,7 +241,7 @@ static int ke_vector_div(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_div(ke1_t *stack, int top) {
+static int ke_vector_int_div(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -250,7 +250,7 @@ static int ke_vector_int_div(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_scale(ke1_t *stack, int top) {
+static int ke_vector_scale(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -259,7 +259,7 @@ static int ke_vector_scale(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_scale(ke1_t *stack, int top) {
+static int ke_vector_int_scale(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -268,7 +268,7 @@ static int ke_vector_int_scale(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_add_constant(ke1_t *stack, int top) {
+static int ke_vector_add_constant(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -277,7 +277,7 @@ static int ke_vector_add_constant(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_add_constant(ke1_t *stack, int top) {
+static int ke_vector_int_add_constant(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -286,7 +286,7 @@ static int ke_vector_int_add_constant(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_reverse(ke1_t *stack, int top) {
+static int ke_vector_reverse(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     gsl_vector_reverse(p->obj.vector);
@@ -294,7 +294,7 @@ static int ke_vector_reverse(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_reverse(ke1_t *stack, int top) {
+static int ke_vector_int_reverse(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	gsl_vector_int_reverse(p->obj.vector_int);
@@ -302,7 +302,7 @@ static int ke_vector_int_reverse(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_swap_elements(ke1_t *stack, int top) {
+static int ke_vector_swap_elements(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q, *v;
     v = &stack[--top],
     q = &stack[--top],
@@ -312,7 +312,7 @@ static int ke_vector_swap_elements(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_swap_elements(ke1_t *stack, int top) {
+static int ke_vector_int_swap_elements(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q, *v;
 	v = &stack[--top],
 		q = &stack[--top],
@@ -322,7 +322,7 @@ static int ke_vector_int_swap_elements(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_memcpy(ke1_t *stack, int top) {
+static int ke_vector_memcpy(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -331,7 +331,7 @@ static int ke_vector_memcpy(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_memcpy(ke1_t *stack, int top) {
+static int ke_vector_int_memcpy(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -340,7 +340,7 @@ static int ke_vector_int_memcpy(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_swap(ke1_t *stack, int top) {
+static int ke_vector_swap(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -349,7 +349,7 @@ static int ke_vector_swap(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_swap(ke1_t *stack, int top) {
+static int ke_vector_int_swap(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -358,7 +358,7 @@ static int ke_vector_int_swap(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_min(ke1_t *stack, int top) {
+static int ke_vector_min(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->r = gsl_vector_min(p->obj.vector);
@@ -368,7 +368,7 @@ static int ke_vector_min(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_min(ke1_t *stack, int top) {
+static int ke_vector_int_min(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	p->i= gsl_vector_int_min(p->obj.vector_int);
@@ -378,7 +378,7 @@ static int ke_vector_int_min(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_max(ke1_t *stack, int top) {
+static int ke_vector_max(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->r = gsl_vector_max(p->obj.vector);
@@ -388,7 +388,7 @@ static int ke_vector_max(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_max(ke1_t *stack, int top) {
+static int ke_vector_int_max(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	p->i = gsl_vector_int_max(p->obj.vector_int);
@@ -398,7 +398,7 @@ static int ke_vector_int_max(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_isnull(ke1_t *stack, int top) {
+static int ke_vector_isnull(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = gsl_vector_isnull(p->obj.vector);
@@ -408,7 +408,7 @@ static int ke_vector_isnull(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_isnull(ke1_t *stack, int top) {
+static int ke_vector_int_isnull(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	p->i = gsl_vector_int_isnull(p->obj.vector_int);
@@ -418,7 +418,7 @@ static int ke_vector_int_isnull(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_ispos(ke1_t *stack, int top) {
+static int ke_vector_ispos(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = gsl_vector_ispos(p->obj.vector);
@@ -428,7 +428,7 @@ static int ke_vector_ispos(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_ispos(ke1_t *stack, int top) {
+static int ke_vector_int_ispos(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	p->i = gsl_vector_int_ispos(p->obj.vector_int);
@@ -438,7 +438,7 @@ static int ke_vector_int_ispos(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_isneg(ke1_t *stack, int top) {
+static int ke_vector_isneg(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = gsl_vector_isneg(p->obj.vector);
@@ -448,7 +448,7 @@ static int ke_vector_isneg(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_isneg(ke1_t *stack, int top) {
+static int ke_vector_int_isneg(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	p->i = gsl_vector_int_isneg(p->obj.vector_int);
@@ -458,7 +458,7 @@ static int ke_vector_int_isneg(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_isnonneg(ke1_t *stack, int top) {
+static int ke_vector_isnonneg(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = gsl_vector_isnonneg(p->obj.vector);
@@ -468,7 +468,7 @@ static int ke_vector_isnonneg(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_isnonneg(ke1_t *stack, int top) {
+static int ke_vector_int_isnonneg(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	p->i = gsl_vector_int_isnonneg(p->obj.vector_int);
@@ -478,7 +478,7 @@ static int ke_vector_int_isnonneg(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_equal(ke1_t *stack, int top) {
+static int ke_vector_equal(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top],
     p = &stack[top-1];
@@ -489,7 +489,7 @@ static int ke_vector_equal(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_equal(ke1_t *stack, int top) {
+static int ke_vector_int_equal(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	q = &stack[--top],
 		p = &stack[top - 1];
@@ -500,7 +500,7 @@ static int ke_vector_int_equal(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_fscanf(ke1_t *stack, int top) {
+static int ke_vector_fscanf(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
@@ -511,7 +511,7 @@ static int ke_vector_fscanf(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_fscanf(ke1_t *stack, int top) {
+static int ke_vector_int_fscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	p = &stack[--top],
 		q = &stack[top - 1];
@@ -522,7 +522,7 @@ static int ke_vector_int_fscanf(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_fprintf(ke1_t *stack, int top) {
+static int ke_vector_fprintf(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
@@ -533,7 +533,7 @@ static int ke_vector_fprintf(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_fprintf(ke1_t *stack, int top) {
+static int ke_vector_int_fprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	p = &stack[--top],
 		q = &stack[top - 1];
@@ -544,7 +544,7 @@ static int ke_vector_int_fprintf(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_fread(ke1_t *stack, int top) {
+static int ke_vector_fread(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
@@ -555,7 +555,7 @@ static int ke_vector_fread(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_fread(ke1_t *stack, int top) {
+static int ke_vector_int_fread(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	p = &stack[--top],
 		q = &stack[top - 1];
@@ -566,7 +566,7 @@ static int ke_vector_int_fread(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_vector_fwrite(ke1_t *stack, int top) {
+static int ke_vector_fwrite(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     p = &stack[--top],
     q = &stack[top-1];
@@ -577,7 +577,7 @@ static int ke_vector_fwrite(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_vector_int_fwrite(ke1_t *stack, int top) {
+static int ke_vector_int_fwrite(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *q;
 	p = &stack[--top],
 		q = &stack[top - 1];

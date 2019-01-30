@@ -1,6 +1,11 @@
 #ifndef FILE_H_INCLUDED
 #define FILE_H_INCLUDED
 
+void ke_file_hash();
+
+#define FILE_NEWBUFFER "newbuffer"
+#define FILE_FREBUFFER "freebuffer"
+#define FILE_FCLOSE "fclose"
 #define FILE_FCLOSE "fclose"
 #define FILE_CLEARERR "clearerr"
 #define FILE_FEOF "feof"
@@ -20,9 +25,9 @@
 #define FILE_SETBUF "setbuf"
 #define FILE_SETVBUF "setvbuf"
 #define FILE_TMPFILE "tmpfile"
-#define FILE_SETNAME "setnam"
+#define FILE_TMPNAME "tmpnam"
 #define FILE_FPRINTF "fprintf"
-#define FILE_FPRINT "fprint"
+#define FILE_PRINTF "printf"
 #define FILE_SPRINTF "sprintf"
 #define FILE_VFPRINTF "vfprintf"
 #define FILE_VPRINTF "vprintf"

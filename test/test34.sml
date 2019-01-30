@@ -1,5 +1,17 @@
 
-f.name = "Les amis ratons"
-f.test = 33
-print(f)
+print("start file read string")
+file = fopen("c:\sml\test\test15.sml","r")
+buf = strbuf(1000)
+for
+  if (feof(file) == 1)
+    break
+  end
+  fgets(buf, 999, file)
+  printf(buf)
+next
+fclose(file)
+
+print("end")
+
+
 

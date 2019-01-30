@@ -6,6 +6,7 @@
 #include <gsl/gsl_complex.h>
 #include <plplot/plplot.h>
 #include <stdint.h>
+#include <stdio.h>
 
 #define LOCAL_VAR '_'
 
@@ -36,6 +37,8 @@
 #define KEV_VEC_INT  9
 #define KEV_DEF  10
 #define KEV_IMAGE 11
+#define KEV_FILE 12
+#define KEV_BUFFER 13
 
 #define KEO_NULL  0
 #define KEO_POS   1
@@ -77,6 +80,7 @@
 #define KET_VAL   7
 #define KET_VNAME 8
 #define KET_REC   9
+#define KET_FILE  10
 
 #define KEF_NULL  0
 #define KEF_REAL  1
@@ -100,8 +104,8 @@ typedef struct ke1_s {
 		double (*real_func1)(double);
 		double (*real_func2)(double, double);
 		int (*defprop)(struct ke1_s* stack, struct ke1_s* prop, int top);
-		int (*deffunc)(struct ke1_s* stack, int top);
-		int (*deffile)(ke1_t *tokp, ke1_t *stack, int top);
+		int (*deffunc)(struct ke1_s* stack, struct ke1_s* tokp, int top);
+		int(*defcmd)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
 		int (*defvcmd)(kexpr_t *ke, struct ke1_s*, int i);
 		struct ke1_s * recp;
 	} f;
@@ -110,6 +114,8 @@ typedef struct ke1_s {
 		char *s;
 		char* image;
 		char ** ms;
+		FILE *file;
+		void *buffer;
 		gsl_vector_int * vector_int;
 		gsl_vector * vector;
 		gsl_matrix * matrix;
@@ -134,7 +140,7 @@ struct kexpr_s {
 
 typedef struct ke1_t* ke1_p;
 typedef int(*cmdp)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
-typedef int(__cdecl *fncp)(struct ke1_s* s, int);
+typedef int(__cdecl *fncp)(struct ke1_s* s, struct ke1_s* t, int);
 typedef int(*vcmdp)(struct kexpr_s*, struct ke1_s*, int);
 char *ke_mystr(char *src, size_t n);
 void ke_hash_add(fncp key, char * name);

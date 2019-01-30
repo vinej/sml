@@ -337,8 +337,8 @@ int ke_command_printf(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  *
 	ke1_t *p = &stack[--top];
 	strrepl(p->obj.s, "\\n", "\n");
 	printf("%s",p->obj.s);
-	ke_free_memory(p->obj.s);
-	p->obj.s = NULL;
+	//ke_free_memory(p->obj.s);
+	//p->obj.s = NULL;
 	return top;
 }
 

@@ -3,7 +3,7 @@
 #include "kexpr.h"
 #include "str.h"
 
-int ke_str_prop_get_0par(ke1_t *stack, int top) {
+int ke_str_prop_get_0par(ke1_t *stack, ke1_t *tokp, int top) {
 	// b = a[1]  =>  1 a(1) =
 	ke1_t *prop;
 	prop = &stack[top - 1];
@@ -15,7 +15,7 @@ int ke_str_prop_get_0par(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_str_prop_get_1par(ke1_t *stack, int top) {
+int ke_str_prop_get_1par(ke1_t *stack, ke1_t *tokp, int top) {
 	// b = a[1]  =>  1 a(1) =
 	ke1_t *prop, *indice;
 	prop = &stack[--top];
@@ -38,7 +38,7 @@ int ke_str_prop_get_1par(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_str_prop_get_2par(ke1_t *stack, int top) {
+int ke_str_prop_get_2par(ke1_t *stack, ke1_t *tokp, int top) {
 	// b = a[1,2]  =>  1 2 a(2) =
 
 	// 0,2
@@ -71,7 +71,7 @@ int ke_str_prop_get_2par(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_str_prop_set_1par(ke1_t *stack, int top) {
+int ke_str_prop_set_1par(ke1_t *stack, ke1_t *tokp, int top) {
 	// a[2] = 'z' =>  2 a(1) 'z' =
 	ke1_t *p, *q, *v;
 	v = &stack[--top];
@@ -82,7 +82,7 @@ int ke_str_prop_set_1par(ke1_t *stack, int top) {
 	return top;
 }
 
-int ke_str_prop_set_2par(ke1_t *stack, int top) {
+int ke_str_prop_set_2par(ke1_t *stack, ke1_t *tokp, int top) {
 	// a{1,2} = 'as'    1 2 a(2) 'sd' =
 	ke1_t *prop, *from, *to, *v;
 	v = &stack[--top];
@@ -93,7 +93,7 @@ int ke_str_prop_set_2par(ke1_t *stack, int top) {
 	return top;
 }
 
-static int ke_strcpy(ke1_t *stack, int top) {
+static int ke_strcpy(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -104,7 +104,7 @@ static int ke_strcpy(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_strcat(ke1_t *stack, int top) {
+static int ke_strcat(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -122,7 +122,17 @@ static int ke_strcat(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_strlen(ke1_t *stack, int top) {
+static int ke_strbuf(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t *p;
+	p = &stack[top - 1];
+	p->obj.s = ke_calloc_memory((size_t)p->i, 1);
+	p->ttype = KET_VAL;
+	p->vtype = KEV_STR;
+	return top;
+}
+
+
+static int ke_strlen(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
     p = &stack[top-1];
     p->i = strlen(p->obj.s);
@@ -133,7 +143,7 @@ static int ke_strlen(ke1_t *stack, int top) {
     return top;
 }
 
-static int ke_strcmp(ke1_t *stack, int top) {
+static int ke_strcmp(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -145,7 +155,8 @@ static int ke_strcmp(ke1_t *stack, int top) {
 }
 
 void ke_str_hash() {
-    ke_hash_add(&ke_strcpy, STR_STRCPY);
+	ke_hash_add(&ke_strbuf, STR_STRBUF);
+	ke_hash_add(&ke_strcpy, STR_STRCPY);
     ke_hash_add(&ke_strcat, STR_STRCAT);
     ke_hash_add(&ke_strlen, STR_STRLEN);
     ke_hash_add(&ke_strcmp, STR_STRCMP);
