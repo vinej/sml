@@ -6,6 +6,8 @@
 #include <limits.h>
 #include <string.h>
 
+#define MAX_BUF 1023
+
 extern ke1_t *g_stack;    // stack for the evaluation of the program
 extern ke1_t ** g_gbl_fields;
 
@@ -80,10 +82,10 @@ static int ke_file_fflush(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 // Gets the current file position of the stream and writes it to pos.
-// int fgetpos(FILE *stream, fpos_t *pos)
+// int fgetpos(FILE *stream) //, fpos_t *pos)
 static int ke_file_fgetpos(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
-	p = &stack[--top];
+	p = &stack[top - 1];
 	fpos_t pos;
 	fgetpos(p->obj.file, &pos);
 	p->i = (int64_t)pos;
@@ -150,14 +152,10 @@ static int ke_file_fseek(ke1_t *stack, ke1_t *tokp, int top) {
 // Sets the file position of the given stream to the given position.The argument pos is a position given by the function fgetpos.
 // int fsetpos(FILE *stream, const fpos_t *pos)
 static int ke_file_fsetpos(ke1_t *stack, ke1_t *tokp, int top) {
-	ke1_t *p;
-	p = &stack[top - 1];
-	fpos_t pos;
-	fsetpos(p->obj.file, &pos);
-	p->i = (int64_t)pos;
-	p->r = (double)p->i;
-	p->vtype = KEV_INT;
-	p->ttype = KET_VAL;
+	ke1_t *p, *pos;
+	pos = &stack[--top];
+	p = &stack[--top];
+	fsetpos(p->obj.file, &pos->i);
 	return top;
 }
 
@@ -245,7 +243,7 @@ static int ke_file_setvbuf(ke1_t *stack, ke1_t *tokp, int top) {
 // FILE *tmpfile(void)
 static int ke_file_tmpfile(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
-	p = &stack[--top];
+	p = &stack[top - 1];
 	p->obj.file = tmpfile();
 	p->vtype = KEV_FILE;
 	p->ttype = KET_VAL;
@@ -257,15 +255,25 @@ static int ke_file_tmpfile(ke1_t *stack, ke1_t *tokp, int top) {
 static int ke_file_tmpnam(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[--top];
-	p->obj.s = tmpnam(p->obj.s);
+	char * buf = ke_calloc_memory(MAX_BUF + 1, 1);
+	tmpnam(buf);
+	if (p->vtype == KEV_STR) {
+		ke_free_memory(g_gbl_fields[p->ifield]->obj.s);
+	}
+	else {
+		g_gbl_fields[p->ifield]->vtype = KEV_STR;
+	}
+	size_t len = strlen(buf);
+	g_gbl_fields[p->ifield]->obj.s = ke_malloc_memory(len + 1);
+	memcpy(g_gbl_fields[p->ifield]->obj.s, buf, len + 1);
 	p->vtype = KEV_STR;
-	p->ttype = KET_VAL;
+	p->obj.s = buf;
 	return top;
 }
 
 va_list gen_valist(size_t n_args, int len, int top, int * size) {
 	ke1_t *q;
-	va_list m = (char*)ke_calloc_memory(1000, 1); /* prepare enough memory*/
+	va_list m = (char*)ke_calloc_memory(MAX_BUF+1, 1); /* prepare enough memory*/
 	void* va = m; /* copies the pointer */
 	size_t total_size = len + 1;
 	for (int i = top - (int)n_args + 1; i < top; i++) {
@@ -309,7 +317,7 @@ static int ke_file_vfprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	if (tokp->n_args > 2) {
 		int total_size = 0;
 		va_list va = gen_valist((size_t)tokp->n_args-1, (int)strlen(format->obj.s), top, &total_size);
-		char * buf = ke_calloc_memory(1000, 1);
+		char * buf = ke_calloc_memory(MAX_BUF+1, 1);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		strrepl(buf, "\\n", "\n");
 		fputs(buf, stream->obj.file);
@@ -333,7 +341,7 @@ static int ke_file_vprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	if (tokp->n_args > 1) {
 		int total_size = 0;
 		va_list va = gen_valist((size_t)tokp->n_args, (int)strlen(format->obj.s), top, &total_size);
-		char * buf = ke_calloc_memory(1000, 1);
+		char * buf = ke_calloc_memory(MAX_BUF+1, 1);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		strrepl(buf, "\\n", "\n");
 		fputs(buf, stdout);
@@ -352,7 +360,7 @@ static int ke_file_vprintf(ke1_t *stack, ke1_t *tokp, int top) {
 static int ke_file_vsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format;
 	format = &stack[top - tokp->n_args];
-	char * buf = ke_calloc_memory(1000, 1);
+	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
 	if (tokp->n_args > 1) {
 		int total_size = 0;
 		va_list va = gen_valist((size_t)tokp->n_args, (int)strlen(format->obj.s), top, &total_size);
@@ -372,13 +380,13 @@ static int ke_file_vsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 
 va_list gen_scan_valist(size_t n_args, int len, int top) {
 	ke1_t *q;
-	va_list m = (char*)ke_calloc_memory(1000, 1); /* prepare enough memory*/
+	va_list m = (char*)ke_calloc_memory(MAX_BUF+1, 1); /* prepare enough memory*/
 	void* va = m; /* copies the pointer */
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = &g_stack[i];
 		if (q->vtype == KEV_STR) {
 			ke_free_memory(g_gbl_fields[q->ifield]->obj.s);
-			g_gbl_fields[q->ifield]->obj.s = ke_calloc_memory(1000, 1);
+			g_gbl_fields[q->ifield]->obj.s = ke_calloc_memory(MAX_BUF+1, 1);
 			(*(char**)m) = g_gbl_fields[q->ifield]->obj.s; /* puts the next value */
 			m += sizeof(char*); /* move forward again*/
 		}
@@ -469,24 +477,34 @@ static int ke_file_vsscanf(ke1_t *stack, ke1_t *tokp, int top) {
 // Gets the next character(an unsigned char) from the specified stream and advances the position indicator for the stream.
 // int fgetc(FILE *stream)
 static int ke_file_fgetc(ke1_t *stack, ke1_t *tokp, int top) {
-	ke1_t *stream;
-	stream = &stack[--top];
-	stream->i = fgetc(stream->obj.file);
-	stream->vtype = KEV_INT;
-	stream->ttype = KET_VAL;
-	stream->r = (double)stream->i;
+	ke1_t *p;
+	p = &stack[top - 1];
+	p->i = fgetc(p->obj.file);
+	p->vtype = KEV_INT;
+	p->ttype = KET_VAL;
+	p->r = (double)p->i;
 	return top;
 }
 
 // Reads a line from the specified stream and stores it into the string pointed to by str.It stops when either(n - 1) characters are read, the newline character is read, or the end - of - file is reached, whichever comes first.
 // char *fgets(char *str, int n, FILE *stream)
+// n not used
 static int ke_file_fgets(ke1_t *stack, ke1_t *tokp, int top) {
-	ke1_t *str, *n, *stream;
+	ke1_t *str, *stream;
 	stream = &stack[--top];
-	n = &stack[--top];
 	str = &stack[--top];
-	memset(g_gbl_fields[str->ifield]->obj.s, 0, n->i);
-	fgets(g_gbl_fields[str->ifield]->obj.s, (int)n->i, stream->obj.file);
+
+	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
+	fgets(buf, MAX_BUF, stream->obj.file);
+	if (str->vtype == KEV_STR) {
+		ke_free_memory(g_gbl_fields[str->ifield]->obj.s);
+	}
+	else {
+		g_gbl_fields[str->ifield]->vtype = KEV_STR;
+	}
+	size_t len = strlen(buf);
+	g_gbl_fields[str->ifield]->obj.s = ke_calloc_memory(len + 1,1);
+	memcpy(g_gbl_fields[str->ifield]->obj.s, buf, len + 1);
 	return top;
 }
 
@@ -514,7 +532,7 @@ static int ke_file_fputs(ke1_t *stack, ke1_t *tokp, int top) {
 // int getc(FILE *stream)
 static int ke_file_getc(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
-	p = &stack[--top];
+	p = &stack[top - 1];
 	p->i = fgetc(p->obj.file);
 	p->vtype = KEV_INT;
 	p->ttype = KET_VAL;
@@ -526,7 +544,7 @@ static int ke_file_getc(ke1_t *stack, ke1_t *tokp, int top) {
 // int getchar(void)
 static int ke_file_getchar(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
-	p = &stack[--top];
+	p = &stack[top - 1];
 	p->i = getchar();
 	p->vtype = KEV_INT;
 	p->ttype = KET_VAL;
@@ -538,8 +556,19 @@ static int ke_file_getchar(ke1_t *stack, ke1_t *tokp, int top) {
 // char *gets(char *str)
 static int ke_file_gets(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *str;
-	str = &stack[top - 1];
-	gets(str->obj.s);
+	str = &stack[--top];
+
+	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
+	fgets(buf, MAX_BUF, stdin);
+	if (str->vtype == KEV_STR) {
+		ke_free_memory(g_gbl_fields[str->ifield]->obj.s);
+	}
+	else {
+		g_gbl_fields[str->ifield]->vtype = KEV_STR;
+	}
+	size_t len = strlen(buf);
+	g_gbl_fields[str->ifield]->obj.s = ke_calloc_memory(len + 1,1);
+	memcpy(g_gbl_fields[str->ifield]->obj.s, buf, len + 1);
 	return top;
 }
 
@@ -587,7 +616,19 @@ static int ke_file_ungetc(ke1_t *stack, ke1_t *tokp, int top) {
 static int ke_file_perror(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *str;
 	str = &stack[--top];
-	perror(str->obj.s);
+
+	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
+	perror(buf);
+	if (str->vtype == KEV_STR) {
+		ke_free_memory(g_gbl_fields[str->ifield]->obj.s);
+	}
+	else {
+		g_gbl_fields[str->ifield]->vtype = KEV_STR;
+	}
+
+	size_t len = strlen(buf);
+	g_gbl_fields[str->ifield]->obj.s = ke_calloc_memory(len + 1,1);
+	memcpy(g_gbl_fields[str->ifield]->obj.s, buf, len + 1);
 	return top;
 }
 

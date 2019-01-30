@@ -1139,6 +1139,10 @@ int ke_eval(kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 			}
 			break;
 		case KET_FUNC:
+			if (tokp->n_args == 0) {
+				// always need something in the stack
+				g_stack[top++] = *tokp;
+			}
 			top = (tokp->f.deffunc)(g_stack, tokp, top);
 			break;
 		case KET_PROP:
