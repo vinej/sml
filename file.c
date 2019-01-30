@@ -271,30 +271,25 @@ static int ke_file_tmpnam(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-va_list gen_valist(size_t n_args, int len, int top, int * size) {
+va_list gen_valist(size_t n_args, int top) {
 	ke1_t *q;
 	va_list m = (char*)ke_calloc_memory(MAX_BUF+1, 1); /* prepare enough memory*/
 	void* va = m; /* copies the pointer */
-	size_t total_size = len + 1;
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = &g_stack[i];
 		if (q->vtype == KEV_STR) {
 			(*(char**)m) = q->obj.s; /* puts the next value */
 			m += sizeof(char*); /* move forward again*/
-			total_size += strlen(q->obj.s) + 1;
 		}
 		else if (q->vtype == KEV_INT) {
 			(*(int*)m) = (int)q->i; /* puts the third element */
 			m += sizeof(int); /* unneeded, but here for clarity. */
-			total_size += (size_t)20;
 		}
 		else if (q->vtype == KEV_REAL) {
 			(*(double*)m) = q->r; /* puts the third element */
 			m += sizeof(double); /* unneeded, but here for clarity. */
-			total_size += (size_t)20;
 		}
 	}
-	*size = (int)total_size;
 	return va;
 }
 
@@ -315,21 +310,19 @@ static int ke_file_vfprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	format = &stack[top - tokp->n_args + 1];
 	stream = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		int total_size = 0;
-		va_list va = gen_valist((size_t)tokp->n_args-1, (int)strlen(format->obj.s), top, &total_size);
+		va_list va = gen_valist((size_t)tokp->n_args-1, top);
 		char * buf = ke_calloc_memory(MAX_BUF+1, 1);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		strrepl(buf, "\\n", "\n");
 		fputs(buf, stream->obj.file);
 		ke_free_memory(buf);
-		//stbsp_vfprintf(stream->obj.file, format->obj.s, va);
 		ke_free_memory(va);
 	}
 	else {
 		strrepl(format->obj.s, "\\n", "\n");
 		fputs(format->obj.s, stream->obj.file);
 	}
-	return top - tokp->n_args + 1;
+	return top - tokp->n_args;
 }
 
 
@@ -339,8 +332,7 @@ static int ke_file_vprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format;
 	format = &stack[top - tokp->n_args];
 	if (tokp->n_args > 1) {
-		int total_size = 0;
-		va_list va = gen_valist((size_t)tokp->n_args, (int)strlen(format->obj.s), top, &total_size);
+		va_list va = gen_valist((size_t)tokp->n_args, top);
 		char * buf = ke_calloc_memory(MAX_BUF+1, 1);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		strrepl(buf, "\\n", "\n");
@@ -352,7 +344,7 @@ static int ke_file_vprintf(ke1_t *stack, ke1_t *tokp, int top) {
 		strrepl(format->obj.s, "\\n", "\n");
 		fputs(format->obj.s, stdout);
 	}
-	return top - tokp->n_args + 1;
+	return top - tokp->n_args;
 }
 
 // Sends formatted output to a string using an argument list.
@@ -363,7 +355,7 @@ static int ke_file_vsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
 	if (tokp->n_args > 1) {
 		int total_size = 0;
-		va_list va = gen_valist((size_t)tokp->n_args, (int)strlen(format->obj.s), top, &total_size);
+		va_list va = gen_valist((size_t)tokp->n_args, top);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		ke_free_memory(va);
 	}
@@ -375,7 +367,7 @@ static int ke_file_vsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	memcpy(str, buf, len + 1);
 	ke_free_memory(buf);
 	format->obj.s = str;
-	return top - tokp->n_args + 1;
+	return top - tokp->n_args;
 }
 
 va_list gen_scan_valist(size_t n_args, int len, int top) {
@@ -444,7 +436,7 @@ static int ke_file_vfscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format, *stream;
 	format = &stack[top - tokp->n_args + 1];
 	stream = &stack[top - tokp->n_args];
-	if (tokp->n_args > 1) {
+	if (tokp->n_args > 2) {
 		va_list va = gen_scan_valist((size_t)tokp->n_args - 1, (int)strlen(format->obj.s), top);
 		vfscanf(stream->obj.file, format->obj.s, va);
 		ke_free_memory(va);
@@ -462,7 +454,7 @@ static int ke_file_vsscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format, *buf;
 	format = &stack[top - tokp->n_args + 1];
 	buf = &stack[top - tokp->n_args];
-	if (tokp->n_args > 1) {
+	if (tokp->n_args > 2) {
 		va_list va = gen_scan_valist((size_t)tokp->n_args-1, (int)strlen(format->obj.s), top);
 		vsscanf(buf->obj.s, format->obj.s, va);
 		ke_free_memory(va);

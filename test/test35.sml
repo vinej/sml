@@ -7,6 +7,8 @@ a = 1
 b = 1
 sscanf("1 2","%d %d",a,b)
 printf("a = %d, b=%d\n",a,b)
+printf("a = %d, b=%d\n",a,b)
+printf("a = %d, b=%d\n",a,b)
 
 print("TEST 02")
 c = 1
@@ -35,11 +37,3 @@ file = fopen('c:\sml\test\out.txt',"r")
 fgets(tt, file)
 fclose(file)
 print(tt)
-
-print("TEST 08")
-tmp = tmpfile()
-tmp = freopen(tmp, "w")
-fprintf(tmp, "bonjour")
-fclose(tmp)
-
-
