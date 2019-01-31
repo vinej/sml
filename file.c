@@ -337,6 +337,25 @@ static int ke_file_vfprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	return top - tokp->n_args;
 }
 
+static int ke_file_xvfprintf(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t *buf, *stream, *format;
+	format = &stack[top - tokp->n_args + 2];
+	stream = &stack[top - tokp->n_args + 1];
+	buf = &stack[top - tokp->n_args];
+	if (tokp->n_args > 3) {
+		va_list va = gen_valist((size_t)tokp->n_args - 2, top);
+		stbsp_vsprintf(g_gbl_fields[buf->ifield]->obj.s, format->obj.s, va);
+		strrepl(g_gbl_fields[buf->ifield]->obj.s, "\\n", "\n");
+		fputs(g_gbl_fields[buf->ifield]->obj.s, stream->obj.file);
+		ke_free_memory(va);
+	}
+	else {
+		strrepl(format->obj.s, "\\n", "\n");
+		fputs(format->obj.s, stream->obj.file);
+	}
+	gen_freelist((size_t)tokp->n_args - 2, top);
+	return top - tokp->n_args;
+}
 
 // Sends formatted output to stdout using an argument list.
 // int vprintf(const char *format, va_list arg)
@@ -350,6 +369,26 @@ static int ke_file_vprintf(ke1_t *stack, ke1_t *tokp, int top) {
 		strrepl(buf, "\\n", "\n");
 		fputs(buf, stdout);
 		ke_free_memory(buf);
+		ke_free_memory(va);
+		gen_freelist((size_t)tokp->n_args - 1, top);
+	}
+	else {
+		strrepl(format->obj.s, "\\n", "\n");
+		fputs(format->obj.s, stdout);
+	}
+	gen_freelist((size_t)tokp->n_args, top);
+	return top - tokp->n_args;
+}
+
+static int ke_file_xvprintf(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t  *buf, *format;
+	format = &stack[top - tokp->n_args + 1];
+	buf = &stack[top - tokp->n_args];
+	if (tokp->n_args > 2) {
+		va_list va = gen_valist((size_t)tokp->n_args - 1, top);
+		stbsp_vsprintf(g_gbl_fields[buf->ifield]->obj.s, format->obj.s, va);
+		strrepl(g_gbl_fields[buf->ifield]->obj.s, "\\n", "\n");
+		fputs(g_gbl_fields[buf->ifield]->obj.s, stdout);
 		ke_free_memory(va);
 		gen_freelist((size_t)tokp->n_args - 1, top);
 	}
@@ -386,7 +425,23 @@ static int ke_file_vsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	return top - tokp->n_args;
 }
 
-va_list gen_scan_valist(size_t n_args, int len, int top) {
+static int ke_file_xvsprintf(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t  *buf, *format;
+	format = &stack[top - tokp->n_args + 1];
+	buf = &stack[top - tokp->n_args];
+	if (tokp->n_args > 2) {
+		va_list va = gen_valist((size_t)tokp->n_args - 1, top);
+		stbsp_vsprintf(g_gbl_fields[buf->ifield]->obj.s, format->obj.s, va);
+		ke_free_memory(va);
+	}
+	else {
+		memcpy(buf, format->obj.s, strlen(format->obj.s) + 1);
+	}
+	gen_freelist((size_t)tokp->n_args - 1, top);
+	return top - tokp->n_args;
+}
+
+va_list gen_scan_valist(size_t n_args, int top) {
 	ke1_t *q;
 	va_list m = (char*)ke_calloc_memory(MAX_BUF+1, 1); /* prepare enough memory*/
 	void* va = m; /* copies the pointer */
@@ -395,6 +450,28 @@ va_list gen_scan_valist(size_t n_args, int len, int top) {
 		if (q->vtype == KEV_STR) {
 			ke_free_memory(g_gbl_fields[q->ifield]->obj.s);
 			g_gbl_fields[q->ifield]->obj.s = ke_calloc_memory(MAX_BUF+1, 1);
+			(*(char**)m) = g_gbl_fields[q->ifield]->obj.s; /* puts the next value */
+			m += sizeof(char*); /* move forward again*/
+		}
+		else if (q->vtype == KEV_INT) {
+			(*(int**)m) = (int *)&(g_gbl_fields[q->ifield]->i);
+			m += sizeof(int *); /* unneeded, but here for clarity. */
+		}
+		else if (q->vtype == KEV_REAL) {
+			(*(double**)m) = &(g_gbl_fields[q->ifield]->r);
+			m += sizeof(double *); /* unneeded, but here for clarity. */
+		}
+	}
+	return va;
+}
+
+va_list gen_xscan_valist(size_t n_args, int top) {
+	ke1_t *q;
+	va_list m = (char*)ke_calloc_memory(MAX_BUF + 1, 1); /* prepare enough memory*/
+	void* va = m; /* copies the pointer */
+	for (int i = top - (int)n_args + 1; i < top; i++) {
+		q = &g_stack[i];
+		if (q->vtype == KEV_STR) {
 			(*(char**)m) = g_gbl_fields[q->ifield]->obj.s; /* puts the next value */
 			m += sizeof(char*); /* move forward again*/
 		}
@@ -429,13 +506,26 @@ void set_i_r(size_t n_args, int top) {
 	}
 }
 
+void set_xi_r(size_t n_args, int top) {
+	ke1_t *q;
+	for (int i = top - (int)n_args + 1; i < top; i++) {
+		q = &g_stack[i];
+		if (q->vtype == KEV_INT) {
+			g_gbl_fields[q->ifield]->r = (double)g_gbl_fields[q->ifield]->i;
+		}
+		else if (q->vtype == KEV_REAL) {
+			g_gbl_fields[q->ifield]->i = (int64_t)g_gbl_fields[q->ifield]->r;
+		}
+	}
+}
+
 // Sends formatted output to stdout using an argument list.
 // int vscanf(char * restrict format, va_list arg_ptr); 
 static int ke_file_vscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format;  
 	format = &stack[top - tokp->n_args];
 	if (tokp->n_args > 1) {
-		va_list va = gen_scan_valist((size_t)tokp->n_args, (int)strlen(format->obj.s), top);
+		va_list va = gen_scan_valist((size_t)tokp->n_args, top);
 		vscanf(format->obj.s, va);
 		ke_free_memory(va);
 	}
@@ -446,6 +536,21 @@ static int ke_file_vscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	return top - tokp->n_args;
 }
 
+static int ke_file_xvscanf(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t  *format;
+	format = &stack[top - tokp->n_args];
+	if (tokp->n_args > 1) {
+		va_list va = gen_xscan_valist((size_t)tokp->n_args, top);
+		vscanf(format->obj.s, va);
+		ke_free_memory(va);
+	}
+	else {
+		printf("error of parameter sscanf");
+	}
+	set_xi_r((size_t)tokp->n_args - 1, top);
+	return top - tokp->n_args;
+}
+
 // Sends formatted output to a string using an argument list.
 // int vfscanf(FILE * restrict stream, const char * restrict format,va_list arg_ptr); 
 static int ke_file_vfscanf(ke1_t *stack, ke1_t *tokp, int top) {
@@ -453,7 +558,7 @@ static int ke_file_vfscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	format = &stack[top - tokp->n_args + 1];
 	stream = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		va_list va = gen_scan_valist((size_t)tokp->n_args - 1, (int)strlen(format->obj.s), top);
+		va_list va = gen_scan_valist((size_t)tokp->n_args - 1, top);
 		vfscanf(stream->obj.file, format->obj.s, va);
 		ke_free_memory(va);
 	}
@@ -464,21 +569,64 @@ static int ke_file_vfscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	return top - tokp->n_args;
 }
 
-// read formatted output to a string using an argument list.
-// int vsscanf(char * restrict buf, const char * restrict format, va_list arg_ptr);
-static int ke_file_vsscanf(ke1_t *stack, ke1_t *tokp, int top) {
-	ke1_t  *format, *buf;
+static int ke_file_xvfscanf(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t  *format, *stream;
 	format = &stack[top - tokp->n_args + 1];
-	buf = &stack[top - tokp->n_args];
+	stream = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		va_list va = gen_scan_valist((size_t)tokp->n_args-1, (int)strlen(format->obj.s), top);
-		vsscanf(buf->obj.s, format->obj.s, va);
+		va_list va = gen_xscan_valist((size_t)tokp->n_args - 1, top);
+		vfscanf(stream->obj.file, format->obj.s, va);
+		ke_free_memory(va);
+	}
+	else {
+		printf("error of parameter sscanf");
+	}
+	set_xi_r((size_t)tokp->n_args - 1, top);
+	return top - tokp->n_args;
+}
+
+// read formatted output to a string using an argument list.
+// int vsscanf(char * restrict str, const char * restrict format, va_list arg_ptr);
+static int ke_file_vsscanf(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t  *format, *str;
+	format = &stack[top - tokp->n_args + 1];
+	str = &stack[top - tokp->n_args];
+	if (tokp->n_args > 2) {
+		va_list va = gen_scan_valist((size_t)tokp->n_args-1, top);
+		char * buf = ke_calloc_memory(MAX_BUF + 1, 1);
+		vsscanf(buf, format->obj.s, va);
+		if (str->vtype == KEV_STR) {
+			ke_free_memory(g_gbl_fields[str->ifield]->obj.s);
+		}
+		else {
+			g_gbl_fields[str->ifield]->vtype = KEV_STR;
+		}
+		size_t len = strlen(buf);
+		g_gbl_fields[str->ifield]->obj.s = ke_calloc_memory(len + 1, 1);
+		memcpy(g_gbl_fields[str->ifield]->obj.s, buf, len + 1);
+		ke_free_memory(buf);
 		ke_free_memory(va);
 	}
 	else {
 		printf("error of parameter sscanf");
 	}
 	set_i_r((size_t)tokp->n_args-1, top);
+	return top - tokp->n_args;
+}
+
+static int ke_file_xvsscanf(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t  *format, *buf;
+	format = &stack[top - tokp->n_args + 1];
+	buf = &stack[top - tokp->n_args];
+	if (tokp->n_args > 2) {
+		va_list va = gen_xscan_valist((size_t)tokp->n_args - 1, top);
+		vsscanf(buf->obj.s, format->obj.s, va);
+		ke_free_memory(va);
+	}
+	else {
+		printf("error of parameter sscanf");
+	}
+	set_xi_r((size_t)tokp->n_args - 1, top);
 	return top - tokp->n_args;
 }
 
@@ -515,6 +663,17 @@ static int ke_file_fgets(ke1_t *stack, ke1_t *tokp, int top) {
 	memcpy(g_gbl_fields[str->ifield]->obj.s, buf, len + 1);
 	return top;
 }
+
+// gets(char *buf, int size, FILE)
+static int ke_file_xfgets(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t *buf, *size, *file;
+	file = &stack[--top];
+	size = &stack[--top];
+	buf = &stack[--top];
+	fgets(g_gbl_fields[buf->ifield]->obj.s, (int)size->i, file->obj.file);
+	return top;
+}
+
 
 // Writes a character(an unsigned char) specified by the argument char to the specified stream and advances the position indicator for the stream.
 // int fputc(int char, FILE *stream)
@@ -577,6 +736,15 @@ static int ke_file_gets(ke1_t *stack, ke1_t *tokp, int top) {
 	size_t len = strlen(buf);
 	g_gbl_fields[str->ifield]->obj.s = ke_calloc_memory(len + 1,1);
 	memcpy(g_gbl_fields[str->ifield]->obj.s, buf, len + 1);
+	return top;
+}
+
+// gets(char *buf, int size)
+static int ke_file_xgets(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t *buf, *size;
+	size = &stack[--top];
+	buf = &stack[--top];
+	fgets(g_gbl_fields[buf->ifield]->obj.s, (int)size->i, stdin);
 	return top;
 }
 
@@ -736,19 +904,30 @@ void ke_file_hash() {
 	ke_hash_add((fncp)&ke_file_setvbuf, FILE_SETVBUF);
 	ke_hash_add((fncp)&ke_file_tmpfile, FILE_TMPFILE);
 	ke_hash_add((fncp)&ke_file_tmpnam, FILE_TMPNAME);
+
 	ke_hash_add((fncp)&ke_file_vfprintf, FILE_FPRINTF);
 	ke_hash_add((fncp)&ke_file_vsprintf, FILE_SPRINTF);
 	ke_hash_add((fncp)&ke_file_vprintf, FILE_PRINTF);
 	ke_hash_add((fncp)&ke_file_vfscanf, FILE_FSCANF);
 	ke_hash_add((fncp)&ke_file_vscanf, FILE_SCANF);
 	ke_hash_add((fncp)&ke_file_vsscanf, FILE_SSCANF);
+
+	ke_hash_add((fncp)&ke_file_xvfprintf, FILE_XFPRINTF);
+	ke_hash_add((fncp)&ke_file_xvsprintf, FILE_XSPRINTF);
+	ke_hash_add((fncp)&ke_file_xvprintf, FILE_XPRINTF);
+	ke_hash_add((fncp)&ke_file_xvfscanf, FILE_XFSCANF);
+	ke_hash_add((fncp)&ke_file_xvscanf, FILE_XSCANF);
+	ke_hash_add((fncp)&ke_file_xvsscanf, FILE_XSSCANF);
+
 	ke_hash_add((fncp)&ke_file_fgetc, FILE_FGETC);
 	ke_hash_add((fncp)&ke_file_fgets, FILE_FGETS);
+	ke_hash_add((fncp)&ke_file_xfgets, FILE_XFGETS);
 	ke_hash_add((fncp)&ke_file_fputc, FILE_FPUTC);
 	ke_hash_add((fncp)&ke_file_fputs, FILE_FPUTS);
 	ke_hash_add((fncp)&ke_file_getc, FILE_GETC);
 	ke_hash_add((fncp)&ke_file_getchar, FILE_GETCHAR);
 	ke_hash_add((fncp)&ke_file_gets, FILE_GETS);
+	ke_hash_add((fncp)&ke_file_xgets, FILE_XGETS);
 	ke_hash_add((fncp)&ke_file_putc, FILE_PUTC);
 	ke_hash_add((fncp)&ke_file_putchar, FILE_PUTCHAR);
 	ke_hash_add((fncp)&ke_file_puts, FILE_PUTS);

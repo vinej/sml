@@ -10,6 +10,7 @@ int ke_str_prop_set_2par(ke1_t *stack, ke1_t *tokp, int top);
 
 
 #define STR_STRBUF "strbuf"
+#define STR_STRFREE "strfree"
 #define STR_STRCPY "strcpy"
 #define STR_STRCAT "strcat"
 #define STR_STRLEN "strlen"

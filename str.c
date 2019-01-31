@@ -3,6 +3,8 @@
 #include "kexpr.h"
 #include "str.h"
 
+extern ke1_t ** g_gbl_fields;
+
 int ke_str_prop_get_0par(ke1_t *stack, ke1_t *tokp, int top) {
 	// b = a[1]  =>  1 a(1) =
 	ke1_t *prop;
@@ -125,16 +127,22 @@ static int ke_strcat(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 static int ke_strbuf(ke1_t *stack, ke1_t *tokp, int top) {
-	ke1_t *p;
-	p = &stack[top - 1];
-	p->obj.s = ke_malloc_memory((size_t)p->i);
-	memset(p->obj.s, 65, p->i - 2);
-	p->obj.s[p->i - 1] = 0;
-	p->ttype = KET_VAL;
-	p->vtype = KEV_STR;
+	ke1_t *p, *q;
+	q = &stack[--top];
+	p = &stack[--top];
+	g_gbl_fields[p->ifield]->obj.s = ke_calloc_memory((size_t)q->i,1);
+	g_gbl_fields[p->ifield]->ttype = KET_VAL;
+	g_gbl_fields[p->ifield]->vtype = KEV_STR;
 	return top;
 }
 
+static int ke_strfree(ke1_t *stack, ke1_t *tokp, int top) {
+	ke1_t *p;
+	p = &stack[--top];
+	ke_free_memory(g_gbl_fields[p->ifield]->obj.s);
+	g_gbl_fields[p->ifield]->obj.s = NULL;
+	return top;
+}
 
 static int ke_strlen(ke1_t *stack, ke1_t *tokp, int top) {
    	ke1_t *p;
@@ -159,6 +167,7 @@ static int ke_strcmp(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 void ke_str_hash() {
+	ke_hash_add(&ke_strfree, STR_STRFREE);
 	ke_hash_add(&ke_strbuf, STR_STRBUF);
 	ke_hash_add(&ke_strcpy, STR_STRCPY);
     ke_hash_add(&ke_strcat, STR_STRCAT);
