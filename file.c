@@ -299,7 +299,7 @@ void gen_freelist(size_t n_args, int top) {
 		q = &g_stack[i];
 		if (q->vtype == KEV_STR && q->tofree == 1) {
 			ke_free_memory(q->obj.s);
-			q->tofree == 0;
+			q->tofree = 0;
 		}
 	}
 }
