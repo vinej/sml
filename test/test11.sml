@@ -24,6 +24,7 @@ print(a)
 c1 = complex(2,3)
 m1 = matrix(2,2)
 v1 = vector(4)
+v1[3] = 12.12
 
 print(c1,m1,v1)
 

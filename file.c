@@ -380,7 +380,8 @@ static int ke_file_vsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	char * str2 = ke_malloc_memory(len + 1);
 	memcpy(str2, buf, len + 1);
 	ke_free_memory(buf);
-	format->obj.s = str2;
+	g_gbl_fields[str->ifield]->obj.s = str2;
+	g_gbl_fields[str->ifield]->vtype = KEV_STR;
 	gen_freelist((size_t)tokp->n_args, top);
 	return top - tokp->n_args;
 }
