@@ -159,15 +159,21 @@ PERFORMANCE vs MSVC 2008 32-/64-bit (GCC is even slower than MSVC):
 #endif
 #endif
 
-//#include <stdarg.h> // for va_list()
+#include <stdarg.h>
 
-#ifndef _WIN32
+#if defined(_MSC_VER) && !defined(_WIN32)
 #define my_va_arg(ap, t) \
-        ((sizeof(t) > sizeof(__int64_t) || (sizeof(t) & (sizeof(t) - 1)) != 0) \
+        ((sizeof(t) > sizeof(__int64) || (sizeof(t) & (sizeof(t) - 1)) != 0) \
             ? **(t**)((ap += sizeof(t)) - sizeof(t)) \
             :  *(t* )((ap += sizeof(t)) - sizeof(t)))
 #else
-#define my_va_arg va_arg
+#ifndef _WIN32
+	((sizeof(t) > sizeof(int64_t) || (sizeof(t) & (sizeof(t) - 1)) != 0) \
+		? **(t**)((ap += sizeof(t)) - sizeof(t)) \
+		: *(t*)((ap += sizeof(t)) - sizeof(t)))
+#else
+  #define my_va_arg va_arg
+#endif
 #endif
 
 #ifndef STB_SPRINTF_MIN

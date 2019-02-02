@@ -90,9 +90,9 @@ static int ke_file_fflush(ke1_t *stack, ke1_t *tokp, int top) {
 static int ke_file_fgetpos(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
-	fpos_t pos;
-	fgetpos(p->obj.file, &pos);
-	p->i = (int64_t)pos.__pos;
+	//fpos_t pos;
+	//fgetpos(p->obj.file, &pos);
+	//p->i = (_+int64)pos.__pos;
 	p->vtype = KEV_INT;
 	p->ttype = KET_VAL;
 	p->r = (double)p->i;
@@ -260,9 +260,9 @@ static int ke_file_tmpnam(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[--top];
 	char * buf = ke_calloc_memory(MAX_BUF + 1, 1);
-	if (mkstemp(buf) == 0) {
-		printf("Error: ke_file_tmpnam");
-	}
+	//if (mkstemp(buf) == 0) {
+	//	printf("Error: ke_file_tmpnam");
+	//}
 	if (p->vtype == KEV_STR) {
 		ke_free_memory(g_gbl_fields[p->ifield]->obj.s);
 	}

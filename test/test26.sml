@@ -2,7 +2,7 @@ max = 1000
 
 strbuf(buf,max)
 
-file = fopen('c:\sml\test\test15.sml','r')
+file = fopen('c:\sml\test\ex_01.sml','r')
 
 for
   if (feof(file) == 1)
