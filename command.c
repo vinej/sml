@@ -1,6 +1,3 @@
-//#include "./stb/stb_sprintf.h"
-
-#include "stdafx.h"
 #include "khash.h"
 #include "kdq.h"
 #include <stdio.h>

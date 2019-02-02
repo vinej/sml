@@ -107,7 +107,7 @@ int main(int argc, char *argv[])
 
         while(1) {
             printf( "jyv>>> : Vava2019");
-            gets( str );
+            fgets( str,999,stdin );
             char * p = str;
             while(*p) {
                 if (*p < 32) *p = 32;

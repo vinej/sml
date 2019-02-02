@@ -140,7 +140,7 @@ struct kexpr_s {
 
 typedef struct ke1_t* ke1_p;
 typedef int(*cmdp)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
-typedef int(__cdecl *fncp)(struct ke1_s* s, struct ke1_s* t, int);
+typedef int(*fncp)(struct ke1_s* s, struct ke1_s* t, int);
 typedef int(*vcmdp)(struct kexpr_s*, struct ke1_s*, int);
 char *ke_mystr(char *src, size_t n);
 void ke_hash_add(fncp key, char * name);

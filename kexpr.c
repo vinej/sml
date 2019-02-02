@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
@@ -23,10 +22,9 @@
 #include <gsl/gsl_vector.h>
 #include <stdio.h>
 #include <stdio.h>
-#include <Windows.h>
 
-HMODULE g_libhandle[40];
-int g_libhandle_qte = 0;      // number of global fields  
+//HMODULE g_libhandle[40];
+//int g_libhandle_qte = 0;      // number of global fields
 
 
 // GLOBAL VARIABLE USED BY ALL FUNCTIONS
@@ -232,8 +230,11 @@ fncp ke_function(char * name) {
 	}
 }
 
-typedef int(*DLLPROC)();
+//typedef int(*DLLPROC)();
 void import(char * s) {
+	return;
+
+	/*
 	// load the dll
 	// call method ke_dll_hash(voir * hash_method, global_field)
 	if ((g_libhandle[g_libhandle_qte] = LoadLibrary(TEXT(s))) == NULL)
@@ -252,6 +253,7 @@ void import(char * s) {
 	fp(ke_hash_add, g_gbl_fields);
 	++g_libhandle_qte;
 	// FREE HANDLE
+	*/
 }
 
 
@@ -1192,23 +1194,27 @@ void ke_push_stack(ke1_t * tokp, int *top) {
     (*top)++;
 }
 
+/*
 void ke_free_dll() {
 	for (int i = 0; i < g_libhandle_qte; ++i) {
 		FreeLibrary(g_libhandle[i]);
 	}
 }
+*/
 
+/*
 void ke_free_image() {
 	for (int i = 0; i < g_libhandle_qte; ++i) {
 		FreeLibrary(g_libhandle[i]);
 	}
 }
+*/
 
 void ke_destroy(kexpr_t *kexpr)
 {
     ke_free(kexpr);
 	ke_free_hash();
-	ke_free_dll();
+	//ke_free_dll();
 }
 
 void ke_free_hash()

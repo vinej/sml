@@ -1,3 +1,4 @@
+#define STB_SPRINTF_IMPLEMENTATION
 #include "./stb/stb_sprintf.h"
 #include "file.h"
 #include "kexpr.h"
@@ -5,8 +6,11 @@
 #include <math.h>
 #include <limits.h>
 #include <string.h>
+#include <stdint.h>
+#include <stdarg.h>
 
 #define MAX_BUF 1023
+#define MAX_SCAN_ARG 16
 
 extern ke1_t *g_stack;    // stack for the evaluation of the program
 extern ke1_t ** g_gbl_fields;
@@ -15,7 +19,7 @@ extern ke1_t ** g_gbl_fields;
 static int ke_file_alloc_buffer(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[--top];
-	p->obj.buffer = ke_calloc_memory((size_t)p->i, (fpos_t)1);
+	p->obj.buffer = ke_calloc_memory((size_t)p->i, 1);
 	p->vtype = KEV_BUFFER;
 	p->ttype = KET_VAL;
 	return top;
@@ -88,7 +92,7 @@ static int ke_file_fgetpos(ke1_t *stack, ke1_t *tokp, int top) {
 	p = &stack[top - 1];
 	fpos_t pos;
 	fgetpos(p->obj.file, &pos);
-	p->i = (int64_t)pos;
+	p->i = (int64_t)pos.__pos;
 	p->vtype = KEV_INT;
 	p->ttype = KET_VAL;
 	p->r = (double)p->i;
@@ -155,7 +159,7 @@ static int ke_file_fsetpos(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p, *pos;
 	pos = &stack[--top];
 	p = &stack[--top];
-	fsetpos(p->obj.file, &pos->i);
+	//fsetpos(p->obj.file, pos->i);
 	return top;
 }
 
@@ -256,7 +260,9 @@ static int ke_file_tmpnam(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[--top];
 	char * buf = ke_calloc_memory(MAX_BUF + 1, 1);
-	tmpnam(buf);
+	if (mkstemp(buf) == 0) {
+		printf("Error: ke_file_tmpnam");
+	}
 	if (p->vtype == KEV_STR) {
 		ke_free_memory(g_gbl_fields[p->ifield]->obj.s);
 	}
@@ -271,10 +277,10 @@ static int ke_file_tmpnam(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-va_list gen_valist(size_t n_args, int top) {
+void* gen_valist(size_t n_args, int top) {
 	ke1_t *q;
-	va_list m = (char*)ke_calloc_memory(MAX_BUF+1, 1); /* prepare enough memory*/
-	void* va = m; /* copies the pointer */
+	char * m = (char*)ke_calloc_memory(MAX_BUF+1, 1); /* prepare enough memory*/
+	void * va = m; /* copies the pointer */
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = &g_stack[i];
 		if (q->vtype == KEV_STR) {
@@ -315,14 +321,14 @@ void strrepl(char *str, const char *a, const char *b) {
 
 
 // Sends formatted output to a stream using an argument list.
-// int vfprintf(FILE *stream, const char *format, va_list arg)
+// int vfprintf(FILE *stream, const char *format, char * arg)
 static int ke_file_vfprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *stream, *format;
 	format = &stack[top - tokp->n_args + 1];
 	stream = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		va_list va = gen_valist((size_t)tokp->n_args-1, top);
-		char * buf = ke_calloc_memory(MAX_BUF+1, 1);
+		char * va = gen_valist((size_t)tokp->n_args-1, top);
+		char* buf = ke_calloc_memory(MAX_BUF+1, 1);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		strrepl(buf, "\\n", "\n");
 		fputs(buf, stream->obj.file);
@@ -343,7 +349,7 @@ static int ke_file_xvfprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	stream = &stack[top - tokp->n_args + 1];
 	buf = &stack[top - tokp->n_args];
 	if (tokp->n_args > 3) {
-		va_list va = gen_valist((size_t)tokp->n_args - 2, top);
+		char * va = gen_valist((size_t)tokp->n_args - 2, top);
 		stbsp_vsprintf(g_gbl_fields[buf->ifield]->obj.s, format->obj.s, va);
 		strrepl(g_gbl_fields[buf->ifield]->obj.s, "\\n", "\n");
 		fputs(g_gbl_fields[buf->ifield]->obj.s, stream->obj.file);
@@ -358,12 +364,12 @@ static int ke_file_xvfprintf(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 // Sends formatted output to stdout using an argument list.
-// int vprintf(const char *format, va_list arg)
+// int vprintf(const char *format, char * arg)
 static int ke_file_vprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format;
 	format = &stack[top - tokp->n_args];
 	if (tokp->n_args > 1) {
-		va_list va = gen_valist((size_t)tokp->n_args, top);
+		char * va = gen_valist((size_t)tokp->n_args, top);
 		char * buf = ke_calloc_memory(MAX_BUF+1, 1);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		strrepl(buf, "\\n", "\n");
@@ -385,8 +391,8 @@ static int ke_file_xvprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	format = &stack[top - tokp->n_args + 1];
 	buf = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		va_list va = gen_valist((size_t)tokp->n_args - 1, top);
-		stbsp_vsprintf(g_gbl_fields[buf->ifield]->obj.s, format->obj.s, va);
+		char * va = gen_valist((size_t)tokp->n_args - 1, top);
+		stbsp_vsprintf(g_gbl_fields[buf->ifield]->obj.s, format->obj.s, (char *)va);
 		strrepl(g_gbl_fields[buf->ifield]->obj.s, "\\n", "\n");
 		fputs(g_gbl_fields[buf->ifield]->obj.s, stdout);
 		ke_free_memory(va);
@@ -401,14 +407,14 @@ static int ke_file_xvprintf(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 // Sends formatted output to a string using an argument list.
-// int vsprintf(char *str, const char *format, va_list arg)
+// int vsprintf(char *str, const char *format, char * arg)
 static int ke_file_vsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format, *str;
 	format = &stack[top - tokp->n_args + 1];
 	str = &stack[top - tokp->n_args];
 	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
 	if (tokp->n_args > 2) {
-		va_list va = gen_valist((size_t)tokp->n_args - 1, top);
+		char * va = gen_valist((size_t)tokp->n_args - 1, top);
 		stbsp_vsprintf(buf, format->obj.s, va);
 		ke_free_memory(va);
 	}
@@ -430,7 +436,7 @@ static int ke_file_xvsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	format = &stack[top - tokp->n_args + 1];
 	buf = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		va_list va = gen_valist((size_t)tokp->n_args - 1, top);
+		char * va = gen_valist((size_t)tokp->n_args - 1, top);
 		stbsp_vsprintf(g_gbl_fields[buf->ifield]->obj.s, format->obj.s, va);
 		ke_free_memory(va);
 	}
@@ -441,47 +447,40 @@ static int ke_file_xvsprintf(ke1_t *stack, ke1_t *tokp, int top) {
 	return top - tokp->n_args;
 }
 
-va_list gen_scan_valist(size_t n_args, int top) {
+void** gen_scan_valist(size_t n_args, int top) {
 	ke1_t *q;
-	va_list m = (char*)ke_calloc_memory(MAX_BUF+1, 1); /* prepare enough memory*/
-	void* va = m; /* copies the pointer */
-	for (int i = top - (int)n_args + 1; i < top; i++) {
+	void** va = ke_calloc_memory(128, sizeof(void*)); /* prepare enough memory*/
+	for (int i = top - (int)n_args + 1, j = 0; i < top; i++, j++) {
 		q = &g_stack[i];
 		if (q->vtype == KEV_STR) {
 			ke_free_memory(g_gbl_fields[q->ifield]->obj.s);
 			g_gbl_fields[q->ifield]->obj.s = ke_calloc_memory(MAX_BUF+1, 1);
-			(*(char**)m) = g_gbl_fields[q->ifield]->obj.s; /* puts the next value */
-			m += sizeof(char*); /* move forward again*/
+			va[j] = (char*)g_gbl_fields[q->ifield]->obj.s; /* puts the next value */
 		}
 		else if (q->vtype == KEV_INT) {
-			(*(int**)m) = (int *)&(g_gbl_fields[q->ifield]->i);
-			m += sizeof(int *); /* unneeded, but here for clarity. */
+			va[j] = (int64_t *)&(g_gbl_fields[q->ifield]->i);
 		}
 		else if (q->vtype == KEV_REAL) {
-			(*(double**)m) = &(g_gbl_fields[q->ifield]->r);
-			m += sizeof(double *); /* unneeded, but here for clarity. */
+			va[j] = (double *)&(g_gbl_fields[q->ifield]->r);
 		}
 	}
 	return va;
 }
 
-va_list gen_xscan_valist(size_t n_args, int top) {
+
+void ** gen_xscan_valist(size_t n_args, int top) {
 	ke1_t *q;
-	va_list m = (char*)ke_calloc_memory(MAX_BUF + 1, 1); /* prepare enough memory*/
-	void* va = m; /* copies the pointer */
-	for (int i = top - (int)n_args + 1; i < top; i++) {
+	void** va = ke_calloc_memory(100, sizeof(void*)); /* prepare enough memory*/
+	for (int i = top - (int)n_args + 1, j = 0; i < top; i++, j++) {
 		q = &g_stack[i];
 		if (q->vtype == KEV_STR) {
-			(*(char**)m) = g_gbl_fields[q->ifield]->obj.s; /* puts the next value */
-			m += sizeof(char*); /* move forward again*/
+			va[j] = g_gbl_fields[q->ifield]->obj.s; /* puts the next value */
 		}
 		else if (q->vtype == KEV_INT) {
-			(*(int**)m) = (int *)&(g_gbl_fields[q->ifield]->i);
-			m += sizeof(int *); /* unneeded, but here for clarity. */
+			va[j] = (int*)&(g_gbl_fields[q->ifield]->i);
 		}
 		else if (q->vtype == KEV_REAL) {
-			(*(double**)m) = &(g_gbl_fields[q->ifield]->r);
-			m += sizeof(double *); /* unneeded, but here for clarity. */
+			va[j] = (double*)&(g_gbl_fields[q->ifield]->r);
 		}
 	}
 	return va;
@@ -520,13 +519,22 @@ void set_xi_r(size_t n_args, int top) {
 }
 
 // Sends formatted output to stdout using an argument list.
-// int vscanf(char * restrict format, va_list arg_ptr); 
+// int vscanf(char * restrict format, char * arg_ptr); 
 static int ke_file_vscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format;  
 	format = &stack[top - tokp->n_args];
 	if (tokp->n_args > 1) {
-		va_list va = gen_scan_valist((size_t)tokp->n_args, top);
-		vscanf(format->obj.s, va);
+		void **va = gen_scan_valist((size_t) tokp->n_args, top);
+		int count = 0;
+		if (tokp->n_args <= MAX_SCAN_ARG + 1) {
+		   count = scanf(format->obj.s, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
+						  va[8], va[9], va[10], va[11], va[12], va[13], va[14], va[15]);
+		} else {
+			printf("Error: ke_file_vscanf :  max 16 arguments");
+		}
+		if (count == tokp->n_args -1 ) {
+			printf("Error: ke_file_xvfscanf");
+		}
 		ke_free_memory(va);
 	}
 	else {
@@ -540,26 +548,44 @@ static int ke_file_xvscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format;
 	format = &stack[top - tokp->n_args];
 	if (tokp->n_args > 1) {
-		va_list va = gen_xscan_valist((size_t)tokp->n_args, top);
-		vscanf(format->obj.s, va);
+		void** va = gen_xscan_valist((size_t)tokp->n_args, top);
+		if (tokp->n_args <= MAX_SCAN_ARG + 1) {
+			if (scanf(format->obj.s, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
+					  va[8], va[9], va[10], va[11], va[12], va[13], va[14], va[15]) != tokp->n_args - 1) {
+				printf("Error : ke_file_xvscanf");
+			}
+		} else {
+			printf("Error: ke_file_xvscanf :  max 16 arguments");
+		}
 		ke_free_memory(va);
 	}
 	else {
 		printf("error of parameter sscanf");
 	}
-	set_xi_r((size_t)tokp->n_args - 1, top);
+	set_xi_r((size_t)tokp->n_args, top);
 	return top - tokp->n_args;
 }
 
 // Sends formatted output to a string using an argument list.
-// int vfscanf(FILE * restrict stream, const char * restrict format,va_list arg_ptr); 
+// int vfscanf(FILE * restrict stream, const char * restrict format,char * arg_ptr); 
 static int ke_file_vfscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format, *stream;
 	format = &stack[top - tokp->n_args + 1];
 	stream = &stack[top - tokp->n_args];
+	char name[] = "les amis ratons ";
 	if (tokp->n_args > 2) {
-		va_list va = gen_scan_valist((size_t)tokp->n_args - 1, top);
-		vfscanf(stream->obj.file, format->obj.s, va);
+		void** va = gen_scan_valist((size_t)tokp->n_args - 1, top);
+		if (tokp->n_args <= MAX_SCAN_ARG + 2) {
+			int count = fscanf(stream->obj.file, format->obj.s,
+				va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
+				va[8],va[9], va[10], va[11], va[12], va[13], va[14], va[15] );
+			if (count != tokp->n_args - 2 ) {
+				printf("Error: ke_file_vfscanf");
+			}
+		} else {
+			printf("Error: ke_file_xvscanf :  max 16 arguments");
+		}
+
 		ke_free_memory(va);
 	}
 	else {
@@ -574,8 +600,15 @@ static int ke_file_xvfscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	format = &stack[top - tokp->n_args + 1];
 	stream = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		va_list va = gen_xscan_valist((size_t)tokp->n_args - 1, top);
-		vfscanf(stream->obj.file, format->obj.s, va);
+		void** va = gen_xscan_valist((size_t)tokp->n_args - 1, top);
+		if (tokp->n_args <= MAX_SCAN_ARG + 2) {
+			if (fscanf(stream->obj.file, format->obj.s, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
+					   va[8],va[9], va[10], va[11], va[12], va[13], va[14], va[15] ) != tokp->n_args - 2) {
+				printf("error : ke_file_xvfscanf");
+			}
+		} else {
+			printf("Error: ke_file_xvscanf :  max 16 arguments");
+		}
 		ke_free_memory(va);
 	}
 	else {
@@ -586,15 +619,22 @@ static int ke_file_xvfscanf(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 // read formatted output to a string using an argument list.
-// int vsscanf(char * restrict str, const char * restrict format, va_list arg_ptr);
+// int vsscanf(char * restrict str, const char * restrict format, char * arg_ptr);
 static int ke_file_vsscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t  *format, *str;
 	format = &stack[top - tokp->n_args + 1];
 	str = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		va_list va = gen_scan_valist((size_t)tokp->n_args-1, top);
+		void** va = gen_scan_valist((size_t)tokp->n_args-1, top);
 		char * buf = ke_calloc_memory(MAX_BUF + 1, 1);
-		vsscanf(buf, format->obj.s, va);
+		if (tokp->n_args <= MAX_SCAN_ARG + 2) {
+			if (sscanf(buf, format->obj.s, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
+					   va[8], va[9], va[10], va[11], va[12], va[13], va[14], va[15]) != tokp->n_args - 2) {
+				printf("Error: ke_file_vsscanf");
+			}
+		} else {
+			printf("Error: ke_file_xvscanf :  max 16 arguments");
+		}
 		if (str->vtype == KEV_STR) {
 			ke_free_memory(g_gbl_fields[str->ifield]->obj.s);
 		}
@@ -619,8 +659,15 @@ static int ke_file_xvsscanf(ke1_t *stack, ke1_t *tokp, int top) {
 	format = &stack[top - tokp->n_args + 1];
 	buf = &stack[top - tokp->n_args];
 	if (tokp->n_args > 2) {
-		va_list va = gen_xscan_valist((size_t)tokp->n_args - 1, top);
-		vsscanf(buf->obj.s, format->obj.s, va);
+		void** va = gen_xscan_valist((size_t)tokp->n_args - 1, top);
+		if (tokp->n_args <= MAX_SCAN_ARG + 2) {
+			if (sscanf(buf->obj.s, format->obj.s, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
+					   va[8],va[9], va[10], va[11], va[12], va[13], va[14], va[15]) != -tokp->n_args-2){
+				printf("Error: ke_file_xvsscanf");
+			}
+		} else {
+			printf("Error: ke_file_xvscanf :  max 16 arguments");
+		}
 		ke_free_memory(va);
 	}
 	else {
@@ -643,7 +690,7 @@ static int ke_file_fgetc(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 // Reads a line from the specified stream and stores it into the string pointed to by str.It stops when either(n - 1) characters are read, the newline character is read, or the end - of - file is reached, whichever comes first.
-// char *fgets(char *str, int n, FILE *stream)
+// char *fgets(char *str, FILE *stream)
 // n not used
 static int ke_file_fgets(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *str, *stream;
@@ -651,7 +698,9 @@ static int ke_file_fgets(ke1_t *stack, ke1_t *tokp, int top) {
 	str = &stack[--top];
 
 	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
-	fgets(buf, MAX_BUF, stream->obj.file);
+	if (fgets(buf, MAX_BUF, stream->obj.file) == NULL) {
+		printf("Error: ke_file_fgets");
+	}
 	if (str->vtype == KEV_STR) {
 		ke_free_memory(g_gbl_fields[str->ifield]->obj.s);
 	}
@@ -670,7 +719,9 @@ static int ke_file_xfgets(ke1_t *stack, ke1_t *tokp, int top) {
 	file = &stack[--top];
 	size = &stack[--top];
 	buf = &stack[--top];
-	fgets(g_gbl_fields[buf->ifield]->obj.s, (int)size->i, file->obj.file);
+	if ( fgets(g_gbl_fields[buf->ifield]->obj.s, (int)size->i, file->obj.file) == NULL) {
+		printf("Error: ke_file_xfgets");
+	}
 	return top;
 }
 
@@ -726,7 +777,9 @@ static int ke_file_gets(ke1_t *stack, ke1_t *tokp, int top) {
 	str = &stack[--top];
 
 	char * buf = ke_calloc_memory(MAX_BUF+1, 1);
-	fgets(buf, MAX_BUF, stdin);
+	if (fgets(buf, MAX_BUF, stdin) == 0) {
+		printf("Error: ke_file_gets");
+	}
 	if (str->vtype == KEV_STR) {
 		ke_free_memory(g_gbl_fields[str->ifield]->obj.s);
 	}
@@ -744,7 +797,9 @@ static int ke_file_xgets(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *buf, *size;
 	size = &stack[--top];
 	buf = &stack[--top];
-	fgets(g_gbl_fields[buf->ifield]->obj.s, (int)size->i, stdin);
+	if ( fgets(g_gbl_fields[buf->ifield]->obj.s, (int)size->i, stdin) == 0) {
+		printf("Error ke_file_xgets");
+	}
 	return top;
 }
 

@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <string.h>
 #include <stdio.h>
 #include "kexpr.h"

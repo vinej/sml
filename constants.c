@@ -1,5 +1,5 @@
-#include "stdafx.h"
 #include <math.h>
+#include <string.h>
 
 double ke_constants(const char * name) {
 	if (strcmp(name, "m_pi") == 0) return	M_PI;

@@ -4,7 +4,7 @@
 void ke_command_hash();
 cmdp ke_command(char * name);
 void ke_command_destroy();
-int ke_command_get_rtn();
+//int ke_command_get_rtn();
 vcmdp ke_command_val(char * name);
 int ke_command_icmd(char * name);
 int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens);

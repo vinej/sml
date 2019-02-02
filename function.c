@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include <math.h>
 #include "khash.h"
 #include "kexpr.h"
@@ -9,6 +8,7 @@
 #define DEGREE 2
 #define GRADIAN  3
 static int anglem = RADIAN;
+
 
 static double convert_anglem(double value) {
 	switch (anglem)
