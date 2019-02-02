@@ -168,6 +168,7 @@ PERFORMANCE vs MSVC 2008 32-/64-bit (GCC is even slower than MSVC):
             :  *(t* )((ap += sizeof(t)) - sizeof(t)))
 #else
 #ifndef _WIN32
+#define my_va_arg(ap, t) \
 	((sizeof(t) > sizeof(int64_t) || (sizeof(t) & (sizeof(t) - 1)) != 0) \
 		? **(t**)((ap += sizeof(t)) - sizeof(t)) \
 		: *(t*)((ap += sizeof(t)) - sizeof(t)))
