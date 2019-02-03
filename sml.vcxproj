@@ -30,7 +30,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>LLVM-vs2014</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -101,7 +101,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>.\lib32;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libcsirocsa.dll.a;libqsastime.dll.a;gsl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libcsirocsa.dll.a;libqsastime.dll.a;gsl.lib;liblmdb.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OptimizeReferences>true</OptimizeReferences>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
@@ -125,7 +125,7 @@
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>.\lib64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>libqsastime.dll.a;gsl.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>libqsastime.dll.a;gsl.lib;liblmdb.lib;liblmdb.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <IgnoreAllDefaultLibraries>
       </IgnoreAllDefaultLibraries>
     </Link>
@@ -209,6 +209,7 @@
     <ClInclude Include="kdq.h" />
     <ClInclude Include="kexpr.h" />
     <ClInclude Include="khash.h" />
+    <ClInclude Include="liblmdb\lmdb.h" />
     <ClInclude Include="matrix.h" />
     <ClInclude Include="property.h" />
     <ClInclude Include="stack.h" />

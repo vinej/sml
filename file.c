@@ -23,7 +23,7 @@ static int ke_file_alloc_buffer(ke1_t *stack, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_INT, "buffer_SIZE", FILE_NEWBUFFER);
+	ke_validate_parameter_vtype(p, KEV_INT, "buffer_size", FILE_NEWBUFFER);
 	ke_validate_parameter_int_gt_zero(p, "buffer_size", FILE_NEWBUFFER);
 #endif // SML_VALIDATION
 	p->obj.buffer = ke_calloc_memory((size_t)p->i, 1);
