@@ -17,6 +17,7 @@ for
 next
 fclose(file)
 
+printf("Saisir un code:")
 xscanf("%s",buf)
 print(buf)
 xprintf("%s",buf)

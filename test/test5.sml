@@ -1,4 +1,4 @@
-
+print('start')
 r1 = 12
 r6 = r1 * 2
 print(r6)

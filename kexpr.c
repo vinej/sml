@@ -20,12 +20,12 @@
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 #include <gsl/gsl_vector.h>
-#include <stdio.h>
-#include <stdio.h>
 
 //HMODULE g_libhandle[40];
 //int g_libhandle_qte = 0;      // number of global fields
-
+#define __GLOBAL "g_"
+#define __GLOBAL_SEP "_"
+#define __GLOBAL_DSEP "__"
 
 // GLOBAL VARIABLE USED BY ALL FUNCTIONS
 ke1_t ** g_gbl_fields = NULL; // array of all global fields of the program to exectue
@@ -147,6 +147,47 @@ static void ke_op_KEO_NEG(ke1_t *p, ke1_t *q)  { p->i = -p->i, p->r = -p->r; }
 
 static void ke_func1_abs(ke1_t *p, ke1_t *q) { if (p->vtype == KEV_INT) p->i = (int64_t)abs((int)p->i), p->r = (double)p->i; else p->r = fabs(p->r), p->i = (int64_t)(p->r + .5); }
 
+// VALIDATION
+
+#ifdef _DEBUG
+void ke_validate_parameter_qte(ke1_t *p, int nb_param, char * function_name) {
+	if (p->n_args != nb_param) {
+		printf("SML: Invalid number of parameters at line %d (got %d expected %d) for function %s", p->sourceLine, p->n_args, nb_param, function_name);
+		exit(1);
+	}
+}
+
+void ke_validate_parameter_vtype(ke1_t * p, int vtype, char * function_name) {
+	if (p->vtype != vtype) {
+		printf("SML: Invalid type of parameter at line <%d> (got %d expected %d) for function <%s>", p->sourceLine, p->vtype, vtype, function_name);
+		exit(1);
+	}
+}
+
+void ke_validate_parameter_ttype(ke1_t * p, int ttype, char * function_name) {
+	if (p->ttype != ttype) {
+		printf("SML: Invalid type of parameter at line <%d< (got %d expected %d) for function <%s>", p->sourceLine, p->ttype, ttype, function_name);
+		exit(1);
+	}
+}
+
+void ke_validate_parameter_not_null(ke1_t * p, void * ptr, char * param_name, char * function_name) {
+	if (ptr == NULL) {
+		printf("SML: Parameter <%s> is null at line <%d> for function <%s>", param_name, p->sourceLine, function_name);
+		exit(1);
+	}
+}
+
+void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * function_name) {
+	if (p->i <= 0) {
+		printf("SML: Parameter <%s> must be greater than zero at line <%d> for function <%s>", param_name, p->sourceLine, function_name);
+		exit(1);
+	}
+}
+
+
+#endif // _DEBUG
+
 // MEMORY ALLOCATION FUNCTIONS
 void ke_init_memory_count() {
     g_mem_count = 0;
@@ -256,6 +297,286 @@ void import(char * s) {
 	*/
 }
 
+void ke_load_dll( char * p) {
+	char *t = p;
+	while (*t != '"' && *t != '\'') ++t;
+	++t;
+	char * end = t + 1;
+	while (*end != '"' && *end != '\'') ++end;
+	char old = *end;
+	*end = 0;
+	import(t);
+	*end = old;
+}
+
+int ke_manage_function(ke1_t * tok, int err) {
+	tok->n_args = 1;
+	tok->sourceLine = g_sourceCodeLine;
+	tok->f.defcmd = (cmdp)ke_command(tok->name);
+	if (tok->f.defcmd != NULL) {
+		tok->icmd = ke_command_icmd(tok->name);
+		tok->ttype = KET_CMD;
+		if (strcmp(tok->name, CMD_DEF) == 0) {
+			g_isNextDefName = 1;
+		}
+		tok->ijmp = 0;
+	}
+	else {
+		tok->f.deffunc = (fncp)ke_function(tok->name);
+		if (tok->f.deffunc != NULL) {
+			tok->ttype = KET_FUNC;
+		}
+		else {
+			strcpy(g_lastErrorMessage, tok->name);
+			err |= KEE_UNFUNC;
+		}
+	}
+	return err;
+}
+
+int ke_manage_property(ke1_t *tok, int err) {
+	// it's a propery
+	tok->n_args = 1;
+	tok->sourceLine = g_sourceCodeLine;
+	tok->ijmp = 0;
+	tok->ttype = KET_PROP;
+	tok->vtype = KEV_REAL;
+	tok->propget = 1;
+	tok->propset = 0;
+	tok->i = 0, tok->r = 0.;
+	khint_t iter = kh_get(KH_FIELD, hname, tok->name);
+	if (kh_end(hname) != iter) {
+		tok->ifield = kh_val(hname, iter);
+	}
+	else {
+		int absent;
+		khint_t iter = kh_put(KH_FIELD, hname, tok->name, &absent);
+		kh_val(hname, iter) = g_gbl_field_qte;
+		tok->ifield = g_gbl_field_qte;
+		g_gbl_field_qte++;
+		//*err |= KEE_UNVAR;
+	}
+	return err;
+}
+
+int ke_manage_variable(ke1_t *tok, int err) {
+	tok->ttype = KET_VNAME;
+	if (g_isNextDefName) {
+		strcpy(g_currentDefName, tok->name);
+		g_isNextDefName = 0;
+		tok->islocal = 1;
+	}
+	else {
+		// inside a function, the variables are localized with the functon name, except
+		// variables starting with "_g"
+		if ((*g_currentDefName != 0) && (strncmp(tok->name, __GLOBAL, 2) != 0)) {
+			char * localName = ke_calloc_memory(strlen(tok->name) + strlen(g_currentDefName) + 4, 1);
+			strcpy(localName, __GLOBAL_DSEP);
+			strcat(localName, g_currentDefName);
+			strcat(localName, __GLOBAL_SEP);
+			strcat(localName, tok->name);
+			ke_free_memory(tok->name);
+			tok->name = localName;
+			tok->islocal = 1;
+		}
+		else {
+			tok->islocal = 0;
+		}
+	}
+
+	ke1_t * recp = NULL;
+	khint_t iter = kh_get(KH_FIELD, hname, tok->name);
+	if (kh_end(hname) != iter) {
+		tok->ifield = kh_val(hname, iter);
+	}
+	else {
+		// if the name contains '.', we must create a variable for the record and
+		// add the current ifield to the record list
+		char * dotp = strchr(tok->name, '.');
+		if (dotp) {
+			// split at the dot. tok.name will contain only the rec name  p.test => p
+			*dotp = 0;
+			int ifield;
+			// check if the record is alreeady there
+			khint_t iter = kh_get(KH_FIELD, hname, tok->name);
+			if (kh_end(hname) != iter) {
+				ifield = kh_val(hname, iter);
+				recp = g_recp[ifield];
+			}
+			else {
+				int absent;
+				char * recName = ke_calloc_memory(strlen(tok->name) + 1, 1);
+				strcpy(recName, tok->name);
+				khint_t iter = kh_put(KH_FIELD, hname, recName, &absent);
+				kh_val(hname, iter) = g_rec_qte;
+				recp = (ke1_t *)ke_calloc_memory(sizeof(ke1_t), 1);
+				recp->ifield = g_rec_qte;
+				recp->name = recName;
+				recp->ttype = KET_REC;
+				recp->vtype = KEV_REC;
+				g_recp[g_rec_qte] = recp;
+				g_rec_qte++;
+			}
+			*dotp = '.';
+		}
+		int absent;
+		khint_t iter = kh_put(KH_FIELD, hname, tok->name, &absent);
+		kh_val(hname, iter) = g_gbl_field_qte;
+		tok->ifield = g_gbl_field_qte;
+		// the field of a record contains a pointer to the record
+		tok->f.recp = recp;
+		g_gbl_field_qte++;
+
+		// create the list if not done
+		if (recp) {
+			if (!recp->obj.reclist) {
+				recp->obj.reclist = ke_calloc_memory(sizeof(int) * 30, 1);
+				recp->i = 0;
+			}
+			// add the new field into the list
+			recp->obj.reclist[recp->i] = tok->ifield;
+			++recp->i;
+		}
+	}
+	return err;
+}
+
+int ke_manage_command(ke1_t *tok, int err) {
+	if (strcmp(tok->name, CMD_RTN) == 0) {
+		*g_currentDefName = 0;
+	}
+	tok->ttype = KET_VCMD;
+	tok->icmd = ke_command_icmd(tok->name);
+	return err;
+}
+
+int ke_manage_digit(ke1_t *tok, char **r, char **p, char **q, int err) {
+	long x;
+	double y;
+	char *pp;
+	tok->ttype = KET_VAL;
+	y = strtod(*q, &(*p));
+	x = strtol(*q, &pp, 0); // FIXME: check int/double parsing errors
+	if (*q == *p && *q == pp) { // parse error
+		err |= KEE_NUM;
+	}
+	else if (*p > pp) { // has "." or "[eE]"; then it is a real number
+		tok->vtype = KEV_REAL;
+		tok->i = (int64_t)(y + .5), tok->r = y;
+		*r = *p;
+	}
+	else {
+		tok->vtype = KEV_INT;
+		tok->i = x, tok->r = y;
+		*r = pp;
+	}
+	return err;
+}
+
+int ke_manage_string(ke1_t *tok, char **r, char **p, char **q, int err) {
+	int c = **p;
+	for (++(*p); **p && **p != c; ++(*p))
+	if (**p == '\\') {
+		++(*p); // escaping
+	}
+	if (**p == c) {
+		tok->ttype = KET_VAL;
+		tok->vtype = KEV_STR;
+		tok->obj.s = ke_mystrndup(*q + 1, *p - *q - 1);
+		*r = *p + 1;
+	}
+	else
+	{
+		err |= KEE_UNQU;
+		*r = *p;
+	}
+	return err;
+}
+
+int ke_manager_operator(ke1_t *tok, char **r, char **p, char **q, int last_is_val, int err) {
+	tok->ttype = KET_OP;
+	if ( **p == '*' && (*p)[1] == '*') tok->op = KEO_POW, tok->f.builtin = ke_op_KEO_POW, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '*') tok->op = KEO_MUL, tok->f.builtin = ke_op_KEO_MUL, tok->n_args = 2, *r = *q + 1; // FIXME: NOT working for unary operators
+	else if (**p == '/' && (*p)[1] == '/') tok->op = KEO_IDIV, tok->f.builtin = ke_op_KEO_IDIV, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '/') tok->op = KEO_DIV, tok->f.builtin = ke_op_KEO_DIV, tok->n_args = 2, *r = *q + 1;
+	else if (**p == '%') tok->op = KEO_MOD, tok->f.builtin = ke_op_KEO_MOD, tok->n_args = 2, *r = *q + 1;
+	else if (**p == '+') {
+		if (last_is_val) tok->op = KEO_ADD, tok->f.builtin = ke_op_KEO_ADD, tok->n_args = 2;
+		else tok->op = KEO_POS, tok->f.builtin = ke_op_KEO_POS, tok->n_args = 1;
+		*r = *q + 1;
+	}
+	else if (**p == '-') {
+		if (last_is_val) tok->op = KEO_SUB, tok->f.builtin = ke_op_KEO_SUB, tok->n_args = 2;
+		else tok->op = KEO_NEG, tok->f.builtin = ke_op_KEO_NEG, tok->n_args = 1;
+
+		*r = *q + 1;
+	}
+	else if (**p == '=' && (*p)[1] != '=') tok->op = KEO_LET, tok->f.builtin = ke_op_KEO_EQ, tok->n_args = 2, *r = *q + 1;
+	else if (**p == '=' && (*p)[1] == '=') tok->op = KEO_EQ, tok->f.builtin = ke_op_KEO_EQ, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '!' && (*p)[1] == '=') tok->op = KEO_NE, tok->f.builtin = ke_op_KEO_NE, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '<' && (*p)[1] == '>') tok->op = KEO_NE, tok->f.builtin = ke_op_KEO_NE, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '>' && (*p)[1] == '=') tok->op = KEO_GE, tok->f.builtin = ke_op_KEO_GE, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '<' && (*p)[1] == '=') tok->op = KEO_LE, tok->f.builtin = ke_op_KEO_LE, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '>' && (*p)[1] == '>') tok->op = KEO_RSH, tok->f.builtin = ke_op_KEO_RSH, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '<' && (*p)[1] == '<') tok->op = KEO_LSH, tok->f.builtin = ke_op_KEO_LSH, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '>') tok->op = KEO_GT, tok->f.builtin = ke_op_KEO_GT, tok->n_args = 2, *r = *q + 1;
+	else if (**p == '<') tok->op = KEO_LT, tok->f.builtin = ke_op_KEO_LT, tok->n_args = 2, *r = *q + 1;
+	else if (**p == '|' && (*p)[1] == '|') tok->op = KEO_LOR, tok->f.builtin = ke_op_KEO_LOR, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '&' && (*p)[1] == '&') tok->op = KEO_LAND, tok->f.builtin = ke_op_KEO_LAND, tok->n_args = 2, *r = *q + 2;
+	else if (**p == '|') tok->op = KEO_BOR, tok->f.builtin = ke_op_KEO_BOR, tok->n_args = 2, *r = *q + 1;
+	else if (**p == '&') tok->op = KEO_BAND, tok->f.builtin = ke_op_KEO_BAND, tok->n_args = 2, *r = *q + 1;
+	else if (**p == '^') tok->op = KEO_BXOR, tok->f.builtin = ke_op_KEO_BXOR, tok->n_args = 2, *r = *q + 1;
+	else if (**p == '~') tok->op = KEO_BNOT, tok->f.builtin = ke_op_KEO_BNOT, tok->n_args = 1, *r = *q + 1;
+	else if (**p == '!') tok->op = KEO_LNOT, tok->f.builtin = ke_op_KEO_LNOT, tok->n_args = 1, *r = *q + 1;
+	else if (**p == ';') tok->op = KEO_NOP, g_isLastTokenNop = 1, tok->f.builtin = ke_op_KEO_NOP, tok->n_args = 2, *r = *q + 1;
+	else {
+		tok->ttype = KET_NULL;
+		err |= KEE_UNOP;
+	}
+
+	g_isFirstToken = 0;
+	return err;
+}
+
+// comments are not kept into the token list
+int ke_manage_comment(ke1_t * tok, char **p) {
+	++(*p);
+	while (**p != 0) {
+		if (**p == '\n') {
+			++g_sourceCodeLine;
+			break;
+		}
+		++(*p);
+	}
+	if (**p == 0) {
+		// fin du code pas d'autre tolen
+		tok->realToken = 0;
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}
+
+int ke_manage_line_continuation(ke1_t * tok, char**p) {
+	++(*p);
+	while (**p != 0) {
+		if (**p == '\n') {
+			++g_sourceCodeLine;
+			++(*p);
+			break;
+		}
+		++(*p);
+	}
+	if (**p == 0) {
+		// fin du code pas d'autre tolen
+		tok->realToken = 0;
+		return 0;
+	}
+	else {
+		return 1;
+	}
+}
 
 // parse a token except "(", ")" and ","
 ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't parse parentheses
@@ -263,71 +584,39 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 	ke1_t tok;
 	memset(&tok, 0, sizeof(ke1_t));
 	tok.realToken = 1;
-	while (1) { // not a real token
-		// comment
-		if (*p == 0) {
-			// fin du code pas d'autre tolen
-			tok.realToken = 0;
-			return tok;
-		}
 
+	// loop until we find the start of a real token
+	while (1) { // not a real token
+		// eofile
+		if (*p == 0) {	tok.realToken = 0;	return tok;	}
+
+		// comment
 		if (*p == '#') {
-			++p;
-			while (*p != 0) {
-				if (*p == '\n') {
-					++g_sourceCodeLine;
-					break;
-				}
-				++p;
-			}
-			if (*p == 0) {
-				// fin du code pas d'autre tolen
-				tok.realToken = 0;
-				return tok;
-			}
+			
+			if (!ke_manage_comment(&tok, &p)) return tok;
 			continue;
 		}
 
+		// newline
 		if (*p == '\n') {
 			++g_sourceCodeLine;
-			if (g_isLastTokenNop || g_isFirstToken) {
-				++p;
-				continue;
-			}
+			if (g_isLastTokenNop || g_isFirstToken) { ++p;	continue; }
 			*p = ';';
 			break;
 		}
 
+		// command separator. We only keep one separator between commands
 		if (*p == ';') {
-			if (g_isLastTokenNop || g_isFirstToken) {
-				++p;
-				continue;
-			}
+			if (g_isLastTokenNop || g_isFirstToken) { ++p;	continue;	}
 			break;
 		}
 
-		// do not accept control caracter and space
-		if (*p <= 32) {
-			++p;
-			continue;
-		}
+		// no control character and space
+		if (*p <= 32) {	++p; continue; }
 
 		// line continuation
 		if (*p == '\\') {
-			++p;
-			while (*p != 0) {
-				if (*p == '\n') {
-					++g_sourceCodeLine;
-					++p;
-					break;
-				}
-				++p;
-			}
-			if (*p == 0) {
-				// fin du code pas d'autre tolen
-				tok.realToken = 0;
-				return tok;
-			}
+			if (!ke_manage_line_continuation(&tok, &p)) { return tok; }
 			continue;
 		}
 
@@ -335,249 +624,54 @@ ke1_t ke_read_token(char *p, char **r, int *err, int last_is_val) // it doesn't 
 		break;
 	}
 
-	if (*p == 0) {
-		// fin du code pas d'autre tolen
-		tok.realToken = 0;
-		return tok;
-	}
+	if (*p == 0) {	tok.realToken = 0;	return tok; }
 
 	char *q = p;
 	g_isLastTokenNop = 0;
 	tok.sourceLine = g_sourceCodeLine;
 	if (isalpha(*p) || *p == '_') { // a variable or a function
 		for (; *p && (*p == '_' || *p == '.' || isalnum(*p)); ++p);
+		if (*p == 0) {	tok.realToken = 0;	return tok;	}
+
 		tok.name = ke_mystrndup(q, p - q);
 		while (*p) { if (*p == ' ') ++p; else break; }  // pass over the spaces
-		if (*p == '(') {
-			// find 
-			char *t = p;
-			if (strcmp(tok.name, "import") == 0) {
-				while (*t != '"' && *t != '\'') ++t;
-				++t;
-				char * end = t + 1;
-				while (*end != '"' && *end != '\'') ++end;
-				char old = *end;
-				*end = 0;
-				import(t);
-				*end = old;
-			}
+		if (*p == 0) { tok.realToken = 0; return tok; }
 
-			tok.n_args = 1;
-			tok.sourceLine = g_sourceCodeLine;
-			tok.f.defcmd = (cmdp)ke_command(tok.name);
-			if (tok.f.defcmd != NULL) {
-				tok.icmd = ke_command_icmd(tok.name);
-				tok.ttype = KET_CMD;
-				if (strcmp(tok.name, CMD_DEF) == 0) {
-					g_isNextDefName = 1;
-				}
-				tok.ijmp = 0;
-			} else {
-				tok.f.deffunc = (fncp)ke_function(tok.name);
-				if (tok.f.deffunc != NULL) {
-					tok.ttype = KET_FUNC;
-				}
-				else {
-					strcpy(g_lastErrorMessage, tok.name);
-					*err |= KEE_UNFUNC;
-				}
+		if (*p == '(') {
+			// manage import immeately, because DLL must be mounted and available functions of the DLL set
+			if (strcmp(tok.name, "import") == 0) {
+				ke_load_dll(p);
 			}
+			*err = ke_manage_function(&tok, *err);
 		}
 		else if (*p == '[') {
-			// it's a propery
-			tok.n_args = 1;
-			tok.sourceLine = g_sourceCodeLine;
-			tok.ijmp = 0;
-			tok.ttype = KET_PROP;
-			tok.vtype = KEV_REAL;
-			tok.propget = 1;
-			tok.propset = 0;
-			tok.i = 0, tok.r = 0.;
-			khint_t iter = kh_get(KH_FIELD, hname, tok.name);
-			if (kh_end(hname) != iter) {
-				tok.ifield = kh_val(hname, iter);
-			}
-			else {
-				int absent;
-				khint_t iter = kh_put(KH_FIELD, hname, tok.name, &absent);
-				kh_val(hname, iter) = g_gbl_field_qte;
-				tok.ifield = g_gbl_field_qte;
-				g_gbl_field_qte++;
-				//*err |= KEE_UNVAR;
-			}
+			*err = ke_manage_property(&tok, *err);
 		}
 		else {
 			tok.r = ke_constants(tok.name);
 			if (tok.r != 0) {
-				tok.ttype = KET_VAL;
+				tok.ttype = KET_VAL; // a constant is only a real variable
 			}
 			else {
 				tok.f.defvcmd = (vcmdp)ke_command_val(tok.name);
 				if (tok.f.defvcmd != NULL) {
-					if (strcmp(tok.name, CMD_RTN) == 0) {
-						*g_currentDefName = 0;
-					}
-					tok.ttype = KET_VCMD;
-					tok.icmd = ke_command_icmd(tok.name);
+					*err = ke_manage_command(&tok, *err);
 				}
 				else {
-					tok.ttype = KET_VNAME;
-					if (g_isNextDefName) {
-						strcpy(g_currentDefName, tok.name);
-						g_isNextDefName = 0;
-						tok.islocal = 1;
-					}
-					else {
-						if ( (*g_currentDefName != 0) && (strncmp(tok.name,"g_",2) != 0)) {
-							char * localName = ke_calloc_memory(strlen(tok.name) + strlen(g_currentDefName) + 4, 1);
-							strcpy(localName, "__");
-							strcat(localName, g_currentDefName);
-							strcat(localName, "_");
-							strcat(localName, tok.name);
-							ke_free_memory(tok.name);
-							tok.name = localName;
-							tok.islocal = 1;
-						}
-						else {
-							tok.islocal = 0;
-						}
-					}
-
-					ke1_t * recp = NULL;
-					khint_t iter = kh_get(KH_FIELD, hname, tok.name);
-					if (kh_end(hname) != iter) {
-						tok.ifield = kh_val(hname, iter);
-					}
-					else {
-						// if the name contains '.', we must create a variable for the record and
-						// add the current ifield to the record list
-						char * dotp = strchr(tok.name, '.');
-						if (dotp) {
-							// split at the dot. tok.name will contain only the rec name  p.test => p
-							*dotp = 0;
-							int ifield;
-							// check if the record is alreeady there
-							khint_t iter = kh_get(KH_FIELD, hname, tok.name);
-							if (kh_end(hname) != iter) {
-								ifield = kh_val(hname, iter);
-								recp = g_recp[ifield];
-							}
-							else {
-								int absent;
-								char * recName = ke_calloc_memory(strlen(tok.name) + 1, 1);
-								strcpy(recName, tok.name);
-								khint_t iter = kh_put(KH_FIELD, hname, recName, &absent);
-								kh_val(hname, iter) = g_rec_qte;
-								recp = (ke1_t *)ke_calloc_memory(sizeof(ke1_t), 1);
-								recp->ifield = g_rec_qte;
-								recp->name = recName;
-								recp->ttype = KET_REC;
-								recp->vtype = KEV_REC;
-								g_recp[g_rec_qte] = recp;
-								g_rec_qte++;
-							}
-							*dotp = '.';
-						}
-						int absent;
-						khint_t iter = kh_put(KH_FIELD, hname, tok.name, &absent);
-						kh_val(hname, iter) = g_gbl_field_qte;
-						tok.ifield = g_gbl_field_qte;
-						// the field of a record contains a pointer to the record
-						tok.f.recp = recp;
-						g_gbl_field_qte++;
-
-						// create the list if not done
-						if (recp) {
-							if (!recp->obj.reclist) {
-								recp->obj.reclist = ke_calloc_memory(sizeof(int) * 30, 1);
-								recp->i = 0;
-							}
-							// add the new field into the list
-							recp->obj.reclist[recp->i] = tok.ifield;
-							++recp->i;
-						}
-					}
+					*err = ke_manage_variable(&tok, *err);
 				}
 				tok.i = 0, tok.r = 0.;
 			}
+			// default type for a variable
 			tok.vtype = KEV_REAL;
-
 		}
 		*r = p;
 	} else if (isdigit(*p) || *p == '.') { // a number
-		long x;
-		double y;
-		char *pp;
-		tok.ttype = KET_VAL;
-		y = strtod(q, &p);
-		x = strtol(q, &pp, 0); // FIXME: check int/double parsing errors
-		if (q == p && q == pp) { // parse error
-			*err |= KEE_NUM;
-		} else if (p > pp) { // has "." or "[eE]"; then it is a real number
-			tok.vtype = KEV_REAL;
-			tok.i = (int64_t)(y + .5), tok.r = y;
-			*r = p;
-		} else {
-			tok.vtype = KEV_INT;
-			tok.i = x, tok.r = y;
-			*r = pp;
-		}
-
+		*err = ke_manage_digit(&tok, r, &p, &q, *err);
 	} else if (*p == '"' || *p == '\'') { // a string value
-		int c = *p;
-		for (++p; *p && *p != c; ++p)
-			if (*p == '\\') {
-				++p; // escaping
-			}
-		if (*p == c) {
-			tok.ttype = KET_VAL, tok.vtype = KEV_STR;
-			tok.obj.s = ke_mystrndup(q + 1, p - q - 1);
-			*r = p + 1;
-		}
-		else
-		{
-			*err |= KEE_UNQU, *r = p;
-		}
+		*err = ke_manage_string(&tok, r, &p, &q, *err);
 	} else { // an operator
-		tok.ttype = KET_OP;
-		if (*p == '*' && p[1] == '*') tok.op = KEO_POW, tok.f.builtin = ke_op_KEO_POW, tok.n_args = 2, *r = q + 2;
-		else if (*p == '*') tok.op = KEO_MUL, tok.f.builtin = ke_op_KEO_MUL, tok.n_args = 2, *r = q + 1; // FIXME: NOT working for unary operators
-		else if (*p == '/' && p[1] == '/') tok.op = KEO_IDIV, tok.f.builtin = ke_op_KEO_IDIV, tok.n_args = 2, *r = q + 2;
-		else if (*p == '/') tok.op = KEO_DIV, tok.f.builtin = ke_op_KEO_DIV, tok.n_args = 2, *r = q + 1;
-		else if (*p == '%') tok.op = KEO_MOD, tok.f.builtin = ke_op_KEO_MOD, tok.n_args = 2, *r = q + 1;
-		else if (*p == '+') {
-			if (last_is_val) tok.op = KEO_ADD, tok.f.builtin = ke_op_KEO_ADD, tok.n_args = 2;
-			else tok.op = KEO_POS, tok.f.builtin = ke_op_KEO_POS, tok.n_args = 1;
-			*r = q + 1;
-		} else if (*p == '-') {
-			if (last_is_val) tok.op = KEO_SUB, tok.f.builtin = ke_op_KEO_SUB, tok.n_args = 2;
-			else tok.op = KEO_NEG, tok.f.builtin = ke_op_KEO_NEG, tok.n_args = 1;
-
-			*r = q + 1;
-		}
-		else if (*p == '=' && p[1] != '=') tok.op = KEO_LET, tok.f.builtin = ke_op_KEO_EQ, tok.n_args = 2, *r = q + 1;
-		else if (*p == '=' && p[1] == '=') tok.op = KEO_EQ, tok.f.builtin = ke_op_KEO_EQ, tok.n_args = 2, *r = q + 2;
-		else if (*p == '!' && p[1] == '=') tok.op = KEO_NE, tok.f.builtin = ke_op_KEO_NE, tok.n_args = 2, *r = q + 2;
-		else if (*p == '<' && p[1] == '>') tok.op = KEO_NE, tok.f.builtin = ke_op_KEO_NE, tok.n_args = 2, *r = q + 2;
-		else if (*p == '>' && p[1] == '=') tok.op = KEO_GE, tok.f.builtin = ke_op_KEO_GE, tok.n_args = 2, *r = q + 2;
-		else if (*p == '<' && p[1] == '=') tok.op = KEO_LE, tok.f.builtin = ke_op_KEO_LE, tok.n_args = 2, *r = q + 2;
-		else if (*p == '>' && p[1] == '>') tok.op = KEO_RSH, tok.f.builtin = ke_op_KEO_RSH, tok.n_args = 2, *r = q + 2;
-		else if (*p == '<' && p[1] == '<') tok.op = KEO_LSH, tok.f.builtin = ke_op_KEO_LSH, tok.n_args = 2, *r = q + 2;
-		else if (*p == '>') tok.op = KEO_GT, tok.f.builtin = ke_op_KEO_GT, tok.n_args = 2, *r = q + 1;
-		else if (*p == '<') tok.op = KEO_LT, tok.f.builtin = ke_op_KEO_LT, tok.n_args = 2, *r = q + 1;
-		else if (*p == '|' && p[1] == '|') tok.op = KEO_LOR, tok.f.builtin = ke_op_KEO_LOR, tok.n_args = 2, *r = q + 2;
-		else if (*p == '&' && p[1] == '&') tok.op = KEO_LAND, tok.f.builtin = ke_op_KEO_LAND, tok.n_args = 2, *r = q + 2;
-		else if (*p == '|') tok.op = KEO_BOR, tok.f.builtin = ke_op_KEO_BOR, tok.n_args = 2, *r = q + 1;
-		else if (*p == '&') tok.op = KEO_BAND, tok.f.builtin = ke_op_KEO_BAND, tok.n_args = 2, *r = q + 1;
-		else if (*p == '^') tok.op = KEO_BXOR, tok.f.builtin = ke_op_KEO_BXOR, tok.n_args = 2, *r = q + 1;
-		else if (*p == '~') tok.op = KEO_BNOT, tok.f.builtin = ke_op_KEO_BNOT, tok.n_args = 1, *r = q + 1;
-		else if (*p == '!') tok.op = KEO_LNOT, tok.f.builtin = ke_op_KEO_LNOT, tok.n_args = 1, *r = q + 1;
-		else if (*p == ';') tok.op = KEO_NOP, g_isLastTokenNop = 1, tok.f.builtin = ke_op_KEO_NOP, tok.n_args = 2, *r = q + 1;
-		else {
-			tok.ttype = KET_NULL, *err |= KEE_UNOP;
-		}
-
-		g_isFirstToken = 0;
+		*err = ke_manager_operator(&tok, r, &p, &q, last_is_val, *err);
 	}
 	return tok;
 }

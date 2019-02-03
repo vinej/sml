@@ -1,7 +1,8 @@
 i = 2
 c = -1
 for
- if(12*12/4+i==36)
+  print(i)
+  if(12*12/4+i==36)
     c=c+323+i
  else
    c=c+423
@@ -12,3 +13,4 @@ for
  end
 next
 c*1
+print('end')

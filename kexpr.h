@@ -40,6 +40,8 @@
 #define KEV_FILE 12
 #define KEV_BUFFER 13
 
+
+
 #define KEO_NULL  0
 #define KEO_POS   1
 #define KEO_NEG   2
@@ -93,8 +95,8 @@ typedef int * reclistt;
 
 struct ke1_s;
 typedef struct ke1_s {
-	double r;
 	int64_t i;
+	double r;
 	int32_t ijmp; // fast jmp  
 	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, propget:1, propset:1, tofree:1, futur:1, islocal:1; // ttype: token type; vtype: value type  
 	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
@@ -137,6 +139,16 @@ struct kexpr_s {
 	int n;
 	ke1_t *e;
 };
+
+
+#ifdef _DEBUG
+void ke_validate_parameter_qte(ke1_t *p, int nb_param, char * function_name);
+void ke_validate_parameter_vtype(ke1_t * p, int vtype, char * function_name);
+void ke_validate_parameter_ttype(ke1_t * p, int ttype, char * function_name);
+void ke_validate_parameter_not_null(ke1_t * p, void * ptr, char * param_name, char * function_name);
+void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * function_name);
+#endif // _DEBUG
+
 
 typedef struct ke1_t* ke1_p;
 typedef int(*cmdp)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);

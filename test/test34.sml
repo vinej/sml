@@ -16,6 +16,7 @@ print("end")
 
 a = 1
 b = 1
+printf("Saisir une code: ")
 sscanf("1 2","%d %d",a,b)
 printf("a=%d, b=%d\n",a,b)
 

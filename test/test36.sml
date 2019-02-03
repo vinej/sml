@@ -1,5 +1,7 @@
+buffer = newbuffer(0)
+
 print("TEST 08")
-file = fopen("/home/vinej/sml/test/test15.sml", "r")
+file = fopen("c:\sml\test\test15.sml", "r")
 name = "kkkkk"
 qte = 129
 eq = ''
