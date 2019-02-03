@@ -157,9 +157,9 @@ void ke_validate_parameter_qte(ke1_t *p, int nb_param, char * function_name) {
 	}
 }
 
-void ke_validate_parameter_vtype(ke1_t * p, int vtype, char * function_name) {
+void ke_validate_parameter_vtype(ke1_t * p, int vtype, char * param_name, char * function_name) {
 	if (p->vtype != vtype) {
-		printf("SML: Invalid type of parameter at line <%d> (got %d expected %d) for function <%s>", p->sourceLine, p->vtype, vtype, function_name);
+		printf("SML: Invalid type of parameter <%s> type at line <%d> (got %d expected %d) for function <%s>", param_name, p->sourceLine, p->vtype, vtype, function_name);
 		exit(1);
 	}
 }

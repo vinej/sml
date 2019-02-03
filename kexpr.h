@@ -143,7 +143,7 @@ struct kexpr_s {
 
 #ifdef _DEBUG
 void ke_validate_parameter_qte(ke1_t *p, int nb_param, char * function_name);
-void ke_validate_parameter_vtype(ke1_t * p, int vtype, char * function_name);
+void ke_validate_parameter_vtype(ke1_t * p, int vtype, char * param_name, char * function_name);
 void ke_validate_parameter_ttype(ke1_t * p, int ttype, char * function_name);
 void ke_validate_parameter_not_null(ke1_t * p, void * ptr, char * param_name, char * function_name);
 void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * function_name);
