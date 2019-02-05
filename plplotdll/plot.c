@@ -24,19 +24,17 @@
 //#include "..\stb\stb_image_resize.h"
 
 
-ke1_t ** dllg_gbl_fields = NULL;
-typedef int(*hashptr_t)(fncp key, char * name);
-int(*dllke_hash_add)(fncp key, char * name) = NULL;
-void dllke_plot_hash();
+//ke1_t ** sml->fields = NULL;
+int(*dllke_hash_add)(sml_t* sml, fncp key, char * name) = NULL;
+void dllke_plot_hash(sml_t* sml);
 
-SML_EXPORT int SML_CALL ke_dll_hash_add(hashptr_t hashfncPtr, ke1_t ** gbl_fields) {
-	dllg_gbl_fields = gbl_fields;
-	dllke_hash_add = hashfncPtr;
-	dllke_plot_hash();
+SML_EXPORT int SML_CALL ke_dll_hash_add(sml_t* sml) {
+	dllke_plot_hash(sml);
 	return 0;
 }
 
-SML_EXPORT int SML_CALL ke_plimload(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int SML_CALL ke_plimload(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *filename, *x, *y, *n, *zero;
 	zero = &stack[--top];
 	n = &stack[--top];
@@ -50,26 +48,28 @@ SML_EXPORT int SML_CALL ke_plimload(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	//ke_inc_memory();
 	filename->vtype = KEV_IMAGE;
 	filename->obj.image = data;
-	dllg_gbl_fields[x->ifield]->i = xx;
-	dllg_gbl_fields[y->ifield]->i = yy;
-	dllg_gbl_fields[n->ifield]->i = nn;
-	dllg_gbl_fields[x->ifield]->r = xx;
-	dllg_gbl_fields[y->ifield]->r = yy;
-	dllg_gbl_fields[n->ifield]->r = nn;
-	dllg_gbl_fields[x->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[y->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[n->ifield]->vtype = KEV_INT;
+	sml->fields[x->ifield]->i = xx;
+	sml->fields[y->ifield]->i = yy;
+	sml->fields[n->ifield]->i = nn;
+	sml->fields[x->ifield]->r = xx;
+	sml->fields[y->ifield]->r = yy;
+	sml->fields[n->ifield]->r = nn;
+	sml->fields[x->ifield]->vtype = KEV_INT;
+	sml->fields[y->ifield]->vtype = KEV_INT;
+	sml->fields[n->ifield]->vtype = KEV_INT;
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plimfree(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plimfree(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p = &stack[--top];
 	stbi_image_free(p->obj.image);
 	//ke_dec_memory();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plimwrite(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plimwrite(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *filename, *w, *h, *comp, *data, *quality, *type;
 
 	type = &stack[--top];
@@ -99,7 +99,8 @@ SML_EXPORT int __cdecl ke_plimwrite(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plimresize(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plimresize(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *in, *in_w, *in_h, *in_stride, *out_w, *out_h, *out_stride, *nb_channel;
 
 	nb_channel = &stack[--top];
@@ -120,14 +121,16 @@ SML_EXPORT int __cdecl ke_plimresize(sml_t* sml, ke1_t *tokp, int top) { ke1_t *
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsdev(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsdev(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p;
 	p = &stack[--top];
 	plsdev(p->obj.s);
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plinit(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plinit(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p;
 	p = &stack[--top];
 	plsdev(p->obj.s);
@@ -135,7 +138,8 @@ SML_EXPORT int __cdecl ke_plinit(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plenv(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plenv(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
 	axis = &stack[--top];
 	just = &stack[--top];
@@ -147,7 +151,8 @@ SML_EXPORT int __cdecl ke_plenv(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plline(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plline(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y;
 	y = &stack[--top];
 	x = &stack[--top]; 
@@ -157,19 +162,22 @@ SML_EXPORT int __cdecl ke_plline(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plpause(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plpause(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p;
 	p = &stack[--top];
 	plspause((PLBOOL)p->i);
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plend(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plend(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plend();
 	return --top;
 }
 
-SML_EXPORT int __cdecl ke_pl_setcontlabelformat(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pl_setcontlabelformat(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *lexp, *sigdig;
 	sigdig = &stack[--top];
 	lexp = &stack[--top];
@@ -178,7 +186,8 @@ SML_EXPORT int __cdecl ke_pl_setcontlabelformat(sml_t* sml, ke1_t *tokp, int top
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pl_setcontlabelparam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pl_setcontlabelparam(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *offset, *size, *spacing, *active;
 	active = &stack[--top];
 	spacing = &stack[--top];
@@ -189,14 +198,16 @@ SML_EXPORT int __cdecl ke_pl_setcontlabelparam(sml_t* sml, ke1_t *tokp, int top)
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pladv(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pladv(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *page;
 	page = &stack[--top];
 	pladv((PLINT)page->i);
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plarc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plarc(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *a, *b, *angle1, *angle2, *rotate, *fill;
 	fill = &stack[--top];
 	rotate = &stack[--top];
@@ -210,7 +221,8 @@ SML_EXPORT int __cdecl ke_plarc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plaxes(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plaxes(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x0, *y0, *xopt, *xtick, *nxsub, *yopt, *ytick, *nysub;
 	nysub= &stack[--top];
 	ytick = &stack[--top];
@@ -225,7 +237,8 @@ SML_EXPORT int __cdecl ke_plaxes(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plbin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plbin(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *nbin, *x, *y, *opt;
 	opt = &stack[--top];
 	y = &stack[--top];
@@ -236,12 +249,14 @@ SML_EXPORT int __cdecl ke_plbin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plbop(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plbop(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plbop();
 	return --top;
 }
 
-SML_EXPORT int __cdecl ke_plbox(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plbox(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xopt, *xtick, *nxsub, *yopt, *ytick, *nysub;
 	nysub = &stack[--top];
 	ytick = &stack[--top];
@@ -253,7 +268,8 @@ SML_EXPORT int __cdecl ke_plbox(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plbox3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plbox3(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xopt, *xlabel, *xtick, *nxsub, *yopt, *ylabel, *ytick, *nysub, *zopt, *zlabel, *ztick, *nzsub;
 	nzsub = &stack[--top];
 	ztick = &stack[--top];
@@ -274,7 +290,8 @@ SML_EXPORT int __cdecl ke_plbox3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plbtime(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plbtime(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *year, *month, *day, *hour, *min, *sec, *ctime;
 	ctime = &stack[--top];
 	sec = &stack[--top];
@@ -286,23 +303,24 @@ SML_EXPORT int __cdecl ke_plbtime(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 
 
 	ctime = &stack[--top];
-	dllg_gbl_fields[year->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[month->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[day->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[hour->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[min->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[sec->ifield]->vtype = KEV_REAL;
-	plbtime((PLINT_NC_SCALAR)(&(dllg_gbl_fields[year->ifield]->i)),
-			(PLINT_NC_SCALAR)(&(dllg_gbl_fields[month->ifield]->i)),
-			(PLINT_NC_SCALAR)(&(dllg_gbl_fields[day->ifield]->i)),
-			(PLINT_NC_SCALAR)(&(dllg_gbl_fields[hour->ifield]->i)),
-			(PLINT_NC_SCALAR)(&(dllg_gbl_fields[min->ifield]->i)),
-			(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[sec->ifield]->r)),
+	sml->fields[year->ifield]->vtype = KEV_INT;
+	sml->fields[month->ifield]->vtype = KEV_INT;
+	sml->fields[day->ifield]->vtype = KEV_INT;
+	sml->fields[hour->ifield]->vtype = KEV_INT;
+	sml->fields[min->ifield]->vtype = KEV_INT;
+	sml->fields[sec->ifield]->vtype = KEV_REAL;
+	plbtime((PLINT_NC_SCALAR)(&(sml->fields[year->ifield]->i)),
+			(PLINT_NC_SCALAR)(&(sml->fields[month->ifield]->i)),
+			(PLINT_NC_SCALAR)(&(sml->fields[day->ifield]->i)),
+			(PLINT_NC_SCALAR)(&(sml->fields[hour->ifield]->i)),
+			(PLINT_NC_SCALAR)(&(sml->fields[min->ifield]->i)),
+			(PLFLT_NC_SCALAR)(&(sml->fields[sec->ifield]->r)),
 			(PLFLT)ctime->r);
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plctime(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plctime(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *year, *month, *day, *hour, *min, *sec, *ctime;
 	ctime = &stack[--top];
 	sec = &stack[--top];
@@ -311,48 +329,53 @@ SML_EXPORT int __cdecl ke_plctime(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	day = &stack[--top];
 	month = &stack[--top];
 	year = &stack[--top];
-	dllg_gbl_fields[ctime->ifield]->vtype = KEV_REAL;
-	plctime((PLINT)year->i, (PLINT)month->i-1, (PLINT)day->i, (PLINT)hour->i, (PLINT)min->i, (PLFLT)sec->r, (PLFLT_NC_SCALAR)(&(dllg_gbl_fields[ctime->ifield]->r)));
+	sml->fields[ctime->ifield]->vtype = KEV_REAL;
+	plctime((PLINT)year->i, (PLINT)month->i-1, (PLINT)day->i, (PLINT)hour->i, (PLINT)min->i, (PLFLT)sec->r, (PLFLT_NC_SCALAR)(&(sml->fields[ctime->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plcalc_world(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plcalc_world(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *rx, *ry, *wx, *wy, *window;
 	window = &stack[--top];
 	wy = &stack[--top];
 	wx = &stack[--top];
 	ry = &stack[--top];
 	rx = &stack[--top];
-	dllg_gbl_fields[wx->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[wy->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[window->ifield]->vtype = KEV_INT;
+	sml->fields[wx->ifield]->vtype = KEV_REAL;
+	sml->fields[wy->ifield]->vtype = KEV_REAL;
+	sml->fields[window->ifield]->vtype = KEV_INT;
 	plcalc_world((PLFLT)rx->r, (PLFLT)ry->r,
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[wx->ifield]->r)), 
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[wy->ifield]->r)), 
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[window->ifield]->i)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[wx->ifield]->r)), 
+		(PLFLT_NC_SCALAR)(&(sml->fields[wy->ifield]->r)), 
+		(PLINT_NC_SCALAR)(&(sml->fields[window->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plclear(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plclear(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plclear();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plcol0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plcol0(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *col0;
 	col0 = &stack[--top];
 	plcol0((PLINT)col0->i);
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plcol1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plcol1(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *col1;
 	col1 = &stack[--top];
 	plcol1((PLFLT)col1->r);
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plcolorbar(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plcolorbar(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_colorbar_width, *p_colorbar_height, *opt, *position, *x, *y, *x_length, *y_length,
 		*bg_color, *bb_color, *bb_style, *low_cap_color, *high_cap_color, *cont_color, *cont_width,
 		*n_labels, *label_opts, *labels, *naxes, *axis_opts, *ticks, *sub_ticks, *n_values, *values;
@@ -382,11 +405,11 @@ SML_EXPORT int __cdecl ke_plcolorbar(sml_t* sml, ke1_t *tokp, int top) { ke1_t *
 	p_colorbar_height = &stack[--top];
 	p_colorbar_width = &stack[--top];
 
-	dllg_gbl_fields[p_colorbar_width->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_colorbar_height->ifield]->vtype = KEV_REAL;
+	sml->fields[p_colorbar_width->ifield]->vtype = KEV_REAL;
+	sml->fields[p_colorbar_height->ifield]->vtype = KEV_REAL;
 	plcolorbar(
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_colorbar_width->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_colorbar_height->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_colorbar_width->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_colorbar_height->ifield]->r)),
 		(PLINT)opt->i,
 		(PLINT)position->i,
 		(PLFLT)x->r,
@@ -409,12 +432,13 @@ SML_EXPORT int __cdecl ke_plcolorbar(sml_t* sml, ke1_t *tokp, int top) { ke1_t *
 		(PLINT_VECTOR)gsl_vector_int_const_ptr(sub_ticks->obj.vector_int, 0),
 		(PLINT_VECTOR)gsl_vector_int_const_ptr(n_values->obj.vector_int, 0),
 		(PLFLT_MATRIX)gsl_matrix_const_ptr(label_opts->obj.matrix, 0,0));
-	dllg_gbl_fields[p_colorbar_width->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_colorbar_height->ifield]->vtype = KEV_REAL;
+	sml->fields[p_colorbar_width->ifield]->vtype = KEV_REAL;
+	sml->fields[p_colorbar_height->ifield]->vtype = KEV_REAL;
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plconfigtime(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plconfigtime(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *scale, *oﬀset1, *oﬀset2, *ccontrol, *ifbtime_oﬀset, *year, *month, *day, *hour, *min, *sec;
 	sec = &stack[--top];
 	min = &stack[--top];
@@ -434,7 +458,8 @@ SML_EXPORT int __cdecl ke_plconfigtime(sml_t* sml, ke1_t *tokp, int top) { ke1_t
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plcont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plcont(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *f, *nx, *ny, *kx, *lx, *ky, *ly, *clevel, *nlevel, *pltr, *pltr_data;
 
 	pltr_data = &stack[--top];
@@ -455,7 +480,8 @@ SML_EXPORT int __cdecl ke_plcont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plcpstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plcpstrm(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *iplsr, *ﬂags;
 	ﬂags = &stack[--top];
 	iplsr = &stack[--top];
@@ -464,12 +490,14 @@ SML_EXPORT int __cdecl ke_plcpstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plend1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plend1(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plend1();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plenv0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plenv0(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
 	axis = &stack[--top];
 	just = &stack[--top];
@@ -481,12 +509,14 @@ SML_EXPORT int __cdecl ke_plenv0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pleop(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pleop(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	pleop();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plerrx(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plerrx(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *xmin, *xmax, *y;
 	y = &stack[--top];
 	xmax = &stack[--top];
@@ -498,7 +528,8 @@ SML_EXPORT int __cdecl ke_plerrx(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plerry(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plerry(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *ymin, *ymax, *y;
 	y = &stack[--top];
 	ymax = &stack[--top];
@@ -510,12 +541,14 @@ SML_EXPORT int __cdecl ke_plerry(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plfamadv(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plfamadv(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plfamadv();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plfill(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plfill(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y;
 	y = &stack[--top];
 	x = &stack[--top];
@@ -524,7 +557,8 @@ SML_EXPORT int __cdecl ke_plfill(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plfill3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plfill3(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *z;
 	z = &stack[--top];
 	y = &stack[--top];
@@ -537,26 +571,30 @@ SML_EXPORT int __cdecl ke_plfill3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plflush(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plflush(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plflush();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plfont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plfont(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *ifont;
 	ifont = &stack[--top];
 	plfont((PLINT)ifont->i);
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plfontld(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plfontld(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *fnt;
 	fnt = &stack[--top];
 	plfontld((PLINT)fnt->i);
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plGetCursor(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plGetCursor(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *gin;
 	gin = &stack[--top];
 	gin->i = plGetCursor((PLGraphicsIn *)gin->obj.plgrin);
@@ -565,159 +603,170 @@ SML_EXPORT int __cdecl ke_plGetCursor(sml_t* sml, ke1_t *tokp, int top) { ke1_t 
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgchr(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgchr(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_def, *p_ht;
 	p_ht = &stack[--top];
 	p_def = &stack[--top];
 
-	plgchr((PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_def->ifield]->r)), (PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_ht->ifield]->r)));
+	plgchr((PLFLT_NC_SCALAR)(&(sml->fields[p_def->ifield]->r)), (PLFLT_NC_SCALAR)(&(sml->fields[p_ht->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgcmap1_range(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgcmap1_range(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *min_color, *max_color;
 	max_color = &stack[--top];
 	min_color = &stack[--top];
 
-	dllg_gbl_fields[min_color->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[max_color->ifield]->vtype = KEV_REAL;
-	plgcmap1_range((PLFLT_NC_SCALAR)(&(dllg_gbl_fields[min_color->ifield]->r)), (PLFLT_NC_SCALAR)(&(dllg_gbl_fields[max_color->ifield]->r)));
+	sml->fields[min_color->ifield]->vtype = KEV_REAL;
+	sml->fields[max_color->ifield]->vtype = KEV_REAL;
+	plgcmap1_range((PLFLT_NC_SCALAR)(&(sml->fields[min_color->ifield]->r)), (PLFLT_NC_SCALAR)(&(sml->fields[max_color->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgcol0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgcol0(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *icol0, *r, *g, *b;
 	b = &stack[--top];
 	g = &stack[--top];
 	r = &stack[--top];
 	icol0 = &stack[--top];
 
-	dllg_gbl_fields[r->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[g->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[b->ifield]->vtype = KEV_INT;
+	sml->fields[r->ifield]->vtype = KEV_INT;
+	sml->fields[g->ifield]->vtype = KEV_INT;
+	sml->fields[b->ifield]->vtype = KEV_INT;
 	plgcol0((PLINT)icol0->i, 
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[r->ifield]->i)), 
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[g->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[b->ifield]->i)));
+		(PLINT_NC_SCALAR)(&(sml->fields[r->ifield]->i)), 
+		(PLINT_NC_SCALAR)(&(sml->fields[g->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[b->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgcol0a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgcol0a(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *icol0, *r, *g, *b, *alpha;
 	alpha = &stack[--top];
 	b = &stack[--top];
 	g = &stack[--top];
 	r = &stack[--top];
 	icol0 = &stack[--top];
-	dllg_gbl_fields[r->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[g->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[b->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[alpha->ifield]->vtype = KEV_REAL;
+	sml->fields[r->ifield]->vtype = KEV_INT;
+	sml->fields[g->ifield]->vtype = KEV_INT;
+	sml->fields[b->ifield]->vtype = KEV_INT;
+	sml->fields[alpha->ifield]->vtype = KEV_REAL;
 
 	plgcol0a((PLINT)icol0->i,
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[r->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[g->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[b->ifield]->i)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[alpha->ifield]->r)));
+		(PLINT_NC_SCALAR)(&(sml->fields[r->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[g->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[b->ifield]->i)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[alpha->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgcolbg(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgcolbg(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b;
 	b = &stack[--top];
 	g = &stack[--top];
 	r = &stack[--top];
-	dllg_gbl_fields[r->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[g->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[b->ifield]->vtype = KEV_INT;
+	sml->fields[r->ifield]->vtype = KEV_INT;
+	sml->fields[g->ifield]->vtype = KEV_INT;
+	sml->fields[b->ifield]->vtype = KEV_INT;
 
 	plgcolbg(
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[r->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[g->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[b->ifield]->i)));
+		(PLINT_NC_SCALAR)(&(sml->fields[r->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[g->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[b->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgcolbga(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgcolbga(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b, *alpha;
 	alpha = &stack[--top];
 	b = &stack[--top];
 	g = &stack[--top];
 	r = &stack[--top];
 
-	dllg_gbl_fields[r->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[g->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[b->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[alpha->ifield]->vtype = KEV_REAL;
+	sml->fields[r->ifield]->vtype = KEV_INT;
+	sml->fields[g->ifield]->vtype = KEV_INT;
+	sml->fields[b->ifield]->vtype = KEV_INT;
+	sml->fields[alpha->ifield]->vtype = KEV_REAL;
 
 	plgcolbga(
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[r->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[g->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[b->ifield]->i)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[alpha->ifield]->r)));
+		(PLINT_NC_SCALAR)(&(sml->fields[r->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[g->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[b->ifield]->i)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[alpha->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgcompression(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgcompression(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *compression;
 	compression = &stack[--top];
 
-	dllg_gbl_fields[compression->ifield]->vtype = KEV_INT;
-	plgcompression((PLINT_NC_SCALAR)(&(dllg_gbl_fields[compression->ifield]->i)));
+	sml->fields[compression->ifield]->vtype = KEV_INT;
+	plgcompression((PLINT_NC_SCALAR)(&(sml->fields[compression->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgdidev(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgdidev(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_mar, *p_aspect, *p_jx, *p_jy;
 	p_jy = &stack[--top];
 	p_jx = &stack[--top];
 	p_aspect = &stack[--top];
 	p_mar = &stack[--top];
 
-	dllg_gbl_fields[p_mar->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_aspect->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_jx->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_jy->ifield]->vtype = KEV_REAL;
+	sml->fields[p_mar->ifield]->vtype = KEV_REAL;
+	sml->fields[p_aspect->ifield]->vtype = KEV_REAL;
+	sml->fields[p_jx->ifield]->vtype = KEV_REAL;
+	sml->fields[p_jy->ifield]->vtype = KEV_REAL;
 
 	plgdidev(
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_mar->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_aspect->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_jx->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_jy->ifield]->r)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_mar->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_aspect->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_jx->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_jy->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgdiori(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgdiori(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_rot;
 	p_rot = &stack[--top];
 
-	dllg_gbl_fields[p_rot->ifield]->vtype = KEV_REAL;
+	sml->fields[p_rot->ifield]->vtype = KEV_REAL;
 
-	plgdiori((PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_rot->ifield]->r)));
+	plgdiori((PLFLT_NC_SCALAR)(&(sml->fields[p_rot->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgdiplt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgdiplt(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_xmin, *p_ymin, *p_xmax, *p_ymax;
 	p_ymax = &stack[--top];
 	p_xmax = &stack[--top];
 	p_ymin = &stack[--top];
 	p_xmin = &stack[--top];
 
-	dllg_gbl_fields[p_xmin->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_ymin->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_xmax->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_ymax->ifield]->vtype = KEV_REAL;
+	sml->fields[p_xmin->ifield]->vtype = KEV_REAL;
+	sml->fields[p_ymin->ifield]->vtype = KEV_REAL;
+	sml->fields[p_xmax->ifield]->vtype = KEV_REAL;
+	sml->fields[p_ymax->ifield]->vtype = KEV_REAL;
 
 	plgdiplt(
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_xmin->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_ymin->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_xmax->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_ymax->ifield]->r)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_xmin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_ymin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_xmax->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_ymax->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_function_plgdrawmode(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_function_plgdrawmode(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p;
 	p = &stack[top - 1];
 	stack[top++] = *p;
@@ -728,71 +777,77 @@ SML_EXPORT int __cdecl ke_function_plgdrawmode(sml_t* sml, ke1_t *tokp, int top)
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgfam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgfam(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_fam, *p_num, *p_bmax;
 	p_bmax = &stack[--top];
 	p_num = &stack[--top];
 	p_fam = &stack[--top];
 
-	dllg_gbl_fields[p_fam->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_num->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_bmax->ifield]->vtype = KEV_INT;
+	sml->fields[p_fam->ifield]->vtype = KEV_INT;
+	sml->fields[p_num->ifield]->vtype = KEV_INT;
+	sml->fields[p_bmax->ifield]->vtype = KEV_INT;
 
 	plgfam(
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_fam->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_num->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_bmax->ifield]->i)));
+		(PLINT_NC_SCALAR)(&(sml->fields[p_fam->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_num->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_bmax->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgfci(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgfci(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_fci;
 	p_fci = &stack[--top];
 
-	dllg_gbl_fields[p_fci->ifield]->vtype = KEV_INT;
+	sml->fields[p_fci->ifield]->vtype = KEV_INT;
 
-	plgfci((PLUNICODE_NC_SCALAR)(&(dllg_gbl_fields[p_fci->ifield]->i)));
+	plgfci((PLUNICODE_NC_SCALAR)(&(sml->fields[p_fci->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgfnam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgfnam(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *fnam;
 	fnam = &stack[--top];
 
-	dllg_gbl_fields[fnam->ifield]->vtype = KEV_STR;
+	sml->fields[fnam->ifield]->vtype = KEV_STR;
 
-	plgfnam((PLCHAR_NC_VECTOR)(&(dllg_gbl_fields[fnam->ifield]->obj.s)));
+	plgfnam((PLCHAR_NC_VECTOR)(&(sml->fields[fnam->ifield]->obj.s)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgfont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgfont(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_family, *p_style, *p_weight;
 	p_weight = &stack[--top];
 	p_style = &stack[--top];
 	p_family = &stack[--top];
 
-	dllg_gbl_fields[p_family->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_style->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_weight->ifield]->vtype = KEV_INT;
+	sml->fields[p_family->ifield]->vtype = KEV_INT;
+	sml->fields[p_style->ifield]->vtype = KEV_INT;
+	sml->fields[p_weight->ifield]->vtype = KEV_INT;
 
 	plgfont(
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_family->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_style->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_weight->ifield]->i)));
+		(PLINT_NC_SCALAR)(&(sml->fields[p_family->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_style->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_weight->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plglevel(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plglevel(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_level;
 	p_level = &stack[--top];
 
-	dllg_gbl_fields[p_level->ifield]->vtype = KEV_INT;
+	sml->fields[p_level->ifield]->vtype = KEV_INT;
 
-	plglevel((PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_level->ifield]->i)));
+	plglevel((PLINT_NC_SCALAR)(&(sml->fields[p_level->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgpage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgpage(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_xp, *p_yp, *p_xleng, *p_yleng, *p_xoﬀ, *p_yoﬀ;
 	p_yoﬀ = &stack[--top];
 	p_xoﬀ = &stack[--top];
@@ -801,29 +856,31 @@ SML_EXPORT int __cdecl ke_plgpage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	p_yp = &stack[--top];
 	p_xp = &stack[--top];
 
-	dllg_gbl_fields[p_xp->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_yp->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_xleng->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_yleng->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_xoﬀ->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_yoﬀ->ifield]->vtype = KEV_INT;
+	sml->fields[p_xp->ifield]->vtype = KEV_REAL;
+	sml->fields[p_yp->ifield]->vtype = KEV_REAL;
+	sml->fields[p_xleng->ifield]->vtype = KEV_INT;
+	sml->fields[p_yleng->ifield]->vtype = KEV_INT;
+	sml->fields[p_xoﬀ->ifield]->vtype = KEV_INT;
+	sml->fields[p_yoﬀ->ifield]->vtype = KEV_INT;
 
 	plgpage(
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_xp->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_yp->ifield]->r)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_xleng->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_yleng->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_xoﬀ->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_yoﬀ->ifield]->i)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_xp->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_yp->ifield]->r)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_xleng->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_yleng->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_xoﬀ->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_yoﬀ->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_function_plgra(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_function_plgra(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plgra();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgradient(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgradient(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *angle;
 	angle = &stack[--top];
 	y = &stack[--top];
@@ -836,7 +893,8 @@ SML_EXPORT int __cdecl ke_plgradient(sml_t* sml, ke1_t *tokp, int top) { ke1_t *
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgriddata(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgriddata(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z, *npts, *xg, *nptsx, *yg, *nptsy, *zg, *type, *data;
 	data = &stack[--top];
 	type = &stack[--top];
@@ -869,131 +927,140 @@ SML_EXPORT int __cdecl ke_plgriddata(sml_t* sml, ke1_t *tokp, int top) { ke1_t *
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgspa(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgspa(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax;
 	ymax = &stack[--top];
 	ymin = &stack[--top];
 	xmax = &stack[--top];
 	xmin = &stack[--top];
 
-	dllg_gbl_fields[xmin->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[xmax->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[ymin->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[ymax->ifield]->vtype = KEV_REAL;
+	sml->fields[xmin->ifield]->vtype = KEV_REAL;
+	sml->fields[xmax->ifield]->vtype = KEV_REAL;
+	sml->fields[ymin->ifield]->vtype = KEV_REAL;
+	sml->fields[ymax->ifield]->vtype = KEV_REAL;
 
 	plgspa(
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[xmin->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[ymin->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[xmax->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[ymax->ifield]->r)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[xmin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[ymin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[xmax->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[ymax->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgstrm(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_strm;
 	p_strm = &stack[--top];
 
-	dllg_gbl_fields[p_strm->ifield]->vtype = KEV_INT;
+	sml->fields[p_strm->ifield]->vtype = KEV_INT;
 
-	plgstrm((PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_strm->ifield]->i)));
+	plgstrm((PLINT_NC_SCALAR)(&(sml->fields[p_strm->ifield]->i)));
 		
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgver(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgver(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_ver;
 	p_ver = &stack[--top];
 
-	dllg_gbl_fields[p_ver->ifield]->vtype = KEV_STR;
+	sml->fields[p_ver->ifield]->vtype = KEV_STR;
 
-	plgver((PLCHAR_NC_VECTOR)(&(dllg_gbl_fields[p_ver->ifield]->obj.s)));
+	plgver((PLCHAR_NC_VECTOR)(&(sml->fields[p_ver->ifield]->obj.s)));
 
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgvpd(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgvpd(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
 	p_ymax = &stack[--top];
 	p_ymin = &stack[--top];
 	p_xmax = &stack[--top];
 	p_xmin = &stack[--top];
 
-	dllg_gbl_fields[p_xmin->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_xmax->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_ymin->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_ymax->ifield]->vtype = KEV_REAL;
+	sml->fields[p_xmin->ifield]->vtype = KEV_REAL;
+	sml->fields[p_xmax->ifield]->vtype = KEV_REAL;
+	sml->fields[p_ymin->ifield]->vtype = KEV_REAL;
+	sml->fields[p_ymax->ifield]->vtype = KEV_REAL;
 
 	plgvpd(
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_xmin->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_xmax->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_ymin->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_ymax->ifield]->r)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_xmin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_xmax->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_ymin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_ymax->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgvpw(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgvpw(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
 	p_ymax = &stack[--top];
 	p_ymin = &stack[--top];
 	p_xmax = &stack[--top];
 	p_xmin = &stack[--top];
 
-	dllg_gbl_fields[p_xmin->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_xmax->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_ymin->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_ymax->ifield]->vtype = KEV_REAL;
+	sml->fields[p_xmin->ifield]->vtype = KEV_REAL;
+	sml->fields[p_xmax->ifield]->vtype = KEV_REAL;
+	sml->fields[p_ymin->ifield]->vtype = KEV_REAL;
+	sml->fields[p_ymax->ifield]->vtype = KEV_REAL;
 
 	plgvpw(
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_xmin->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_xmax->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_ymin->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_ymax->ifield]->r)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_xmin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_xmax->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_ymin->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_ymax->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgxax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgxax(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_digmax, *p_digits;
 	p_digits = &stack[--top];
 	p_digmax = &stack[--top];
 
-	dllg_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+	sml->fields[p_digits->ifield]->vtype = KEV_INT;
+	sml->fields[p_digits->ifield]->vtype = KEV_INT;
 
 	plgxax(
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_digits->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_digits->ifield]->i)));
+		(PLINT_NC_SCALAR)(&(sml->fields[p_digits->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_digits->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgyax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgyax(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_digmax, *p_digits;
 	p_digits = &stack[--top];
 	p_digmax = &stack[--top];
 
-	dllg_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+	sml->fields[p_digits->ifield]->vtype = KEV_INT;
+	sml->fields[p_digits->ifield]->vtype = KEV_INT;
 
 	plgyax(
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_digits->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_digits->ifield]->i)));
+		(PLINT_NC_SCALAR)(&(sml->fields[p_digits->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_digits->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plgzax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plgzax(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_digmax, *p_digits;
 	p_digits = &stack[--top];
 	p_digmax = &stack[--top];
 
-	dllg_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
-	dllg_gbl_fields[p_digits->ifield]->vtype = KEV_INT;
+	sml->fields[p_digits->ifield]->vtype = KEV_INT;
+	sml->fields[p_digits->ifield]->vtype = KEV_INT;
 
 	plgzax(
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_digits->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_digits->ifield]->i)));
+		(PLINT_NC_SCALAR)(&(sml->fields[p_digits->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_digits->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plhist(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plhist(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *data, *datmin, *datmax, *nbin, *opt;
 	opt = &stack[--top];
 	nbin = &stack[--top];
@@ -1012,7 +1079,8 @@ SML_EXPORT int __cdecl ke_plhist(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plhlsrgb(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plhlsrgb(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *h, *l, *s, *p_r, *p_g, *p_b;
 	p_b = &stack[--top];
 	p_g = &stack[--top];
@@ -1021,21 +1089,22 @@ SML_EXPORT int __cdecl ke_plhlsrgb(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	l = &stack[--top];
 	h = &stack[--top];
 
-	dllg_gbl_fields[p_r->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_g->ifield]->vtype = KEV_REAL;
-	dllg_gbl_fields[p_b->ifield]->vtype = KEV_REAL;
+	sml->fields[p_r->ifield]->vtype = KEV_REAL;
+	sml->fields[p_g->ifield]->vtype = KEV_REAL;
+	sml->fields[p_b->ifield]->vtype = KEV_REAL;
 
 	plhlsrgb(
 		(PLFLT)h->r, 
 		(PLFLT)l->r, 
 		(PLFLT)s->r,
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_r->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_g->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_b->ifield]->r)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_r->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_g->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_b->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plimagefr(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plimagefr(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *valuemin, *valuemax, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
 	pltr = &stack[--top];
@@ -1068,7 +1137,8 @@ SML_EXPORT int __cdecl ke_plimagefr(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plimage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plimage(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax,  *Dxmin, *Dxmax, *Dymin, *Dymax;
 	Dymax = &stack[--top];
 	Dymin = &stack[--top];
@@ -1101,7 +1171,8 @@ SML_EXPORT int __cdecl ke_plimage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pljoin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pljoin(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x1, *y1, *x2, *y2;
 	y2 = &stack[--top];
 	x2 = &stack[--top];
@@ -1116,7 +1187,8 @@ SML_EXPORT int __cdecl ke_pljoin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pllab(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pllab(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xlabel, *ylabel, *tlabel;
 	tlabel = &stack[--top];
 	ylabel = &stack[--top];
@@ -1130,7 +1202,8 @@ SML_EXPORT int __cdecl ke_pllab(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 }
 
 
-SML_EXPORT int __cdecl ke_pllegend(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pllegend(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_legend_width, *p_legend_height, *opt, *position, *x, *y, 
 		*plot_width, *bg_color, *bb_color, *bb_style, *nrow, *ncolumn,
 		*nlegend, *opt_array, *text_oﬀset, *text_scale, *text_spacing, 
@@ -1171,8 +1244,8 @@ SML_EXPORT int __cdecl ke_pllegend(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	p_legend_width = &stack[--top];
 
 	pllegend(
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_legend_width->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_legend_height->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_legend_width->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_legend_height->ifield]->r)),
 		(PLINT)opt->i, 
 		(PLINT)position->i, 
 		(PLFLT)x->r, 
@@ -1205,7 +1278,8 @@ SML_EXPORT int __cdecl ke_pllegend(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pllightsource(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pllightsource(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z;
 	z = &stack[--top];
 	y = &stack[--top];
@@ -1219,7 +1293,8 @@ SML_EXPORT int __cdecl ke_pllightsource(sml_t* sml, ke1_t *tokp, int top) { ke1_
 }
 
 
-SML_EXPORT int __cdecl ke_plline3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plline3(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *z;
 	z = &stack[--top];
 	y = &stack[--top];
@@ -1234,7 +1309,8 @@ SML_EXPORT int __cdecl ke_plline3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pllsty(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pllsty(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *lin;
 	lin = &stack[--top];
 
@@ -1243,7 +1319,8 @@ SML_EXPORT int __cdecl ke_pllsty(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 }
 
 // TODO gin
-SML_EXPORT int __cdecl ke_plmap(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmap(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy;
 	maxy = &stack[--top];
 	miny = &stack[--top];
@@ -1263,7 +1340,8 @@ SML_EXPORT int __cdecl ke_plmap(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 }
 
 // TODO 
-SML_EXPORT int __cdecl ke_plmapfill(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmapfill(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = &stack[--top];
 	plotentries = &stack[--top];
@@ -1287,7 +1365,8 @@ SML_EXPORT int __cdecl ke_plmapfill(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 }
 
 // TODO 
-SML_EXPORT int __cdecl ke_plmapline(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmapline(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = &stack[--top];
 	plotentries = &stack[--top];
@@ -1311,7 +1390,8 @@ SML_EXPORT int __cdecl ke_plmapline(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 }
 
 // TODO 
-SML_EXPORT int __cdecl ke_plmapstring(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmapstring(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *mapform, *name, *string, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = &stack[--top];
 	plotentries = &stack[--top];
@@ -1337,7 +1417,8 @@ SML_EXPORT int __cdecl ke_plmapstring(sml_t* sml, ke1_t *tokp, int top) { ke1_t 
 }
 
 // TODO 
-SML_EXPORT int __cdecl ke_plmaptex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmaptex(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *mapform, *name, *dx, *dy, *just, *text, *minx, *maxx, *miny, *maxy, *plotentry;
 	plotentry = &stack[--top];
 	maxy = &stack[--top];
@@ -1367,7 +1448,8 @@ SML_EXPORT int __cdecl ke_plmaptex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 }
 
 
-SML_EXPORT int __cdecl ke_plmeridians(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmeridians(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *mapform, *dlong, *dlat, *minlong, *maxlong, *minlat, *maxlat;
 	maxlat = &stack[--top];
 	minlat = &stack[--top];
@@ -1388,7 +1470,8 @@ SML_EXPORT int __cdecl ke_plmeridians(sml_t* sml, ke1_t *tokp, int top) { ke1_t 
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plmesh(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmesh(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt;
 	opt = &stack[--top];
 	ny = &stack[--top];
@@ -1407,7 +1490,8 @@ SML_EXPORT int __cdecl ke_plmesh(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plmeshc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmeshc(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = &stack[--top];
 	clevel = &stack[--top];
@@ -1430,15 +1514,17 @@ SML_EXPORT int __cdecl ke_plmeshc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plmkstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmkstrm(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_strm;
 	p_strm = &stack[--top];
 
-	plmkstrm((PLINT_NC_SCALAR)(&(dllg_gbl_fields[p_strm->ifield]->i)));
+	plmkstrm((PLINT_NC_SCALAR)(&(sml->fields[p_strm->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plmtex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmtex(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *side, *disp, *pos, *just, *text;
 	text = &stack[--top];
 	just = &stack[--top];
@@ -1455,7 +1541,8 @@ SML_EXPORT int __cdecl ke_plmtex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plmtex3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plmtex3(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *side, *disp, *pos, *just, *text;
 	text = &stack[--top];
 	just = &stack[--top];
@@ -1472,7 +1559,8 @@ SML_EXPORT int __cdecl ke_plmtex3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plot3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plot3d(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *side;
 	side = &stack[--top];
 	opt = &stack[--top];
@@ -1493,7 +1581,8 @@ SML_EXPORT int __cdecl ke_plot3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plot3dc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plot3dc(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = &stack[--top];
 	clevel = &stack[--top];
@@ -1516,7 +1605,8 @@ SML_EXPORT int __cdecl ke_plot3dc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plot3dl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plot3dl(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel, *indexxmin, *indexxmax, *indexymin, *indexymax;
 
 	indexymax = &stack[--top];
@@ -1551,14 +1641,15 @@ SML_EXPORT int __cdecl ke_plot3dl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 }
 
 
-SML_EXPORT int __cdecl ke_plparseopts(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plparseopts(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p_argc, *argv, *mode;
 	mode = &stack[--top];
 	argv = &stack[--top];
 	p_argc = &stack[top - 1];
 	
 	PLINT st = plparseopts(
-		(int *)(&(dllg_gbl_fields[p_argc->ifield]->i)),
+		(int *)(&(sml->fields[p_argc->ifield]->i)),
 		(PLCHAR_NC_MATRIX)argv->obj.s,
 		(PLINT)mode->i);
 	p_argc->i = st;
@@ -1567,7 +1658,8 @@ SML_EXPORT int __cdecl ke_plparseopts(sml_t* sml, ke1_t *tokp, int top) { ke1_t 
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plpat(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plpat(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *nlin, *inc, *del;
 	del = &stack[--top];
 	inc = &stack[--top];
@@ -1580,7 +1672,8 @@ SML_EXPORT int __cdecl ke_plpat(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plpath(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plpath(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x1, *y1, *x2, *y2;
 	y2 = &stack[--top];
 	x2 = &stack[--top];
@@ -1598,7 +1691,8 @@ SML_EXPORT int __cdecl ke_plpath(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plpoin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plpoin(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *code;
 	code = &stack[--top];
 	y = &stack[--top];
@@ -1614,7 +1708,8 @@ SML_EXPORT int __cdecl ke_plpoin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plpoin3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plpoin3(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *z, *code;
 	code = &stack[--top];
 	z = &stack[--top];
@@ -1632,7 +1727,8 @@ SML_EXPORT int __cdecl ke_plpoin3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plpoly3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plpoly3(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *z, *draw, *ifcc;
 	ifcc = &stack[--top];
 	draw = &stack[--top];
@@ -1652,7 +1748,8 @@ SML_EXPORT int __cdecl ke_plpoly3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plprec(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plprec(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *setp, *prec;
 	prec = &stack[--top];
 	setp = &stack[--top];
@@ -1664,7 +1761,8 @@ SML_EXPORT int __cdecl ke_plprec(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plpsty(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plpsty(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *patt;
 	patt = &stack[--top];
 
@@ -1672,7 +1770,8 @@ SML_EXPORT int __cdecl ke_plpsty(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plptex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plptex(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *dx, *dy, *just, *text;
 	text = &stack[--top];
 	just = &stack[--top];
@@ -1691,7 +1790,8 @@ SML_EXPORT int __cdecl ke_plptex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plptex3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plptex3(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *wx, *wy, *wz, *dx, *dy, *dz, *sx, *sy, *sz, *just, *text;
 	text = &stack[--top];
 	just = &stack[--top];
@@ -1720,7 +1820,8 @@ SML_EXPORT int __cdecl ke_plptex3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plrandd(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plrandd(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *p;
 	p = &stack[top - 1];
 	stack[top++] = *p;
@@ -1732,12 +1833,14 @@ SML_EXPORT int __cdecl ke_plrandd(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plreplot(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plreplot(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plreplot();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plrgbhls(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plrgbhls(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b, *p_h, *p_l, *p_s;
 	p_s = &stack[--top];
 	p_l = &stack[--top];
@@ -1750,13 +1853,14 @@ SML_EXPORT int __cdecl ke_plrgbhls(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 		(PLFLT)r->r,
 		(PLFLT)g->r,
 		(PLFLT)b->r,
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_h->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_l->ifield]->r)),
-		(PLFLT_NC_SCALAR)(&(dllg_gbl_fields[p_s->ifield]->r)));
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_h->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_l->ifield]->r)),
+		(PLFLT_NC_SCALAR)(&(sml->fields[p_s->ifield]->r)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plschr(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plschr(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *def, *scale;
 	scale = &stack[--top];
 	def = &stack[--top];
@@ -1765,7 +1869,8 @@ SML_EXPORT int __cdecl ke_plschr(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap0(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b, *ncol0;
 	ncol0 = &stack[--top];
 	b = &stack[--top];
@@ -1780,7 +1885,8 @@ SML_EXPORT int __cdecl ke_plscmap0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap0a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap0a(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b, *alpha, *ncol0;
 	ncol0 = &stack[--top];
 	alpha = &stack[--top];
@@ -1797,7 +1903,8 @@ SML_EXPORT int __cdecl ke_plscmap0a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap0n(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap0n(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *ncol0;
 	ncol0 = &stack[--top];
 
@@ -1805,7 +1912,8 @@ SML_EXPORT int __cdecl ke_plscmap0n(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap1_range(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap1_range(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *min_color, *max_color;
 	max_color = &stack[--top];
 	min_color = &stack[--top];
@@ -1814,7 +1922,8 @@ SML_EXPORT int __cdecl ke_plscmap1_range(sml_t* sml, ke1_t *tokp, int top) { ke1
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap1(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b, *ncol1;
 	ncol1 = &stack[--top];
 	b = &stack[--top];
@@ -1829,7 +1938,8 @@ SML_EXPORT int __cdecl ke_plscmap1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap1a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap1a(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b, *alpha, *ncol1;
 	ncol1 = &stack[--top];
 	alpha = &stack[--top];
@@ -1846,7 +1956,8 @@ SML_EXPORT int __cdecl ke_plscmap1a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap1l(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap1l(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *itype, *npts, *intensity, *coord1, *coord2, *coord3, *alt_hue_path;
 	alt_hue_path = &stack[--top];
 	coord3 = &stack[--top];
@@ -1867,7 +1978,8 @@ SML_EXPORT int __cdecl ke_plscmap1l(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap1la(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap1la(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *itype, *npts, *intensity, *coord1, *coord2, *coord3, *alpha, *alt_hue_path;
 	alt_hue_path = &stack[--top];
 	alpha = &stack[--top];
@@ -1890,7 +2002,8 @@ SML_EXPORT int __cdecl ke_plscmap1la(sml_t* sml, ke1_t *tokp, int top) { ke1_t *
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscmap1n(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscmap1n(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *ncol1;
 	ncol1 = &stack[--top];
 
@@ -1898,7 +2011,8 @@ SML_EXPORT int __cdecl ke_plscmap1n(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscol0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscol0(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *icol0, *r, *g, *b;
 	b = &stack[--top];
 	g = &stack[--top];
@@ -1913,7 +2027,8 @@ SML_EXPORT int __cdecl ke_plscol0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscol0a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscol0a(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *icol0, *r, *g, *b, *alpha;
 	alpha = &stack[--top];
 	b = &stack[--top];
@@ -1930,7 +2045,8 @@ SML_EXPORT int __cdecl ke_plscol0a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscolbg(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscolbg(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b;
 	b = &stack[--top];
 	g = &stack[--top];
@@ -1943,7 +2059,8 @@ SML_EXPORT int __cdecl ke_plscolbg(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscolbga(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscolbga(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *r, *g, *b, *alpha;
 	alpha = &stack[--top];
 	b = &stack[--top];
@@ -1958,7 +2075,8 @@ SML_EXPORT int __cdecl ke_plscolbga(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscolor(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscolor(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *color;
 	color = &stack[--top];
 
@@ -1966,7 +2084,8 @@ SML_EXPORT int __cdecl ke_plscolor(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plscompression(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plscompression(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *compression;
 	compression = &stack[--top];
 
@@ -1974,7 +2093,8 @@ SML_EXPORT int __cdecl ke_plscompression(sml_t* sml, ke1_t *tokp, int top) { ke1
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsdidev(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsdidev(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *mar, *aspect, *jx, *jy;
 	jy = &stack[--top];
 	jx = &stack[--top];
@@ -1989,7 +2109,8 @@ SML_EXPORT int __cdecl ke_plsdidev(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsdimap(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsdimap(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *dimxmin, *dimxmax, *dimymin, *dimymax, *dimxpmm, *dimypmm;
 	dimypmm = &stack[--top];
 	dimxpmm = &stack[--top];
@@ -2008,7 +2129,8 @@ SML_EXPORT int __cdecl ke_plsdimap(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsdiori(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsdiori(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *rot;
 	rot = &stack[--top];
 
@@ -2016,7 +2138,8 @@ SML_EXPORT int __cdecl ke_plsdiori(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsdiplt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsdiplt(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *ymin, *xmax, *ymax;
 	ymax = &stack[--top];
 	xmax = &stack[--top];
@@ -2031,7 +2154,8 @@ SML_EXPORT int __cdecl ke_plsdiplt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsdiplz(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsdiplz(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *ymin, *xmax, *ymax;
 	ymax = &stack[--top];
 	xmax = &stack[--top];
@@ -2046,7 +2170,8 @@ SML_EXPORT int __cdecl ke_plsdiplz(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsdrawmode(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsdrawmode(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *mode;
 	mode = &stack[--top];
 
@@ -2055,7 +2180,8 @@ SML_EXPORT int __cdecl ke_plsdrawmode(sml_t* sml, ke1_t *tokp, int top) { ke1_t 
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plseed(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plseed(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *seed;
 	seed = &stack[--top];
 
@@ -2064,7 +2190,8 @@ SML_EXPORT int __cdecl ke_plseed(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsesc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsesc(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *esc;
 	esc = &stack[--top];
 
@@ -2073,7 +2200,8 @@ SML_EXPORT int __cdecl ke_plsesc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsetopt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsetopt(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *opt, *optarg;
 	optarg = &stack[--top];
 	opt = &stack[top - 1];
@@ -2085,7 +2213,8 @@ SML_EXPORT int __cdecl ke_plsetopt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsfam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsfam(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *fam, *num, *bmax;
 	bmax = &stack[--top];
 	num = &stack[--top];
@@ -2098,7 +2227,8 @@ SML_EXPORT int __cdecl ke_plsfam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsfci(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsfci(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *fci;
 	fci = &stack[--top];
 
@@ -2106,7 +2236,8 @@ SML_EXPORT int __cdecl ke_plsfci(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsfnam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsfnam(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *fnam;
 	fnam = &stack[--top];
 
@@ -2115,7 +2246,8 @@ SML_EXPORT int __cdecl ke_plsfnam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsfont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsfont(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *family, *style, *weight;
 	weight = &stack[--top];
 	style = &stack[--top];
@@ -2129,7 +2261,8 @@ SML_EXPORT int __cdecl ke_plsfont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 }
 
 
-SML_EXPORT int __cdecl ke_plshades(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plshades(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *a, *nx, *ny, *defined, *xmin, *xmax, *ymin, *ymax, *clevel, *nlevel,
 		*fill_width, *cont_color, *cont_width, *fill, *rectangular, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
@@ -2171,7 +2304,8 @@ SML_EXPORT int __cdecl ke_plshades(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plshade(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plshade(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *a, *nx, *ny, *defined, *xmin, *xmax, *ymin, *ymax, *shade_min, *shade_max, *sh_cmap, *sh_color, *sh_width,
 		*min_color, *min_width, *max_color, *max_width, *fill, *rectangular, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
@@ -2221,7 +2355,8 @@ SML_EXPORT int __cdecl ke_plshade(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plslabelfunc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plslabelfunc(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *label_func, *label_data;
 	label_data = &stack[--top];
 	label_func = &stack[--top];
@@ -2232,7 +2367,8 @@ SML_EXPORT int __cdecl ke_plslabelfunc(sml_t* sml, ke1_t *tokp, int top) { ke1_t
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsmaj(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsmaj(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *def, *scale;
 	scale = &stack[--top];
 	def = &stack[--top];
@@ -2241,7 +2377,8 @@ SML_EXPORT int __cdecl ke_plsmaj(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsmem(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsmem(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *maxx, *maxy, *plotmem;
 	plotmem = &stack[--top];
 	maxy = &stack[--top];
@@ -2251,7 +2388,8 @@ SML_EXPORT int __cdecl ke_plsmem(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsmema(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsmema(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *maxx, *maxy, *plotmem;
 	plotmem = &stack[--top];
 	maxy = &stack[--top];
@@ -2261,7 +2399,8 @@ SML_EXPORT int __cdecl ke_plsmema(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsmin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsmin(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *def, *scale;
 	scale = &stack[--top];
 	def = &stack[--top];
@@ -2270,7 +2409,8 @@ SML_EXPORT int __cdecl ke_plsmin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsori(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsori(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *ori;
 	ori = &stack[--top];
 
@@ -2278,7 +2418,8 @@ SML_EXPORT int __cdecl ke_plsori(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plspage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plspage(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *xp, *yp, *xleng, *yleng, *xoff, *yoff;
 	yoff = &stack[--top];
 	xoff = &stack[--top];
@@ -2297,7 +2438,8 @@ SML_EXPORT int __cdecl ke_plspage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plspal0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plspal0(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *filename;
 	filename = &stack[--top];
 
@@ -2305,7 +2447,8 @@ SML_EXPORT int __cdecl ke_plspal0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plspal1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plspal1(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *filename, *interpolate;
 	interpolate = &stack[--top];
 	filename = &stack[--top];
@@ -2314,7 +2457,8 @@ SML_EXPORT int __cdecl ke_plspal1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsstrm(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *strm;
 	strm = &stack[--top];
 
@@ -2322,7 +2466,8 @@ SML_EXPORT int __cdecl ke_plsstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plssub(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plssub(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *nx, *ny;
 	ny = &stack[--top];
 	nx = &stack[--top];
@@ -2331,7 +2476,8 @@ SML_EXPORT int __cdecl ke_plssub(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plssym(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plssym(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *def, *scale;
 	scale = &stack[--top];
 	def = &stack[--top];
@@ -2340,7 +2486,8 @@ SML_EXPORT int __cdecl ke_plssym(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstar(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstar(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *nx, *ny;
 	ny = &stack[--top];
 	nx = &stack[--top];
@@ -2349,7 +2496,8 @@ SML_EXPORT int __cdecl ke_plstar(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstart(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstart(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *devname, *nx, *ny;
 	ny = &stack[--top];
 	nx = &stack[--top];
@@ -2362,7 +2510,8 @@ SML_EXPORT int __cdecl ke_plstart(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstransform(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstransform(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *coordinate_transform, *coordinate_transform_data;
 	coordinate_transform_data = &stack[--top];
 	coordinate_transform = &stack[--top];
@@ -2373,7 +2522,8 @@ SML_EXPORT int __cdecl ke_plstransform(sml_t* sml, ke1_t *tokp, int top) { ke1_t
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstring(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstring(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *string;
 	string = &stack[--top];
 	y = &stack[--top];
@@ -2388,7 +2538,8 @@ SML_EXPORT int __cdecl ke_plstring(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstring3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstring3(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *z, *string;
 	string = &stack[--top];
 	z = &stack[--top];
@@ -2405,7 +2556,8 @@ SML_EXPORT int __cdecl ke_plstring3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstripa(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstripa(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *id, *pen, *x, *y;
 	y = &stack[--top];
 	x = &stack[--top];
@@ -2420,7 +2572,8 @@ SML_EXPORT int __cdecl ke_plstripa(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstripc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstripc(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *id, *xspec, *yspec, *xmin, *xmax, *xjump, *ymin, *ymax, *xlpos, *ylpos, 
 		*y_ascl, *acc, *colbox, *collab, *colline, *styline, *legline, *labx, *laby, *labtop;
 	labtop = &stack[--top];
@@ -2445,7 +2598,7 @@ SML_EXPORT int __cdecl ke_plstripc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	id = &stack[--top];
 
 	plstripc(
-		(PLINT_NC_SCALAR)(&(dllg_gbl_fields[id->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[id->ifield]->i)),
 		(PLCHAR_VECTOR)xspec->obj.s,
 		(PLCHAR_VECTOR)yspec->obj.s,
 		(PLFLT)xmin->r, 
@@ -2468,7 +2621,8 @@ SML_EXPORT int __cdecl ke_plstripc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstripd(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstripd(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *id;
 	id = &stack[--top];
 
@@ -2476,7 +2630,8 @@ SML_EXPORT int __cdecl ke_plstripd(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plstyl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plstyl(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *nms, *mark, *space;
 	space = &stack[--top];
 	mark = &stack[--top];
@@ -2489,7 +2644,8 @@ SML_EXPORT int __cdecl ke_plstyl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsurf3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsurf3d(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = &stack[--top];
 	clevel = &stack[--top];
@@ -2512,7 +2668,8 @@ SML_EXPORT int __cdecl ke_plsurf3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *st
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsurf3dl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsurf3dl(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel, *indexxmin, *indexxmax, *indexymin, *indexymax;
 	indexymax = &stack[--top];
 	indexymin = &stack[--top];
@@ -2543,7 +2700,8 @@ SML_EXPORT int __cdecl ke_plsurf3dl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsvect(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsvect(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *arrowx, *arrowy, *npts, *fill;
 	fill = &stack[--top];
 	npts = &stack[--top];
@@ -2558,7 +2716,8 @@ SML_EXPORT int __cdecl ke_plsvect(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsvpa(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsvpa(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax;
 	ymax = &stack[--top];
 	ymin = &stack[--top];
@@ -2573,7 +2732,8 @@ SML_EXPORT int __cdecl ke_plsvpa(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsxax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsxax(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *digmax, *digits;
 	digits = &stack[--top];
 	digmax = &stack[--top];
@@ -2582,7 +2742,8 @@ SML_EXPORT int __cdecl ke_plsxax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsyax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsyax(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *digmax, *digits;
 	digits = &stack[--top];
 	digmax = &stack[--top];
@@ -2591,7 +2752,8 @@ SML_EXPORT int __cdecl ke_plsyax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plsym(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plsym(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *n, *x, *y, *code;
 	code = &stack[--top];
 	y = &stack[--top];
@@ -2606,7 +2768,8 @@ SML_EXPORT int __cdecl ke_plsym(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plszax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plszax(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *digmax, *digits;
 	digits = &stack[--top];
 	digmax = &stack[--top];
@@ -2615,12 +2778,14 @@ SML_EXPORT int __cdecl ke_plszax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pltext(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pltext(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	pltext();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_pltimefmt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_pltimefmt(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *fmt;
 	fmt = &stack[--top];
 
@@ -2628,7 +2793,8 @@ SML_EXPORT int __cdecl ke_pltimefmt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *s
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plvasp(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plvasp(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *aspect;
 	aspect = &stack[--top];
 
@@ -2636,7 +2802,8 @@ SML_EXPORT int __cdecl ke_plvasp(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plvect(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plvect(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *u, *v, *nx, *ny, *scale, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
 	pltr = &stack[--top];
@@ -2657,7 +2824,8 @@ SML_EXPORT int __cdecl ke_plvect(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plvpas(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plvpas(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax, *aspect;
 	aspect = &stack[--top];
 	ymax = &stack[--top];
@@ -2674,7 +2842,8 @@ SML_EXPORT int __cdecl ke_plvpas(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plvpor(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plvpor(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax;
 	ymax = &stack[--top];
 	ymin = &stack[--top];
@@ -2689,12 +2858,14 @@ SML_EXPORT int __cdecl ke_plvpor(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plvsta(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plvsta(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	plvsta();
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plw3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plw3d(sml_t* sml, ke1_t *tokp, int top) { 
+	ke1_t *stack = sml->stack;
 	ke1_t *basex,* basey, *height, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *alt, *az;
 	az = &stack[--top];
 	alt = &stack[--top];
@@ -2724,7 +2895,8 @@ SML_EXPORT int __cdecl ke_plw3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack
 }
 
 
-SML_EXPORT int __cdecl ke_plwidth(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plwidth(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *width;
 	width = &stack[--top];
 
@@ -2733,7 +2905,8 @@ SML_EXPORT int __cdecl ke_plwidth(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plwind(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plwind(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax;
 	ymax = &stack[--top];
 	ymin = &stack[--top];
@@ -2748,17 +2921,19 @@ SML_EXPORT int __cdecl ke_plwind(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stac
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plxormod(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plxormod(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *mode, *status;
 	status = &stack[--top];
 	mode = &stack[--top];
 
 	plxormod((PLBOOL)mode->i,
-		(PLBOOL_NC_SCALAR)(&(dllg_gbl_fields[status->ifield]->i)));
+		(PLBOOL_NC_SCALAR)(&(sml->fields[status->ifield]->i)));
 	return top;
 }
 
-SML_EXPORT int __cdecl ke_plabort(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
+SML_EXPORT int __cdecl ke_plabort(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
 	ke1_t *message;
 	message = &stack[--top];
 
@@ -2766,193 +2941,193 @@ SML_EXPORT int __cdecl ke_plabort(sml_t* sml, ke1_t *tokp, int top) { ke1_t *sta
 	return top;
 }
 
-void dllke_plot_hash() {
+void dllke_plot_hash(sml_t* sml) {
 
-	dllke_hash_add((fncp)&ke_plimload, PLOT_IMLOAD);
-	dllke_hash_add((fncp)&ke_plimfree, PLOT_IMFREE);
-	dllke_hash_add((fncp)&ke_plimwrite, PLOT_IMWRITE);
-	dllke_hash_add((fncp)&ke_plimresize, PLOT_IMRESIZE);
+	dllke_hash_add(sml, (fncp)&ke_plimload, PLOT_IMLOAD);
+	dllke_hash_add(sml, (fncp)&ke_plimfree, PLOT_IMFREE);
+	dllke_hash_add(sml, (fncp)&ke_plimwrite, PLOT_IMWRITE);
+	dllke_hash_add(sml, (fncp)&ke_plimresize, PLOT_IMRESIZE);
 
-	dllke_hash_add((fncp)&ke_plgcompression, PLOT_PLGCOMPRESSION);
-	dllke_hash_add((fncp)&ke_plgdidev, PLOT_PLGDIDEV);
-	dllke_hash_add((fncp)&ke_plgdiori, PLOT_PLGDIORI);
-	dllke_hash_add((fncp)&ke_plgdiplt, PLOT_PLGDIPL);
-	dllke_hash_add((fncp)&ke_function_plgdrawmode, PLOT_FUNCTION_PLGDRAWMODE);
-	dllke_hash_add((fncp)&ke_plgfam, PLOT_PLGFAM);
-	dllke_hash_add((fncp)&ke_plgfci, PLOT_PLGFCI);
-	dllke_hash_add((fncp)&ke_plgfnam, PLOT_PLGFNAM);
-	dllke_hash_add((fncp)&ke_plgfont, PLOT_PLGFONT);
-	dllke_hash_add((fncp)&ke_plglevel, PLOT_PLGLEVEL);
-	dllke_hash_add((fncp)&ke_plgpage, PLOT_PLGPAGE);
-	dllke_hash_add((fncp)&ke_function_plgra, PLOT_FUNCTION_PLGRA);
-	dllke_hash_add((fncp)&ke_plgradient, PLOT_PLGRADIENT);
-	dllke_hash_add((fncp)&ke_plgriddata, PLOT_PLGRIDDATA);
-	dllke_hash_add((fncp)&ke_plgspa, PLOT_PLGSPA);
-	dllke_hash_add((fncp)&ke_plgstrm, PLOT_PLGSTRM);
-	dllke_hash_add((fncp)&ke_plgver, PLOT_PLGVER);
-	dllke_hash_add((fncp)&ke_plgvpd, PLOT_PLGVPD);
-	dllke_hash_add((fncp)&ke_plgvpw, PLOT_PLGVPW);
-	dllke_hash_add((fncp)&ke_plgxax, PLOT_PLGXAX);
-	dllke_hash_add((fncp)&ke_plgyax, PLOT_PLGYAX);
-	dllke_hash_add((fncp)&ke_plgzax, PLOT_PLGZAX);
-	dllke_hash_add((fncp)&ke_plhist, PLOT_PLHIST);
-	dllke_hash_add((fncp)&ke_plhlsrgb, PLOT_PLHLSRGB);
-	dllke_hash_add((fncp)&ke_plimagefr, PLOT_PLIMAGEFR);
-	dllke_hash_add((fncp)&ke_plimage, PLOT_PLIMAGE);
-	dllke_hash_add((fncp)&ke_pljoin, PLOT_PLJOIN);
-	dllke_hash_add((fncp)&ke_pllab, PLOT_PLLAB);
-	dllke_hash_add((fncp)&ke_pllegend, PLOT_PLLEGEND);
-	dllke_hash_add((fncp)&ke_pllightsource, PLOT_PLLIGHTSOURCE);
-	dllke_hash_add((fncp)&ke_plline3, PLOT_PLLINE3);
-	dllke_hash_add((fncp)&ke_pllsty, PLOT_PLLSTY);
-	dllke_hash_add((fncp)&ke_plmap, PLOT_PLMAP);
-	dllke_hash_add((fncp)&ke_plmapfill, PLOT_PLMAPFILL);
-	dllke_hash_add((fncp)&ke_plmapline, PLOT_PLMAPLINE);
-	dllke_hash_add((fncp)&ke_plmapstring, PLOT_PLMAPSTRING);
-	dllke_hash_add((fncp)&ke_plmaptex, PLOT_PLMAPTEX);
-	dllke_hash_add((fncp)&ke_plmeridians, PLOT_PLMERIDIANS);
-	dllke_hash_add((fncp)&ke_plmesh, PLOT_PLMESH);
-	dllke_hash_add((fncp)&ke_plmeshc, PLOT_PLMESHC);
-	dllke_hash_add((fncp)&ke_plmkstrm, PLOT_PLMKSTRM);
-	dllke_hash_add((fncp)&ke_plmtex, PLOT_PLMTEX);
-	dllke_hash_add((fncp)&ke_plmtex3, PLOT_PLMTEX3);
-	dllke_hash_add((fncp)&ke_plot3d, PLOT_PLOT3D);
-	dllke_hash_add((fncp)&ke_plot3dc, PLOT_PLOT3DC);
-	dllke_hash_add((fncp)&ke_plot3dl, PLOT_PLOT3DL);
-	dllke_hash_add((fncp)&ke_plparseopts, PLOT_PLPARSEOPTS);
-	dllke_hash_add((fncp)&ke_plpat, PLOT_PLPAT);
-	dllke_hash_add((fncp)&ke_plpath, PLOT_PLPATH);
-	dllke_hash_add((fncp)&ke_plpoin, PLOT_PLPOIN);
-	dllke_hash_add((fncp)&ke_plpoin3, PLOT_PLPOIN3);
-	dllke_hash_add((fncp)&ke_plpoly3, PLOT_PLPOLY3);
-	dllke_hash_add((fncp)&ke_plprec, PLOT_PLPREC);
-	dllke_hash_add((fncp)&ke_plpsty, PLOT_PLPSTY);
-	dllke_hash_add((fncp)&ke_plptex, PLOT_PLPTEX);
-	dllke_hash_add((fncp)&ke_plptex3, PLOT_PLPTEX3);
-	dllke_hash_add((fncp)&ke_plrandd, PLOT_PLRANDD);
-	dllke_hash_add((fncp)&ke_plreplot, PLOT_PLREPLOT);
-	dllke_hash_add((fncp)&ke_plrgbhls, PLOT_PLRGBHLS);
-	dllke_hash_add((fncp)&ke_plschr, PLOT_PLSCHR);
-	dllke_hash_add((fncp)&ke_plscmap0, PLOT_PLSCMAP0);
-	dllke_hash_add((fncp)&ke_plscmap0a, PLOT_PLSCMAP0A);
-	dllke_hash_add((fncp)&ke_plscmap0n, PLOT_PLSCMAP0N);
-	dllke_hash_add((fncp)&ke_plscmap1_range, PLOT_PLSCMAP1_RANGE);
-	dllke_hash_add((fncp)&ke_plscmap1, PLOT_PLSCMAP1);
-	dllke_hash_add((fncp)&ke_plscmap1a, PLOT_PLSCMAP1A);
-	dllke_hash_add((fncp)&ke_plscmap1l, PLOT_PLSCMAP1L);
-	dllke_hash_add((fncp)&ke_plscmap1la, PLOT_PLSCMAP1LA);
-	dllke_hash_add((fncp)&ke_plscmap1n, PLOT_PLSCMAP1N);
-	dllke_hash_add((fncp)&ke_plscol0, PLOT_PLSCOL0);
-	dllke_hash_add((fncp)&ke_plscol0a, PLOT_PLSCOL0A);
-	dllke_hash_add((fncp)&ke_plscolbg, PLOT_PLSCOLBG);
-	dllke_hash_add((fncp)&ke_plscolbga, PLOT_PLSCOLBGA);
-	dllke_hash_add((fncp)&ke_plscolor, PLOT_PLSCOLOR);
-	dllke_hash_add((fncp)&ke_plscompression, PLOT_PLSCOMPRESSION);
-	dllke_hash_add((fncp)&ke_plsdidev, PLOT_PLSDIDEV);
-	dllke_hash_add((fncp)&ke_plsdimap, PLOT_PLSDIMAP);
-	dllke_hash_add((fncp)&ke_plsdiori, PLOT_PLSDIORI);
-	dllke_hash_add((fncp)&ke_plsdiplt, PLOT_PLSDIPLT);
-	dllke_hash_add((fncp)&ke_plsdiplz, PLOT_PLSDIPLZ);
-	dllke_hash_add((fncp)&ke_plsdrawmode, PLOT_PLSDRAWMODE);
-	dllke_hash_add((fncp)&ke_plseed, PLOT_PLSEED);
-	dllke_hash_add((fncp)&ke_plsesc, PLOT_PLSESC);
-	dllke_hash_add((fncp)&ke_plsetopt, PLOT_PLSETOPT);
-	dllke_hash_add((fncp)&ke_plsfam, PLOT_PLSFAM);
-	dllke_hash_add((fncp)&ke_plsfci, PLOT_PLSFCI);
-	dllke_hash_add((fncp)&ke_plsfnam, PLOT_PLSFNAM);
-	dllke_hash_add((fncp)&ke_plsfont, PLOT_PLSFONT);
-	dllke_hash_add((fncp)&ke_plshades, PLOT_PLSHADES);
-	dllke_hash_add((fncp)&ke_plshade, PLOT_PLSHADE);
-	dllke_hash_add((fncp)&ke_plslabelfunc, PLOT_PLSLABELFUNC);
-	dllke_hash_add((fncp)&ke_plsmaj, PLOT_PLSMAJ);
-	dllke_hash_add((fncp)&ke_plsmem, PLOT_PLSMEM);
-	dllke_hash_add((fncp)&ke_plsmema, PLOT_PLSMEMA);
-	dllke_hash_add((fncp)&ke_plsmin, PLOT_PLSMIN);
-	dllke_hash_add((fncp)&ke_plsori, PLOT_PLSORI);
-	dllke_hash_add((fncp)&ke_plspage, PLOT_PLSPAGE);
-	dllke_hash_add((fncp)&ke_plspal0, PLOT_PLSPAL0);
-	dllke_hash_add((fncp)&ke_plspal1, PLOT_PLSPAL1);
-	dllke_hash_add((fncp)&ke_plsstrm, PLOT_PLSSTRM);
-	dllke_hash_add((fncp)&ke_plssub, PLOT_PLSSUB);
-	dllke_hash_add((fncp)&ke_plssym, PLOT_PLSSYM);
-	dllke_hash_add((fncp)&ke_plstar, PLOT_PLSTAR);
-	dllke_hash_add((fncp)&ke_plstart, PLOT_PLSTART);
-	dllke_hash_add((fncp)&ke_plstransform, PLOT_PLSTRANSFORM);
-	dllke_hash_add((fncp)&ke_plstring, PLOT_PLSTRING);
-	dllke_hash_add((fncp)&ke_plstring3, PLOT_PLSTRING3);
-	dllke_hash_add((fncp)&ke_plstripa, PLOT_PLSTRIPA);
-	dllke_hash_add((fncp)&ke_plstripc, PLOT_PLSTRIPC);
-	dllke_hash_add((fncp)&ke_plstripd, PLOT_PLSTRIPD);
-	dllke_hash_add((fncp)&ke_plstyl, PLOT_PLSTYL);
-	dllke_hash_add((fncp)&ke_plsurf3d, PLOT_PLSURF3D);
-	dllke_hash_add((fncp)&ke_plsurf3dl, PLOT_PLSURF3DL);
-	dllke_hash_add((fncp)&ke_plsvect, PLOT_PLSVECT);
-	dllke_hash_add((fncp)&ke_plsvpa, PLOT_PLSVPA);
-	dllke_hash_add((fncp)&ke_plsxax, PLOT_PLSXAX);
-	dllke_hash_add((fncp)&ke_plsyax, PLOT_PLSYAX);
-	dllke_hash_add((fncp)&ke_plsym, PLOT_PLSYM);
-	dllke_hash_add((fncp)&ke_plszax, PLOT_PLSZAX);
-	dllke_hash_add((fncp)&ke_pltext, PLOT_PLTEXT);
-	dllke_hash_add((fncp)&ke_pltimefmt, PLOT_PLTIMEFMT);
-	dllke_hash_add((fncp)&ke_plvasp, PLOT_PLVASP);
-	dllke_hash_add((fncp)&ke_plvect, PLOT_PLVECT);
-	dllke_hash_add((fncp)&ke_plvpas, PLOT_PLVPAS);
-	dllke_hash_add((fncp)&ke_plvpor, PLOT_PLVPOR);
-	dllke_hash_add((fncp)&ke_plvsta, PLOT_PLVSTA);
-	dllke_hash_add((fncp)&ke_plwidth, PLOT_PLWIDTH);
-	dllke_hash_add((fncp)&ke_plwind, PLOT_PLWIND);
-	dllke_hash_add((fncp)&ke_plxormod, PLOT_PLXORMOD);
-	dllke_hash_add((fncp)&ke_plabort, PLOT_PLABORT);
+	dllke_hash_add(sml, (fncp)&ke_plgcompression, PLOT_PLGCOMPRESSION);
+	dllke_hash_add(sml, (fncp)&ke_plgdidev, PLOT_PLGDIDEV);
+	dllke_hash_add(sml, (fncp)&ke_plgdiori, PLOT_PLGDIORI);
+	dllke_hash_add(sml, (fncp)&ke_plgdiplt, PLOT_PLGDIPL);
+	dllke_hash_add(sml, (fncp)&ke_function_plgdrawmode, PLOT_FUNCTION_PLGDRAWMODE);
+	dllke_hash_add(sml, (fncp)&ke_plgfam, PLOT_PLGFAM);
+	dllke_hash_add(sml, (fncp)&ke_plgfci, PLOT_PLGFCI);
+	dllke_hash_add(sml, (fncp)&ke_plgfnam, PLOT_PLGFNAM);
+	dllke_hash_add(sml, (fncp)&ke_plgfont, PLOT_PLGFONT);
+	dllke_hash_add(sml, (fncp)&ke_plglevel, PLOT_PLGLEVEL);
+	dllke_hash_add(sml, (fncp)&ke_plgpage, PLOT_PLGPAGE);
+	dllke_hash_add(sml, (fncp)&ke_function_plgra, PLOT_FUNCTION_PLGRA);
+	dllke_hash_add(sml, (fncp)&ke_plgradient, PLOT_PLGRADIENT);
+	dllke_hash_add(sml, (fncp)&ke_plgriddata, PLOT_PLGRIDDATA);
+	dllke_hash_add(sml, (fncp)&ke_plgspa, PLOT_PLGSPA);
+	dllke_hash_add(sml, (fncp)&ke_plgstrm, PLOT_PLGSTRM);
+	dllke_hash_add(sml, (fncp)&ke_plgver, PLOT_PLGVER);
+	dllke_hash_add(sml, (fncp)&ke_plgvpd, PLOT_PLGVPD);
+	dllke_hash_add(sml, (fncp)&ke_plgvpw, PLOT_PLGVPW);
+	dllke_hash_add(sml, (fncp)&ke_plgxax, PLOT_PLGXAX);
+	dllke_hash_add(sml, (fncp)&ke_plgyax, PLOT_PLGYAX);
+	dllke_hash_add(sml, (fncp)&ke_plgzax, PLOT_PLGZAX);
+	dllke_hash_add(sml, (fncp)&ke_plhist, PLOT_PLHIST);
+	dllke_hash_add(sml, (fncp)&ke_plhlsrgb, PLOT_PLHLSRGB);
+	dllke_hash_add(sml, (fncp)&ke_plimagefr, PLOT_PLIMAGEFR);
+	dllke_hash_add(sml, (fncp)&ke_plimage, PLOT_PLIMAGE);
+	dllke_hash_add(sml, (fncp)&ke_pljoin, PLOT_PLJOIN);
+	dllke_hash_add(sml, (fncp)&ke_pllab, PLOT_PLLAB);
+	dllke_hash_add(sml, (fncp)&ke_pllegend, PLOT_PLLEGEND);
+	dllke_hash_add(sml, (fncp)&ke_pllightsource, PLOT_PLLIGHTSOURCE);
+	dllke_hash_add(sml, (fncp)&ke_plline3, PLOT_PLLINE3);
+	dllke_hash_add(sml, (fncp)&ke_pllsty, PLOT_PLLSTY);
+	dllke_hash_add(sml, (fncp)&ke_plmap, PLOT_PLMAP);
+	dllke_hash_add(sml, (fncp)&ke_plmapfill, PLOT_PLMAPFILL);
+	dllke_hash_add(sml, (fncp)&ke_plmapline, PLOT_PLMAPLINE);
+	dllke_hash_add(sml, (fncp)&ke_plmapstring, PLOT_PLMAPSTRING);
+	dllke_hash_add(sml, (fncp)&ke_plmaptex, PLOT_PLMAPTEX);
+	dllke_hash_add(sml, (fncp)&ke_plmeridians, PLOT_PLMERIDIANS);
+	dllke_hash_add(sml, (fncp)&ke_plmesh, PLOT_PLMESH);
+	dllke_hash_add(sml, (fncp)&ke_plmeshc, PLOT_PLMESHC);
+	dllke_hash_add(sml, (fncp)&ke_plmkstrm, PLOT_PLMKSTRM);
+	dllke_hash_add(sml, (fncp)&ke_plmtex, PLOT_PLMTEX);
+	dllke_hash_add(sml, (fncp)&ke_plmtex3, PLOT_PLMTEX3);
+	dllke_hash_add(sml, (fncp)&ke_plot3d, PLOT_PLOT3D);
+	dllke_hash_add(sml, (fncp)&ke_plot3dc, PLOT_PLOT3DC);
+	dllke_hash_add(sml, (fncp)&ke_plot3dl, PLOT_PLOT3DL);
+	dllke_hash_add(sml, (fncp)&ke_plparseopts, PLOT_PLPARSEOPTS);
+	dllke_hash_add(sml, (fncp)&ke_plpat, PLOT_PLPAT);
+	dllke_hash_add(sml, (fncp)&ke_plpath, PLOT_PLPATH);
+	dllke_hash_add(sml, (fncp)&ke_plpoin, PLOT_PLPOIN);
+	dllke_hash_add(sml, (fncp)&ke_plpoin3, PLOT_PLPOIN3);
+	dllke_hash_add(sml, (fncp)&ke_plpoly3, PLOT_PLPOLY3);
+	dllke_hash_add(sml, (fncp)&ke_plprec, PLOT_PLPREC);
+	dllke_hash_add(sml, (fncp)&ke_plpsty, PLOT_PLPSTY);
+	dllke_hash_add(sml, (fncp)&ke_plptex, PLOT_PLPTEX);
+	dllke_hash_add(sml, (fncp)&ke_plptex3, PLOT_PLPTEX3);
+	dllke_hash_add(sml, (fncp)&ke_plrandd, PLOT_PLRANDD);
+	dllke_hash_add(sml, (fncp)&ke_plreplot, PLOT_PLREPLOT);
+	dllke_hash_add(sml, (fncp)&ke_plrgbhls, PLOT_PLRGBHLS);
+	dllke_hash_add(sml, (fncp)&ke_plschr, PLOT_PLSCHR);
+	dllke_hash_add(sml, (fncp)&ke_plscmap0, PLOT_PLSCMAP0);
+	dllke_hash_add(sml, (fncp)&ke_plscmap0a, PLOT_PLSCMAP0A);
+	dllke_hash_add(sml, (fncp)&ke_plscmap0n, PLOT_PLSCMAP0N);
+	dllke_hash_add(sml, (fncp)&ke_plscmap1_range, PLOT_PLSCMAP1_RANGE);
+	dllke_hash_add(sml, (fncp)&ke_plscmap1, PLOT_PLSCMAP1);
+	dllke_hash_add(sml, (fncp)&ke_plscmap1a, PLOT_PLSCMAP1A);
+	dllke_hash_add(sml, (fncp)&ke_plscmap1l, PLOT_PLSCMAP1L);
+	dllke_hash_add(sml, (fncp)&ke_plscmap1la, PLOT_PLSCMAP1LA);
+	dllke_hash_add(sml, (fncp)&ke_plscmap1n, PLOT_PLSCMAP1N);
+	dllke_hash_add(sml, (fncp)&ke_plscol0, PLOT_PLSCOL0);
+	dllke_hash_add(sml, (fncp)&ke_plscol0a, PLOT_PLSCOL0A);
+	dllke_hash_add(sml, (fncp)&ke_plscolbg, PLOT_PLSCOLBG);
+	dllke_hash_add(sml, (fncp)&ke_plscolbga, PLOT_PLSCOLBGA);
+	dllke_hash_add(sml, (fncp)&ke_plscolor, PLOT_PLSCOLOR);
+	dllke_hash_add(sml, (fncp)&ke_plscompression, PLOT_PLSCOMPRESSION);
+	dllke_hash_add(sml, (fncp)&ke_plsdidev, PLOT_PLSDIDEV);
+	dllke_hash_add(sml, (fncp)&ke_plsdimap, PLOT_PLSDIMAP);
+	dllke_hash_add(sml, (fncp)&ke_plsdiori, PLOT_PLSDIORI);
+	dllke_hash_add(sml, (fncp)&ke_plsdiplt, PLOT_PLSDIPLT);
+	dllke_hash_add(sml, (fncp)&ke_plsdiplz, PLOT_PLSDIPLZ);
+	dllke_hash_add(sml, (fncp)&ke_plsdrawmode, PLOT_PLSDRAWMODE);
+	dllke_hash_add(sml, (fncp)&ke_plseed, PLOT_PLSEED);
+	dllke_hash_add(sml, (fncp)&ke_plsesc, PLOT_PLSESC);
+	dllke_hash_add(sml, (fncp)&ke_plsetopt, PLOT_PLSETOPT);
+	dllke_hash_add(sml, (fncp)&ke_plsfam, PLOT_PLSFAM);
+	dllke_hash_add(sml, (fncp)&ke_plsfci, PLOT_PLSFCI);
+	dllke_hash_add(sml, (fncp)&ke_plsfnam, PLOT_PLSFNAM);
+	dllke_hash_add(sml, (fncp)&ke_plsfont, PLOT_PLSFONT);
+	dllke_hash_add(sml, (fncp)&ke_plshades, PLOT_PLSHADES);
+	dllke_hash_add(sml, (fncp)&ke_plshade, PLOT_PLSHADE);
+	dllke_hash_add(sml, (fncp)&ke_plslabelfunc, PLOT_PLSLABELFUNC);
+	dllke_hash_add(sml, (fncp)&ke_plsmaj, PLOT_PLSMAJ);
+	dllke_hash_add(sml, (fncp)&ke_plsmem, PLOT_PLSMEM);
+	dllke_hash_add(sml, (fncp)&ke_plsmema, PLOT_PLSMEMA);
+	dllke_hash_add(sml, (fncp)&ke_plsmin, PLOT_PLSMIN);
+	dllke_hash_add(sml, (fncp)&ke_plsori, PLOT_PLSORI);
+	dllke_hash_add(sml, (fncp)&ke_plspage, PLOT_PLSPAGE);
+	dllke_hash_add(sml, (fncp)&ke_plspal0, PLOT_PLSPAL0);
+	dllke_hash_add(sml, (fncp)&ke_plspal1, PLOT_PLSPAL1);
+	dllke_hash_add(sml, (fncp)&ke_plsstrm, PLOT_PLSSTRM);
+	dllke_hash_add(sml, (fncp)&ke_plssub, PLOT_PLSSUB);
+	dllke_hash_add(sml, (fncp)&ke_plssym, PLOT_PLSSYM);
+	dllke_hash_add(sml, (fncp)&ke_plstar, PLOT_PLSTAR);
+	dllke_hash_add(sml, (fncp)&ke_plstart, PLOT_PLSTART);
+	dllke_hash_add(sml, (fncp)&ke_plstransform, PLOT_PLSTRANSFORM);
+	dllke_hash_add(sml, (fncp)&ke_plstring, PLOT_PLSTRING);
+	dllke_hash_add(sml, (fncp)&ke_plstring3, PLOT_PLSTRING3);
+	dllke_hash_add(sml, (fncp)&ke_plstripa, PLOT_PLSTRIPA);
+	dllke_hash_add(sml, (fncp)&ke_plstripc, PLOT_PLSTRIPC);
+	dllke_hash_add(sml, (fncp)&ke_plstripd, PLOT_PLSTRIPD);
+	dllke_hash_add(sml, (fncp)&ke_plstyl, PLOT_PLSTYL);
+	dllke_hash_add(sml, (fncp)&ke_plsurf3d, PLOT_PLSURF3D);
+	dllke_hash_add(sml, (fncp)&ke_plsurf3dl, PLOT_PLSURF3DL);
+	dllke_hash_add(sml, (fncp)&ke_plsvect, PLOT_PLSVECT);
+	dllke_hash_add(sml, (fncp)&ke_plsvpa, PLOT_PLSVPA);
+	dllke_hash_add(sml, (fncp)&ke_plsxax, PLOT_PLSXAX);
+	dllke_hash_add(sml, (fncp)&ke_plsyax, PLOT_PLSYAX);
+	dllke_hash_add(sml, (fncp)&ke_plsym, PLOT_PLSYM);
+	dllke_hash_add(sml, (fncp)&ke_plszax, PLOT_PLSZAX);
+	dllke_hash_add(sml, (fncp)&ke_pltext, PLOT_PLTEXT);
+	dllke_hash_add(sml, (fncp)&ke_pltimefmt, PLOT_PLTIMEFMT);
+	dllke_hash_add(sml, (fncp)&ke_plvasp, PLOT_PLVASP);
+	dllke_hash_add(sml, (fncp)&ke_plvect, PLOT_PLVECT);
+	dllke_hash_add(sml, (fncp)&ke_plvpas, PLOT_PLVPAS);
+	dllke_hash_add(sml, (fncp)&ke_plvpor, PLOT_PLVPOR);
+	dllke_hash_add(sml, (fncp)&ke_plvsta, PLOT_PLVSTA);
+	dllke_hash_add(sml, (fncp)&ke_plwidth, PLOT_PLWIDTH);
+	dllke_hash_add(sml, (fncp)&ke_plwind, PLOT_PLWIND);
+	dllke_hash_add(sml, (fncp)&ke_plxormod, PLOT_PLXORMOD);
+	dllke_hash_add(sml, (fncp)&ke_plabort, PLOT_PLABORT);
 
-	dllke_hash_add((fncp)&ke_plgcolbg, PLOT_PLGCOLBG);
-	dllke_hash_add((fncp)&ke_plgcolbga, PLOT_PLGCOLBGA);
-
-
-	dllke_hash_add((fncp)&ke_plgcol0a, PLOT_PLGCOL0A);
-	dllke_hash_add((fncp)&ke_plgcol0, PLOT_PLGCOL0);
-	dllke_hash_add((fncp)&ke_plgcmap1_range, PLOT_PLGCMAP1RANGE);
-	dllke_hash_add((fncp)&ke_plgchr, PLOT_PLGCHR);
+	dllke_hash_add(sml, (fncp)&ke_plgcolbg, PLOT_PLGCOLBG);
+	dllke_hash_add(sml, (fncp)&ke_plgcolbga, PLOT_PLGCOLBGA);
 
 
-	dllke_hash_add((fncp)&ke_plinit, PLOT);
-	dllke_hash_add((fncp)&ke_plinit, PLOT_INIT);
-	dllke_hash_add((fncp)&ke_plsdev, PLOT_PLSDEV);
-	dllke_hash_add((fncp)&ke_plsdev, PLOT_PLDEV);
-	dllke_hash_add((fncp)&ke_plenv, PLOT_PLENV);
-	dllke_hash_add((fncp)&ke_plline, PLOT_PLLINE);
-	dllke_hash_add((fncp)&ke_plend, PLOT_PLEND);
-	dllke_hash_add((fncp)&ke_plpause, PLOT_PLSPAUSE);
-	dllke_hash_add((fncp)&ke_plpause, PLOT_PLPAUSE);
-	dllke_hash_add((fncp)&ke_pl_setcontlabelformat, PLOT_PLSETCONTLABELFORMAT);
-	dllke_hash_add((fncp)&ke_pl_setcontlabelparam, PLOT_PLSETCONTLABELPARAM);
-	dllke_hash_add((fncp)&ke_pladv, PLOT_PLADV);
-	dllke_hash_add((fncp)&ke_plarc, PLOT_PLARC);
-	dllke_hash_add((fncp)&ke_plaxes, PLOT_PLAXES);
-	dllke_hash_add((fncp)&ke_plbin, PLOT_PLBIN);
-	dllke_hash_add((fncp)&ke_plbop, PLOT_PLBOP);
-	dllke_hash_add((fncp)&ke_plbox, PLOT_PLBOX);
-	dllke_hash_add((fncp)&ke_plbox3, PLOT_PLBOX3);
-	dllke_hash_add((fncp)&ke_plbtime, PLOT_PLBTIME);
-	dllke_hash_add((fncp)&ke_plctime, PLOT_PLCTIME);
-	dllke_hash_add((fncp)&ke_plcalc_world, PLOT_PLCALCWORLD);
-	dllke_hash_add((fncp)&ke_plcol0, PLOT_PLCOL0);
-	dllke_hash_add((fncp)&ke_plcol1, PLOT_PLCOL1);
-	dllke_hash_add((fncp)&ke_plcolorbar, PLOT_PLCOLORBAR);
-	dllke_hash_add((fncp)&ke_plconfigtime, PLOT_PLCONFIGTIME);
-	dllke_hash_add((fncp)&ke_plcont, PLOT_PLCONT);
-	dllke_hash_add((fncp)&ke_plcpstrm, PLOT_PLCPSTRM);
+	dllke_hash_add(sml, (fncp)&ke_plgcol0a, PLOT_PLGCOL0A);
+	dllke_hash_add(sml, (fncp)&ke_plgcol0, PLOT_PLGCOL0);
+	dllke_hash_add(sml, (fncp)&ke_plgcmap1_range, PLOT_PLGCMAP1RANGE);
+	dllke_hash_add(sml, (fncp)&ke_plgchr, PLOT_PLGCHR);
 
-	dllke_hash_add((fncp)&ke_plend1, PLOT_PLEND1);
-	dllke_hash_add((fncp)&ke_plenv0, PLOT_PLENV0);
-	dllke_hash_add((fncp)&ke_pleop, PLOT_PLEOP);
-	dllke_hash_add((fncp)&ke_plerrx, PLOT_PLERRX);
-	dllke_hash_add((fncp)&ke_plerry, PLOT_PLERRY);
-	dllke_hash_add((fncp)&ke_plfamadv, PLOT_PLFAMADV);
-	dllke_hash_add((fncp)&ke_plfill, PLOT_PLFILL);
-	dllke_hash_add((fncp)&ke_plfill3, PLOT_PLFILL3);
-	dllke_hash_add((fncp)&ke_plflush, PLOT_PLFLUSH);
-	dllke_hash_add((fncp)&ke_plfont, PLOT_PLFONT);
-	dllke_hash_add((fncp)&ke_plfontld, PLOT_PLFONTLD);
-	dllke_hash_add((fncp)&ke_plGetCursor, PLOT_PLGETCURSOR);
+
+	dllke_hash_add(sml, (fncp)&ke_plinit, PLOT);
+	dllke_hash_add(sml, (fncp)&ke_plinit, PLOT_INIT);
+	dllke_hash_add(sml, (fncp)&ke_plsdev, PLOT_PLSDEV);
+	dllke_hash_add(sml, (fncp)&ke_plsdev, PLOT_PLDEV);
+	dllke_hash_add(sml, (fncp)&ke_plenv, PLOT_PLENV);
+	dllke_hash_add(sml, (fncp)&ke_plline, PLOT_PLLINE);
+	dllke_hash_add(sml, (fncp)&ke_plend, PLOT_PLEND);
+	dllke_hash_add(sml, (fncp)&ke_plpause, PLOT_PLSPAUSE);
+	dllke_hash_add(sml, (fncp)&ke_plpause, PLOT_PLPAUSE);
+	dllke_hash_add(sml, (fncp)&ke_pl_setcontlabelformat, PLOT_PLSETCONTLABELFORMAT);
+	dllke_hash_add(sml, (fncp)&ke_pl_setcontlabelparam, PLOT_PLSETCONTLABELPARAM);
+	dllke_hash_add(sml, (fncp)&ke_pladv, PLOT_PLADV);
+	dllke_hash_add(sml, (fncp)&ke_plarc, PLOT_PLARC);
+	dllke_hash_add(sml, (fncp)&ke_plaxes, PLOT_PLAXES);
+	dllke_hash_add(sml, (fncp)&ke_plbin, PLOT_PLBIN);
+	dllke_hash_add(sml, (fncp)&ke_plbop, PLOT_PLBOP);
+	dllke_hash_add(sml, (fncp)&ke_plbox, PLOT_PLBOX);
+	dllke_hash_add(sml, (fncp)&ke_plbox3, PLOT_PLBOX3);
+	dllke_hash_add(sml, (fncp)&ke_plbtime, PLOT_PLBTIME);
+	dllke_hash_add(sml, (fncp)&ke_plctime, PLOT_PLCTIME);
+	dllke_hash_add(sml, (fncp)&ke_plcalc_world, PLOT_PLCALCWORLD);
+	dllke_hash_add(sml, (fncp)&ke_plcol0, PLOT_PLCOL0);
+	dllke_hash_add(sml, (fncp)&ke_plcol1, PLOT_PLCOL1);
+	dllke_hash_add(sml, (fncp)&ke_plcolorbar, PLOT_PLCOLORBAR);
+	dllke_hash_add(sml, (fncp)&ke_plconfigtime, PLOT_PLCONFIGTIME);
+	dllke_hash_add(sml, (fncp)&ke_plcont, PLOT_PLCONT);
+	dllke_hash_add(sml, (fncp)&ke_plcpstrm, PLOT_PLCPSTRM);
+
+	dllke_hash_add(sml, (fncp)&ke_plend1, PLOT_PLEND1);
+	dllke_hash_add(sml, (fncp)&ke_plenv0, PLOT_PLENV0);
+	dllke_hash_add(sml, (fncp)&ke_pleop, PLOT_PLEOP);
+	dllke_hash_add(sml, (fncp)&ke_plerrx, PLOT_PLERRX);
+	dllke_hash_add(sml, (fncp)&ke_plerry, PLOT_PLERRY);
+	dllke_hash_add(sml, (fncp)&ke_plfamadv, PLOT_PLFAMADV);
+	dllke_hash_add(sml, (fncp)&ke_plfill, PLOT_PLFILL);
+	dllke_hash_add(sml, (fncp)&ke_plfill3, PLOT_PLFILL3);
+	dllke_hash_add(sml, (fncp)&ke_plflush, PLOT_PLFLUSH);
+	dllke_hash_add(sml, (fncp)&ke_plfont, PLOT_PLFONT);
+	dllke_hash_add(sml, (fncp)&ke_plfontld, PLOT_PLFONTLD);
+	dllke_hash_add(sml, (fncp)&ke_plGetCursor, PLOT_PLGETCURSOR);
 }
 

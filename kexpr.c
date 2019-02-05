@@ -151,10 +151,11 @@ void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * func
 }
 #endif // _DEBUG
 
-sml_t * create_sml() {
+sml_t * ke_create_sml() {
 	sml_t * sml = calloc(sizeof(sml_t), 1);
 	sml->lastDef = -1;
 	sml->g_fortop = 0;
+	sml->dllke_hash_add = ke_hash_add;
 	return sml;
 }
 
@@ -242,7 +243,7 @@ fncp ke_function(sml_t *sml, char * name) {
 }
 
 typedef int(*DLLPROC)();
-void import(sml_t *sml, char * s) {
+void ke_import(sml_t *sml, char * s) {
 #if defined(_MSC_VER) || defined(_WIN32)
 	// load the dll
 	// call method ke_dll_hash(voir * hash_method, global_field)
@@ -259,7 +260,7 @@ void import(sml_t *sml, char * s) {
 		return;
 	}
 
-	fp(ke_hash_add, sml->fields);
+	fp(sml);
 	++sml->libhandle_qte;
 	//FREE HANDLE
 #else
@@ -275,7 +276,7 @@ void ke_load_dll(sml_t *sml, char * p) {
 	while (*end != '"' && *end != '\'') ++end;
 	char old = *end;
 	*end = 0;
-	import(sml, t);
+	ke_import(sml, t);
 	*end = old;
 }
 

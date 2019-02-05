@@ -99,11 +99,13 @@
 
 struct ke1_s;
 struct kexpr_s;
+struct sml_s;
 
 typedef struct ke1_s* ke1_p;
 typedef int(*cmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s*, int, int *);
 typedef int(*fncp)(struct sml_s * sml, struct ke1_s* s, int);
 typedef int(*vcmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s* s, int);
+typedef void(*dllke_hash_add_t)(struct sml_s *sml, fncp key, char * name);
 
 KHASH_MAP_INIT_STR(0, cmdp)
 KHASH_MAP_INIT_STR(1, vcmdp)
@@ -112,7 +114,13 @@ KHASH_MAP_INIT_INT(3, int)
 KHASH_MAP_INIT_STR(5, ke1_p)
 KHASH_MAP_INIT_STR(6, int)
 
+#pragma warning( push )
+#pragma warning( disable : 4018)
+#pragma warning( disable : 4334)
+#pragma warning( disable : 4627)
+#pragma warning( disable : 4267)
 KDQ_INIT(int)
+#pragma warning( pop )
 
 struct sml_s;
 typedef struct sml_s {
@@ -148,10 +156,9 @@ typedef struct sml_s {
 	stack_t *harg;
 	int g_forstack[20]; 
 	int g_fortop;
-	// g_forstack max 20 level of for
 	int lastDef;
+	dllke_hash_add_t dllke_hash_add;
 } sml_t;
-
 
 struct kexpr_s;
 typedef struct kexpr_s kexpr_t;
@@ -216,7 +223,7 @@ void ke_validate_parameter_not_null(ke1_t * p, void * ptr, char * param_name, ch
 void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * function_name);
 #endif // _DEBUG
 
-sml_t * create_sml();
+sml_t * ke_create_sml();
 char *ke_mystr(sml_t * sml, char *src, size_t n);
 void ke_hash_add(sml_t * sml, fncp key, char * name);
 kexpr_t *ke_parse(sml_t * sml, char *_s, int *err);
