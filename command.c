@@ -26,8 +26,6 @@ khash_t(KH_VCMD) *hvcommand;
 khash_t(KH_IDEF) *hdefcommand;
 stack_t *harg;
 
-extern ke1_t ** g_gbl_fields;
-
 // g_forstack max 20 level of for
 int g_forstack[20]; int g_fortop = 0;
 
@@ -236,22 +234,23 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 	return 0;
 }
 
-int ke_command_import(kexpr_t *kexpr, ke1_t * tokp, ke1_t *stack, int top, int * itokp) {
+int ke_command_import(sml_t* sml, kexpr_t *kexpr, ke1_t * tokp, int top, int * itokp) {
 	return top - 1;
 }
 
-int ke_command_if(kexpr_t *kexpr, ke1_t * tokp, ke1_t *stack, int top, int * itokp) {
+int ke_command_if(sml_t* sml, kexpr_t *kexpr, ke1_t * tokp, int top, int * itokp) {
+	ke1_t *stack = sml->g_stack;
     ke1_t *p;
     p = NULL;
 	*itokp = (&stack[--top])->i ? *itokp : tokp->ijmp;
     return top;
 }
 
-int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * itokp) {
+int ke_command_def(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int  * itokp) {
 	ke1_t * p;
 	ke1_t * q;
 	ke1_t * v;
-
+	ke1_t *stack = sml->g_stack;
     // get the def name
     p = (ke1_t *)&stack[top - tokp->n_args];
     if (tokp->assigned) {
@@ -261,8 +260,8 @@ int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * it
         for (int j = 0; j < n-1; ++j) {
            q = &stack[top-n+j+1];
 		   v = stack_pop(harg);
-		   ke_set_val(g_gbl_fields[q->ifield], v);
-		   ke_free_memory(v);
+		   ke_set_val(sml, sml->g_gbl_fields[q->ifield], v);
+		   ke_free_memory(sml, v);
         }
         return top - tokp->n_args;
     } else {
@@ -280,75 +279,13 @@ int ke_command_def(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * it
     }
 }
 
-/*
-int ke_command_sprintf(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * itokp) {
-	// list of parameter
+int ke_command_exe(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp) {
 	ke1_t *p, *q;
-	p = &stack[top - tokp->n_args];   //fmt
-	if (tokp->n_args > 1) {
-		va_list va = (char*)ke_calloc_memory(1000, 1); 
-		va_list m = va;
-		size_t narg = tokp->n_args;
-		size_t total_size = strlen(p->obj.s) + 1;
-		for (int i = top - tokp->n_args + 1; i < top; i++) {
-			q = &stack[i];
-			if (q->vtype == KEV_STR) {
-				(*(char**)m) = q->obj.s; 
-				m += sizeof(char*); 
-				total_size += strlen(q->obj.s) + 1;
-			}
-			else if (q->vtype == KEV_INT) {
-				(*(int*)m) = (int)q->i; 
-				m += sizeof(int); 
-				total_size += (size_t)20;
-			}
-			else if (q->vtype == KEV_REAL) {
-				(*(double*)m) = (double)q->r; 
-				m += sizeof(double); 
-				total_size += (size_t)20;
-			}
-		}
-		char * buf = (char*)ke_calloc_memory(total_size, 1);
-		int st = stbsp_vsprintf(buf, p->obj.s, va);
-		p->vtype = KEV_STR;
-		p->ttype = KET_VAL;
-		p->obj.s = buf;
-		ke_free_memory(va);
-		return top - tokp->n_args + 1;
-	}
-	else {
-		return top - 1;
-	}
-}
-
-void strrepl(char *str, const char *a, const char *b) {
-	for (char *cursor = str; (cursor = strstr(cursor, a)) != NULL;) {
-		memmove(cursor + strlen(b), cursor + strlen(a), strlen(cursor) - strlen(a) + 1);
-		for (int i = 0; b[i] != '\0'; i++)
-			cursor[i] = b[i];
-		cursor += strlen(b);
-	}
-}
-
-int ke_command_printf(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int  * itokp) {
-	ke1_t *p = &stack[top - tokp->n_args];   //fmt
-	top = ke_command_sprintf(kexpr, tokp, stack, top, itokp);
-	strrepl(p->obj.s, "\\n", "\n");
-	printf("%s",p->obj.s);
-	if (tokp->n_args > 1) {
-		ke_free_memory(p->obj.s);
-		p->obj.s = NULL;
-	}
-	return top;
-}
-*/
-
-int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
-	ke1_t *p, *q;
+	ke1_t *stack = sml->g_stack;
 	int narg = tokp->n_args;
 	while (narg > 1) {
 		q = &stack[--top];
-		ke1_t * k = ke_malloc_memory(sizeof(ke1_t));
+		ke1_t * k = ke_malloc_memory(sml, sizeof(ke1_t));
 		memcpy(k, q, sizeof(ke1_t));
 		stack_push(harg, k);
 		narg--;
@@ -361,15 +298,16 @@ int ke_command_exe(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 }
 
 
-int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
+int ke_command_for(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp) {
 	// field min, max inc
+	ke1_t *stack = sml->g_stack;
 	int n = tokp->n_args;
 	int top_m1 = top - n;
 	if (!tokp->assigned) {
 		ke1_t *p = &stack[top_m1]; // copy of the real variable into the stack
 		ke1_t *min = &stack[top_m1 + 1];
 		tokp->assigned = 1;
-		tokp->obj.tokp = g_gbl_fields[p->ifield];
+		tokp->obj.tokp = sml->g_gbl_fields[p->ifield];
 		struct ke1_s * t = tokp->obj.tokp;
 		t->r = min->r;
 		t->i = (int64_t)t->r;
@@ -390,7 +328,8 @@ int ke_command_for(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * ito
 	return top - n;
 }
 
-int ke_command_print_nonl(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
+int ke_command_print_nonl(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp) {
+	ke1_t *stack = sml->g_stack;
     int ntmp = tokp->n_args;
     int n = tokp->n_args;
     ke1_t *p;
@@ -398,37 +337,37 @@ int ke_command_print_nonl(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, in
     tokp->n_args = n;
     p = &stack[--top];
     if (n) {
-        top = ke_command_print_nonl(kexpr,tokp,stack,top,itokp);
+        top = ke_command_print_nonl(sml,kexpr,tokp,top,itokp);
     }
-    ke_print_one(p);
+    ke_print_one(sml,p);
     tokp->n_args = ntmp;
     return top;
 }
 
-int ke_command_print(kexpr_t *kexpr, ke1_t *tokp, ke1_t *stack, int top, int * itokp) {
-    top = ke_command_print_nonl(kexpr,tokp,stack,top,itokp);
+int ke_command_print(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp) {
+    top = ke_command_print_nonl(sml,kexpr,tokp,top,itokp);
     printf("\n");
     return top;
 }
 
-int ke_command_val_else(kexpr_t *ke, ke1_t *e, int itok) {
+int ke_command_val_else(sml_t* sml, kexpr_t *ke, ke1_t *e, int itok) {
 	return e->ijmp;
 }
 
-int  ke_command_val_end(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+int  ke_command_val_end(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	return itok;
 }
 
-int  ke_command_val_brk(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+int  ke_command_val_brk(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 
 	int ifor = popfor();
-	ke1_t *efor = ke_get_tokidx(ifor);
+	ke1_t *efor = ke_get_tokidx(sml,ifor);
 	efor->assigned = 0;
 	return tokp->ijmp;
 }
 
 
-int  ke_command_val_for(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+int  ke_command_val_for(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	if (!tokp->assigned) {
 		tokp->assigned = 1;
 		pushfor(itok);
@@ -436,15 +375,15 @@ int  ke_command_val_for(kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	return itok;
 }
 
-int  ke_command_val_cnt(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+int  ke_command_val_cnt(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	return tokp->ijmp;
 }
 
-int  ke_command_val_next(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+int  ke_command_val_next(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	return tokp->ijmp;
 }
 
-int  ke_command_val_rtn(kexpr_t *kexpr, ke1_t *tokp, int itok) {
+int  ke_command_val_rtn(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	return *kdq_pop(int, callstack);
 }
 
@@ -460,14 +399,14 @@ void ke_vcommand_hash_add(vcmdp key, char * name) {
 	kh_val(hvcommand, iter) = key;
 }
 
-void ke_command_hash() {
-    callstack = kdq_init(int); ke_inc_memory();
+void ke_command_hash(sml_t* sml) {
+    callstack = kdq_init(int); ke_inc_memory(sml);
 	harg = stack_create(16);
-    hcommand = kh_init(KH_CMD); ke_inc_memory();
-	hvcommand = kh_init(KH_VCMD); ke_inc_memory();
-	hidefcommand = kh_init(KH_IDEF); ke_inc_memory();
-	hiforcommand = kdq_init(int); ke_inc_memory();
-	hinextcommand = kdq_init(int); ke_inc_memory();
+    hcommand = kh_init(KH_CMD); ke_inc_memory(sml);
+	hvcommand = kh_init(KH_VCMD); ke_inc_memory(sml);
+	hidefcommand = kh_init(KH_IDEF); ke_inc_memory(sml);
+	hiforcommand = kdq_init(int); ke_inc_memory(sml);
+	hinextcommand = kdq_init(int); ke_inc_memory(sml);
 
     ke_command_hash_add((cmdp)&ke_command_if, CMD_IF);
     ke_command_hash_add((cmdp)&ke_command_print, CMD_PRINT);
@@ -545,15 +484,15 @@ vcmdp ke_command_val(char * name) {
 	}
 }
 
-void ke_command_destroy() {
-	kdq_destroy(int, callstack); ke_dec_memory();
-	kdq_destroy(int, hiforcommand); ke_dec_memory();
-	kdq_destroy(int, hinextcommand); ke_dec_memory();
-	stack_destroy(harg); ke_dec_memory();
+void ke_command_destroy(sml_t* sml) {
+	kdq_destroy(int, callstack); ke_dec_memory(sml);
+	kdq_destroy(int, hiforcommand); ke_dec_memory(sml);
+	kdq_destroy(int, hinextcommand); ke_dec_memory(sml);
+	stack_destroy(harg); ke_dec_memory(sml);
 
-    kh_destroy(KH_CMD, hcommand); ke_dec_memory();
-	kh_destroy(KH_VCMD, hvcommand); ke_dec_memory();
-	kh_destroy(KH_IDEF, hidefcommand); ke_dec_memory();
+    kh_destroy(KH_CMD, hcommand); ke_dec_memory(sml);
+	kh_destroy(KH_VCMD, hvcommand); ke_dec_memory(sml);
+	kh_destroy(KH_IDEF, hidefcommand); ke_dec_memory(sml);
 }
 
 int ke_command_get_rtn() {

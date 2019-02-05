@@ -1,12 +1,12 @@
 #ifndef MATRIX_H_INCLUDED
 #define MATRIX_H_INCLUDED
 
-void ke_matrix_print(ke1_t *e);
-void ke_matrix_hash();
-void ke_matrix_freemem(ke1_t*e);
-int ke_matrix_get(ke1_t *stack, ke1_t *tokp, int top);
-int ke_matrix_prop_set(ke1_t *stack, ke1_t *tokp, int top);
-int ke_matrix_prop_get(ke1_t *stack, ke1_t *tokp, int top);
+void ke_matrix_print(sml_t* sml, ke1_t *e);
+void ke_matrix_hash(sml_t* sml);
+void ke_matrix_freemem(sml_t* sml, ke1_t*e);
+int ke_matrix_get(sml_t* sml, ke1_t *tokp, int top);
+int ke_matrix_prop_set(sml_t* sml, ke1_t *tokp, int top);
+int ke_matrix_prop_get(sml_t* sml, ke1_t *tokp, int top);
 
 
 #define MATRIX "matrix"

@@ -1,9 +1,9 @@
 #ifndef COMMAND_H_INCLUDED
 #define COMMAND_H_INCLUDED
 
-void ke_command_hash();
+void ke_command_hash(sml_t* sml);
 cmdp ke_command(char * name);
-void ke_command_destroy();
+void ke_command_destroy(sml_t* sml);
 //int ke_command_get_rtn();
 vcmdp ke_command_val(char * name);
 int ke_command_icmd(char * name);

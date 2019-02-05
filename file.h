@@ -1,7 +1,7 @@
 #ifndef FILE_H_INCLUDED
 #define FILE_H_INCLUDED
 
-void ke_file_hash();
+void ke_file_hash(sml_t* sml);
 
 #define FILE_NEWBUFFER "newbuffer"
 #define FILE_FREBUFFER "freebuffer"

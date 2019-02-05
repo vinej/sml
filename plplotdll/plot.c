@@ -8,6 +8,16 @@
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_RESIZE_IMPLEMENTATION
+
+#if defined(_MSC_VER) || defined(_WIN32)
+#define SML_EXPORT __declspec(dllexport) 
+#define SML_CALL __cdecl
+#else
+#define SML_EXPORT __declspec(dllexport) 
+#define SML_CALL __cdecl
+#endif
+
+
 #include "..\stb\stb_image.h"
 #include "..\stb\stb_image_write.h"
 #include "..\stb\stb_image_resize.h"
@@ -19,14 +29,14 @@ typedef int(*hashptr_t)(fncp key, char * name);
 int(*dllke_hash_add)(fncp key, char * name) = NULL;
 void dllke_plot_hash();
 
-__declspec(dllexport) int __cdecl ke_dll_hash_add(hashptr_t hashfncPtr, ke1_t ** gbl_fields) {
+SML_EXPORT int SML_CALL ke_dll_hash_add(hashptr_t hashfncPtr, ke1_t ** gbl_fields) {
 	dllg_gbl_fields = gbl_fields;
 	dllke_hash_add = hashfncPtr;
 	dllke_plot_hash();
 	return 0;
 }
 
-__declspec(dllexport) int __cdecl ke_plimload(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int SML_CALL ke_plimload(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *filename, *x, *y, *n, *zero;
 	zero = &stack[--top];
 	n = &stack[--top];
@@ -52,14 +62,14 @@ __declspec(dllexport) int __cdecl ke_plimload(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plimfree(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plimfree(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p = &stack[--top];
 	stbi_image_free(p->obj.image);
 	//ke_dec_memory();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plimwrite(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plimwrite(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *filename, *w, *h, *comp, *data, *quality, *type;
 
 	type = &stack[--top];
@@ -89,7 +99,7 @@ __declspec(dllexport) int __cdecl ke_plimwrite(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plimresize(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plimresize(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *in, *in_w, *in_h, *in_stride, *out_w, *out_h, *out_stride, *nb_channel;
 
 	nb_channel = &stack[--top];
@@ -110,14 +120,14 @@ __declspec(dllexport) int __cdecl ke_plimresize(ke1_t *stack, ke1_t *tokp, int t
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsdev(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsdev(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p;
 	p = &stack[--top];
 	plsdev(p->obj.s);
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plinit(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plinit(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p;
 	p = &stack[--top];
 	plsdev(p->obj.s);
@@ -125,7 +135,7 @@ __declspec(dllexport) int __cdecl ke_plinit(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plenv(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plenv(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
 	axis = &stack[--top];
 	just = &stack[--top];
@@ -137,7 +147,7 @@ __declspec(dllexport) int __cdecl ke_plenv(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plline(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plline(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y;
 	y = &stack[--top];
 	x = &stack[--top]; 
@@ -147,19 +157,19 @@ __declspec(dllexport) int __cdecl ke_plline(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plpause(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plpause(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p;
 	p = &stack[--top];
 	plspause((PLBOOL)p->i);
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plend(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plend(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plend();
 	return --top;
 }
 
-__declspec(dllexport) int __cdecl ke_pl_setcontlabelformat(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pl_setcontlabelformat(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *lexp, *sigdig;
 	sigdig = &stack[--top];
 	lexp = &stack[--top];
@@ -168,7 +178,7 @@ __declspec(dllexport) int __cdecl ke_pl_setcontlabelformat(ke1_t *stack, ke1_t *
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pl_setcontlabelparam(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pl_setcontlabelparam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *offset, *size, *spacing, *active;
 	active = &stack[--top];
 	spacing = &stack[--top];
@@ -179,14 +189,14 @@ __declspec(dllexport) int __cdecl ke_pl_setcontlabelparam(ke1_t *stack, ke1_t *t
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pladv(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pladv(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *page;
 	page = &stack[--top];
 	pladv((PLINT)page->i);
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plarc(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plarc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *a, *b, *angle1, *angle2, *rotate, *fill;
 	fill = &stack[--top];
 	rotate = &stack[--top];
@@ -200,7 +210,7 @@ __declspec(dllexport) int __cdecl ke_plarc(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plaxes(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plaxes(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x0, *y0, *xopt, *xtick, *nxsub, *yopt, *ytick, *nysub;
 	nysub= &stack[--top];
 	ytick = &stack[--top];
@@ -215,7 +225,7 @@ __declspec(dllexport) int __cdecl ke_plaxes(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plbin(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plbin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *nbin, *x, *y, *opt;
 	opt = &stack[--top];
 	y = &stack[--top];
@@ -226,12 +236,12 @@ __declspec(dllexport) int __cdecl ke_plbin(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plbop(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plbop(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plbop();
 	return --top;
 }
 
-__declspec(dllexport) int __cdecl ke_plbox(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plbox(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xopt, *xtick, *nxsub, *yopt, *ytick, *nysub;
 	nysub = &stack[--top];
 	ytick = &stack[--top];
@@ -243,7 +253,7 @@ __declspec(dllexport) int __cdecl ke_plbox(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plbox3(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plbox3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xopt, *xlabel, *xtick, *nxsub, *yopt, *ylabel, *ytick, *nysub, *zopt, *zlabel, *ztick, *nzsub;
 	nzsub = &stack[--top];
 	ztick = &stack[--top];
@@ -264,7 +274,7 @@ __declspec(dllexport) int __cdecl ke_plbox3(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plbtime(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plbtime(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *year, *month, *day, *hour, *min, *sec, *ctime;
 	ctime = &stack[--top];
 	sec = &stack[--top];
@@ -292,7 +302,7 @@ __declspec(dllexport) int __cdecl ke_plbtime(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plctime(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plctime(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *year, *month, *day, *hour, *min, *sec, *ctime;
 	ctime = &stack[--top];
 	sec = &stack[--top];
@@ -306,7 +316,7 @@ __declspec(dllexport) int __cdecl ke_plctime(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plcalc_world(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plcalc_world(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *rx, *ry, *wx, *wy, *window;
 	window = &stack[--top];
 	wy = &stack[--top];
@@ -323,26 +333,26 @@ __declspec(dllexport) int __cdecl ke_plcalc_world(ke1_t *stack, ke1_t *tokp, int
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plclear(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plclear(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plclear();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plcol0(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plcol0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *col0;
 	col0 = &stack[--top];
 	plcol0((PLINT)col0->i);
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plcol1(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plcol1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *col1;
 	col1 = &stack[--top];
 	plcol1((PLFLT)col1->r);
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plcolorbar(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plcolorbar(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_colorbar_width, *p_colorbar_height, *opt, *position, *x, *y, *x_length, *y_length,
 		*bg_color, *bb_color, *bb_style, *low_cap_color, *high_cap_color, *cont_color, *cont_width,
 		*n_labels, *label_opts, *labels, *naxes, *axis_opts, *ticks, *sub_ticks, *n_values, *values;
@@ -404,7 +414,7 @@ __declspec(dllexport) int __cdecl ke_plcolorbar(ke1_t *stack, ke1_t *tokp, int t
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plconfigtime(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plconfigtime(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *scale, *oﬀset1, *oﬀset2, *ccontrol, *ifbtime_oﬀset, *year, *month, *day, *hour, *min, *sec;
 	sec = &stack[--top];
 	min = &stack[--top];
@@ -424,7 +434,7 @@ __declspec(dllexport) int __cdecl ke_plconfigtime(ke1_t *stack, ke1_t *tokp, int
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plcont(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plcont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *f, *nx, *ny, *kx, *lx, *ky, *ly, *clevel, *nlevel, *pltr, *pltr_data;
 
 	pltr_data = &stack[--top];
@@ -445,7 +455,7 @@ __declspec(dllexport) int __cdecl ke_plcont(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plcpstrm(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plcpstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *iplsr, *ﬂags;
 	ﬂags = &stack[--top];
 	iplsr = &stack[--top];
@@ -454,12 +464,12 @@ __declspec(dllexport) int __cdecl ke_plcpstrm(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plend1(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plend1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plend1();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plenv0(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plenv0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
 	axis = &stack[--top];
 	just = &stack[--top];
@@ -471,12 +481,12 @@ __declspec(dllexport) int __cdecl ke_plenv0(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pleop(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pleop(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	pleop();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plerrx(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plerrx(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *xmin, *xmax, *y;
 	y = &stack[--top];
 	xmax = &stack[--top];
@@ -488,7 +498,7 @@ __declspec(dllexport) int __cdecl ke_plerrx(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plerry(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plerry(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *ymin, *ymax, *y;
 	y = &stack[--top];
 	ymax = &stack[--top];
@@ -500,12 +510,12 @@ __declspec(dllexport) int __cdecl ke_plerry(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plfamadv(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plfamadv(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plfamadv();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plfill(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plfill(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y;
 	y = &stack[--top];
 	x = &stack[--top];
@@ -514,7 +524,7 @@ __declspec(dllexport) int __cdecl ke_plfill(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plfill3(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plfill3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *z;
 	z = &stack[--top];
 	y = &stack[--top];
@@ -527,26 +537,26 @@ __declspec(dllexport) int __cdecl ke_plfill3(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plflush(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plflush(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plflush();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plfont(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plfont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *ifont;
 	ifont = &stack[--top];
 	plfont((PLINT)ifont->i);
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plfontld(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plfontld(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *fnt;
 	fnt = &stack[--top];
 	plfontld((PLINT)fnt->i);
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plGetCursor(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plGetCursor(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *gin;
 	gin = &stack[--top];
 	gin->i = plGetCursor((PLGraphicsIn *)gin->obj.plgrin);
@@ -555,7 +565,7 @@ __declspec(dllexport) int __cdecl ke_plGetCursor(ke1_t *stack, ke1_t *tokp, int 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgchr(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgchr(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_def, *p_ht;
 	p_ht = &stack[--top];
 	p_def = &stack[--top];
@@ -564,7 +574,7 @@ __declspec(dllexport) int __cdecl ke_plgchr(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgcmap1_range(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgcmap1_range(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *min_color, *max_color;
 	max_color = &stack[--top];
 	min_color = &stack[--top];
@@ -575,7 +585,7 @@ __declspec(dllexport) int __cdecl ke_plgcmap1_range(ke1_t *stack, ke1_t *tokp, i
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgcol0(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgcol0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *icol0, *r, *g, *b;
 	b = &stack[--top];
 	g = &stack[--top];
@@ -592,7 +602,7 @@ __declspec(dllexport) int __cdecl ke_plgcol0(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgcol0a(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgcol0a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *icol0, *r, *g, *b, *alpha;
 	alpha = &stack[--top];
 	b = &stack[--top];
@@ -612,7 +622,7 @@ __declspec(dllexport) int __cdecl ke_plgcol0a(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgcolbg(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgcolbg(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b;
 	b = &stack[--top];
 	g = &stack[--top];
@@ -628,7 +638,7 @@ __declspec(dllexport) int __cdecl ke_plgcolbg(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgcolbga(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgcolbga(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b, *alpha;
 	alpha = &stack[--top];
 	b = &stack[--top];
@@ -648,7 +658,7 @@ __declspec(dllexport) int __cdecl ke_plgcolbga(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgcompression(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgcompression(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *compression;
 	compression = &stack[--top];
 
@@ -657,7 +667,7 @@ __declspec(dllexport) int __cdecl ke_plgcompression(ke1_t *stack, ke1_t *tokp, i
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgdidev(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgdidev(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_mar, *p_aspect, *p_jx, *p_jy;
 	p_jy = &stack[--top];
 	p_jx = &stack[--top];
@@ -677,7 +687,7 @@ __declspec(dllexport) int __cdecl ke_plgdidev(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgdiori(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgdiori(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_rot;
 	p_rot = &stack[--top];
 
@@ -687,7 +697,7 @@ __declspec(dllexport) int __cdecl ke_plgdiori(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgdiplt(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgdiplt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_xmin, *p_ymin, *p_xmax, *p_ymax;
 	p_ymax = &stack[--top];
 	p_xmax = &stack[--top];
@@ -707,7 +717,7 @@ __declspec(dllexport) int __cdecl ke_plgdiplt(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_function_plgdrawmode(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_function_plgdrawmode(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p;
 	p = &stack[top - 1];
 	stack[top++] = *p;
@@ -718,7 +728,7 @@ __declspec(dllexport) int __cdecl ke_function_plgdrawmode(ke1_t *stack, ke1_t *t
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgfam(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgfam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_fam, *p_num, *p_bmax;
 	p_bmax = &stack[--top];
 	p_num = &stack[--top];
@@ -735,7 +745,7 @@ __declspec(dllexport) int __cdecl ke_plgfam(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgfci(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgfci(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_fci;
 	p_fci = &stack[--top];
 
@@ -745,7 +755,7 @@ __declspec(dllexport) int __cdecl ke_plgfci(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgfnam(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgfnam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *fnam;
 	fnam = &stack[--top];
 
@@ -755,7 +765,7 @@ __declspec(dllexport) int __cdecl ke_plgfnam(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgfont(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgfont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_family, *p_style, *p_weight;
 	p_weight = &stack[--top];
 	p_style = &stack[--top];
@@ -772,7 +782,7 @@ __declspec(dllexport) int __cdecl ke_plgfont(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plglevel(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plglevel(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_level;
 	p_level = &stack[--top];
 
@@ -782,7 +792,7 @@ __declspec(dllexport) int __cdecl ke_plglevel(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgpage(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgpage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_xp, *p_yp, *p_xleng, *p_yleng, *p_xoﬀ, *p_yoﬀ;
 	p_yoﬀ = &stack[--top];
 	p_xoﬀ = &stack[--top];
@@ -808,12 +818,12 @@ __declspec(dllexport) int __cdecl ke_plgpage(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_function_plgra(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_function_plgra(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plgra();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgradient(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgradient(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *angle;
 	angle = &stack[--top];
 	y = &stack[--top];
@@ -826,7 +836,7 @@ __declspec(dllexport) int __cdecl ke_plgradient(ke1_t *stack, ke1_t *tokp, int t
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgriddata(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgriddata(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z, *npts, *xg, *nptsx, *yg, *nptsy, *zg, *type, *data;
 	data = &stack[--top];
 	type = &stack[--top];
@@ -859,7 +869,7 @@ __declspec(dllexport) int __cdecl ke_plgriddata(ke1_t *stack, ke1_t *tokp, int t
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgspa(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgspa(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax;
 	ymax = &stack[--top];
 	ymin = &stack[--top];
@@ -879,7 +889,7 @@ __declspec(dllexport) int __cdecl ke_plgspa(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgstrm(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_strm;
 	p_strm = &stack[--top];
 
@@ -890,7 +900,7 @@ __declspec(dllexport) int __cdecl ke_plgstrm(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgver(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgver(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_ver;
 	p_ver = &stack[--top];
 
@@ -901,7 +911,7 @@ __declspec(dllexport) int __cdecl ke_plgver(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgvpd(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgvpd(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
 	p_ymax = &stack[--top];
 	p_ymin = &stack[--top];
@@ -921,7 +931,7 @@ __declspec(dllexport) int __cdecl ke_plgvpd(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgvpw(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgvpw(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
 	p_ymax = &stack[--top];
 	p_ymin = &stack[--top];
@@ -941,7 +951,7 @@ __declspec(dllexport) int __cdecl ke_plgvpw(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgxax(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgxax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_digmax, *p_digits;
 	p_digits = &stack[--top];
 	p_digmax = &stack[--top];
@@ -955,7 +965,7 @@ __declspec(dllexport) int __cdecl ke_plgxax(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgyax(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgyax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_digmax, *p_digits;
 	p_digits = &stack[--top];
 	p_digmax = &stack[--top];
@@ -969,7 +979,7 @@ __declspec(dllexport) int __cdecl ke_plgyax(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plgzax(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plgzax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_digmax, *p_digits;
 	p_digits = &stack[--top];
 	p_digmax = &stack[--top];
@@ -983,7 +993,7 @@ __declspec(dllexport) int __cdecl ke_plgzax(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plhist(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plhist(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *data, *datmin, *datmax, *nbin, *opt;
 	opt = &stack[--top];
 	nbin = &stack[--top];
@@ -1002,7 +1012,7 @@ __declspec(dllexport) int __cdecl ke_plhist(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plhlsrgb(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plhlsrgb(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *h, *l, *s, *p_r, *p_g, *p_b;
 	p_b = &stack[--top];
 	p_g = &stack[--top];
@@ -1025,7 +1035,7 @@ __declspec(dllexport) int __cdecl ke_plhlsrgb(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plimagefr(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plimagefr(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *valuemin, *valuemax, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
 	pltr = &stack[--top];
@@ -1058,7 +1068,7 @@ __declspec(dllexport) int __cdecl ke_plimagefr(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plimage(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plimage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax,  *Dxmin, *Dxmax, *Dymin, *Dymax;
 	Dymax = &stack[--top];
 	Dymin = &stack[--top];
@@ -1091,7 +1101,7 @@ __declspec(dllexport) int __cdecl ke_plimage(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pljoin(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pljoin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x1, *y1, *x2, *y2;
 	y2 = &stack[--top];
 	x2 = &stack[--top];
@@ -1106,7 +1116,7 @@ __declspec(dllexport) int __cdecl ke_pljoin(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pllab(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pllab(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xlabel, *ylabel, *tlabel;
 	tlabel = &stack[--top];
 	ylabel = &stack[--top];
@@ -1120,7 +1130,7 @@ __declspec(dllexport) int __cdecl ke_pllab(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 
-__declspec(dllexport) int __cdecl ke_pllegend(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pllegend(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_legend_width, *p_legend_height, *opt, *position, *x, *y, 
 		*plot_width, *bg_color, *bb_color, *bb_style, *nrow, *ncolumn,
 		*nlegend, *opt_array, *text_oﬀset, *text_scale, *text_spacing, 
@@ -1195,7 +1205,7 @@ __declspec(dllexport) int __cdecl ke_pllegend(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pllightsource(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pllightsource(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z;
 	z = &stack[--top];
 	y = &stack[--top];
@@ -1209,7 +1219,7 @@ __declspec(dllexport) int __cdecl ke_pllightsource(ke1_t *stack, ke1_t *tokp, in
 }
 
 
-__declspec(dllexport) int __cdecl ke_plline3(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plline3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *z;
 	z = &stack[--top];
 	y = &stack[--top];
@@ -1224,7 +1234,7 @@ __declspec(dllexport) int __cdecl ke_plline3(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pllsty(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pllsty(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *lin;
 	lin = &stack[--top];
 
@@ -1233,7 +1243,7 @@ __declspec(dllexport) int __cdecl ke_pllsty(ke1_t *stack, ke1_t *tokp, int top) 
 }
 
 // TODO gin
-__declspec(dllexport) int __cdecl ke_plmap(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmap(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy;
 	maxy = &stack[--top];
 	miny = &stack[--top];
@@ -1253,7 +1263,7 @@ __declspec(dllexport) int __cdecl ke_plmap(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 // TODO 
-__declspec(dllexport) int __cdecl ke_plmapfill(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmapfill(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = &stack[--top];
 	plotentries = &stack[--top];
@@ -1277,7 +1287,7 @@ __declspec(dllexport) int __cdecl ke_plmapfill(ke1_t *stack, ke1_t *tokp, int to
 }
 
 // TODO 
-__declspec(dllexport) int __cdecl ke_plmapline(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmapline(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = &stack[--top];
 	plotentries = &stack[--top];
@@ -1301,7 +1311,7 @@ __declspec(dllexport) int __cdecl ke_plmapline(ke1_t *stack, ke1_t *tokp, int to
 }
 
 // TODO 
-__declspec(dllexport) int __cdecl ke_plmapstring(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmapstring(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mapform, *name, *string, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = &stack[--top];
 	plotentries = &stack[--top];
@@ -1327,7 +1337,7 @@ __declspec(dllexport) int __cdecl ke_plmapstring(ke1_t *stack, ke1_t *tokp, int 
 }
 
 // TODO 
-__declspec(dllexport) int __cdecl ke_plmaptex(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmaptex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mapform, *name, *dx, *dy, *just, *text, *minx, *maxx, *miny, *maxy, *plotentry;
 	plotentry = &stack[--top];
 	maxy = &stack[--top];
@@ -1357,7 +1367,7 @@ __declspec(dllexport) int __cdecl ke_plmaptex(ke1_t *stack, ke1_t *tokp, int top
 }
 
 
-__declspec(dllexport) int __cdecl ke_plmeridians(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmeridians(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mapform, *dlong, *dlat, *minlong, *maxlong, *minlat, *maxlat;
 	maxlat = &stack[--top];
 	minlat = &stack[--top];
@@ -1378,7 +1388,7 @@ __declspec(dllexport) int __cdecl ke_plmeridians(ke1_t *stack, ke1_t *tokp, int 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plmesh(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmesh(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt;
 	opt = &stack[--top];
 	ny = &stack[--top];
@@ -1397,7 +1407,7 @@ __declspec(dllexport) int __cdecl ke_plmesh(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plmeshc(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmeshc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = &stack[--top];
 	clevel = &stack[--top];
@@ -1420,7 +1430,7 @@ __declspec(dllexport) int __cdecl ke_plmeshc(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plmkstrm(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmkstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_strm;
 	p_strm = &stack[--top];
 
@@ -1428,7 +1438,7 @@ __declspec(dllexport) int __cdecl ke_plmkstrm(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plmtex(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmtex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *side, *disp, *pos, *just, *text;
 	text = &stack[--top];
 	just = &stack[--top];
@@ -1445,7 +1455,7 @@ __declspec(dllexport) int __cdecl ke_plmtex(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plmtex3(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plmtex3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *side, *disp, *pos, *just, *text;
 	text = &stack[--top];
 	just = &stack[--top];
@@ -1462,7 +1472,7 @@ __declspec(dllexport) int __cdecl ke_plmtex3(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plot3d(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plot3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *side;
 	side = &stack[--top];
 	opt = &stack[--top];
@@ -1483,7 +1493,7 @@ __declspec(dllexport) int __cdecl ke_plot3d(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plot3dc(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plot3dc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = &stack[--top];
 	clevel = &stack[--top];
@@ -1506,7 +1516,7 @@ __declspec(dllexport) int __cdecl ke_plot3dc(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plot3dl(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plot3dl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel, *indexxmin, *indexxmax, *indexymin, *indexymax;
 
 	indexymax = &stack[--top];
@@ -1541,7 +1551,7 @@ __declspec(dllexport) int __cdecl ke_plot3dl(ke1_t *stack, ke1_t *tokp, int top)
 }
 
 
-__declspec(dllexport) int __cdecl ke_plparseopts(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plparseopts(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p_argc, *argv, *mode;
 	mode = &stack[--top];
 	argv = &stack[--top];
@@ -1557,7 +1567,7 @@ __declspec(dllexport) int __cdecl ke_plparseopts(ke1_t *stack, ke1_t *tokp, int 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plpat(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plpat(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *nlin, *inc, *del;
 	del = &stack[--top];
 	inc = &stack[--top];
@@ -1570,7 +1580,7 @@ __declspec(dllexport) int __cdecl ke_plpat(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plpath(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plpath(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x1, *y1, *x2, *y2;
 	y2 = &stack[--top];
 	x2 = &stack[--top];
@@ -1588,7 +1598,7 @@ __declspec(dllexport) int __cdecl ke_plpath(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plpoin(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plpoin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *code;
 	code = &stack[--top];
 	y = &stack[--top];
@@ -1604,7 +1614,7 @@ __declspec(dllexport) int __cdecl ke_plpoin(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plpoin3(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plpoin3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *z, *code;
 	code = &stack[--top];
 	z = &stack[--top];
@@ -1622,7 +1632,7 @@ __declspec(dllexport) int __cdecl ke_plpoin3(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plpoly3(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plpoly3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *z, *draw, *ifcc;
 	ifcc = &stack[--top];
 	draw = &stack[--top];
@@ -1642,7 +1652,7 @@ __declspec(dllexport) int __cdecl ke_plpoly3(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plprec(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plprec(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *setp, *prec;
 	prec = &stack[--top];
 	setp = &stack[--top];
@@ -1654,7 +1664,7 @@ __declspec(dllexport) int __cdecl ke_plprec(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plpsty(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plpsty(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *patt;
 	patt = &stack[--top];
 
@@ -1662,7 +1672,7 @@ __declspec(dllexport) int __cdecl ke_plpsty(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plptex(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plptex(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *dx, *dy, *just, *text;
 	text = &stack[--top];
 	just = &stack[--top];
@@ -1681,7 +1691,7 @@ __declspec(dllexport) int __cdecl ke_plptex(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plptex3(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plptex3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *wx, *wy, *wz, *dx, *dy, *dz, *sx, *sy, *sz, *just, *text;
 	text = &stack[--top];
 	just = &stack[--top];
@@ -1710,7 +1720,7 @@ __declspec(dllexport) int __cdecl ke_plptex3(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plrandd(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plrandd(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p;
 	p = &stack[top - 1];
 	stack[top++] = *p;
@@ -1722,12 +1732,12 @@ __declspec(dllexport) int __cdecl ke_plrandd(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plreplot(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plreplot(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plreplot();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plrgbhls(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plrgbhls(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b, *p_h, *p_l, *p_s;
 	p_s = &stack[--top];
 	p_l = &stack[--top];
@@ -1746,7 +1756,7 @@ __declspec(dllexport) int __cdecl ke_plrgbhls(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plschr(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plschr(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *def, *scale;
 	scale = &stack[--top];
 	def = &stack[--top];
@@ -1755,7 +1765,7 @@ __declspec(dllexport) int __cdecl ke_plschr(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap0(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b, *ncol0;
 	ncol0 = &stack[--top];
 	b = &stack[--top];
@@ -1770,7 +1780,7 @@ __declspec(dllexport) int __cdecl ke_plscmap0(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap0a(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap0a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b, *alpha, *ncol0;
 	ncol0 = &stack[--top];
 	alpha = &stack[--top];
@@ -1787,7 +1797,7 @@ __declspec(dllexport) int __cdecl ke_plscmap0a(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap0n(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap0n(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *ncol0;
 	ncol0 = &stack[--top];
 
@@ -1795,7 +1805,7 @@ __declspec(dllexport) int __cdecl ke_plscmap0n(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap1_range(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap1_range(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *min_color, *max_color;
 	max_color = &stack[--top];
 	min_color = &stack[--top];
@@ -1804,7 +1814,7 @@ __declspec(dllexport) int __cdecl ke_plscmap1_range(ke1_t *stack, ke1_t *tokp, i
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap1(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b, *ncol1;
 	ncol1 = &stack[--top];
 	b = &stack[--top];
@@ -1819,7 +1829,7 @@ __declspec(dllexport) int __cdecl ke_plscmap1(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap1a(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap1a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b, *alpha, *ncol1;
 	ncol1 = &stack[--top];
 	alpha = &stack[--top];
@@ -1836,7 +1846,7 @@ __declspec(dllexport) int __cdecl ke_plscmap1a(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap1l(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap1l(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *itype, *npts, *intensity, *coord1, *coord2, *coord3, *alt_hue_path;
 	alt_hue_path = &stack[--top];
 	coord3 = &stack[--top];
@@ -1857,7 +1867,7 @@ __declspec(dllexport) int __cdecl ke_plscmap1l(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap1la(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap1la(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *itype, *npts, *intensity, *coord1, *coord2, *coord3, *alpha, *alt_hue_path;
 	alt_hue_path = &stack[--top];
 	alpha = &stack[--top];
@@ -1880,7 +1890,7 @@ __declspec(dllexport) int __cdecl ke_plscmap1la(ke1_t *stack, ke1_t *tokp, int t
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscmap1n(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscmap1n(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *ncol1;
 	ncol1 = &stack[--top];
 
@@ -1888,7 +1898,7 @@ __declspec(dllexport) int __cdecl ke_plscmap1n(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscol0(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscol0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *icol0, *r, *g, *b;
 	b = &stack[--top];
 	g = &stack[--top];
@@ -1903,7 +1913,7 @@ __declspec(dllexport) int __cdecl ke_plscol0(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscol0a(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscol0a(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *icol0, *r, *g, *b, *alpha;
 	alpha = &stack[--top];
 	b = &stack[--top];
@@ -1920,7 +1930,7 @@ __declspec(dllexport) int __cdecl ke_plscol0a(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscolbg(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscolbg(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b;
 	b = &stack[--top];
 	g = &stack[--top];
@@ -1933,7 +1943,7 @@ __declspec(dllexport) int __cdecl ke_plscolbg(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscolbga(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscolbga(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *r, *g, *b, *alpha;
 	alpha = &stack[--top];
 	b = &stack[--top];
@@ -1948,7 +1958,7 @@ __declspec(dllexport) int __cdecl ke_plscolbga(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscolor(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscolor(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *color;
 	color = &stack[--top];
 
@@ -1956,7 +1966,7 @@ __declspec(dllexport) int __cdecl ke_plscolor(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plscompression(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plscompression(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *compression;
 	compression = &stack[--top];
 
@@ -1964,7 +1974,7 @@ __declspec(dllexport) int __cdecl ke_plscompression(ke1_t *stack, ke1_t *tokp, i
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsdidev(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsdidev(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mar, *aspect, *jx, *jy;
 	jy = &stack[--top];
 	jx = &stack[--top];
@@ -1979,7 +1989,7 @@ __declspec(dllexport) int __cdecl ke_plsdidev(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsdimap(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsdimap(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *dimxmin, *dimxmax, *dimymin, *dimymax, *dimxpmm, *dimypmm;
 	dimypmm = &stack[--top];
 	dimxpmm = &stack[--top];
@@ -1998,7 +2008,7 @@ __declspec(dllexport) int __cdecl ke_plsdimap(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsdiori(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsdiori(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *rot;
 	rot = &stack[--top];
 
@@ -2006,7 +2016,7 @@ __declspec(dllexport) int __cdecl ke_plsdiori(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsdiplt(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsdiplt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *ymin, *xmax, *ymax;
 	ymax = &stack[--top];
 	xmax = &stack[--top];
@@ -2021,7 +2031,7 @@ __declspec(dllexport) int __cdecl ke_plsdiplt(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsdiplz(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsdiplz(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *ymin, *xmax, *ymax;
 	ymax = &stack[--top];
 	xmax = &stack[--top];
@@ -2036,7 +2046,7 @@ __declspec(dllexport) int __cdecl ke_plsdiplz(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsdrawmode(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsdrawmode(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mode;
 	mode = &stack[--top];
 
@@ -2045,7 +2055,7 @@ __declspec(dllexport) int __cdecl ke_plsdrawmode(ke1_t *stack, ke1_t *tokp, int 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plseed(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plseed(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *seed;
 	seed = &stack[--top];
 
@@ -2054,7 +2064,7 @@ __declspec(dllexport) int __cdecl ke_plseed(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsesc(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsesc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *esc;
 	esc = &stack[--top];
 
@@ -2063,7 +2073,7 @@ __declspec(dllexport) int __cdecl ke_plsesc(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsetopt(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsetopt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *opt, *optarg;
 	optarg = &stack[--top];
 	opt = &stack[top - 1];
@@ -2075,7 +2085,7 @@ __declspec(dllexport) int __cdecl ke_plsetopt(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsfam(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsfam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *fam, *num, *bmax;
 	bmax = &stack[--top];
 	num = &stack[--top];
@@ -2088,7 +2098,7 @@ __declspec(dllexport) int __cdecl ke_plsfam(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsfci(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsfci(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *fci;
 	fci = &stack[--top];
 
@@ -2096,7 +2106,7 @@ __declspec(dllexport) int __cdecl ke_plsfci(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsfnam(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsfnam(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *fnam;
 	fnam = &stack[--top];
 
@@ -2105,7 +2115,7 @@ __declspec(dllexport) int __cdecl ke_plsfnam(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsfont(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsfont(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *family, *style, *weight;
 	weight = &stack[--top];
 	style = &stack[--top];
@@ -2119,7 +2129,7 @@ __declspec(dllexport) int __cdecl ke_plsfont(ke1_t *stack, ke1_t *tokp, int top)
 }
 
 
-__declspec(dllexport) int __cdecl ke_plshades(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plshades(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *a, *nx, *ny, *defined, *xmin, *xmax, *ymin, *ymax, *clevel, *nlevel,
 		*fill_width, *cont_color, *cont_width, *fill, *rectangular, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
@@ -2161,7 +2171,7 @@ __declspec(dllexport) int __cdecl ke_plshades(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plshade(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plshade(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *a, *nx, *ny, *defined, *xmin, *xmax, *ymin, *ymax, *shade_min, *shade_max, *sh_cmap, *sh_color, *sh_width,
 		*min_color, *min_width, *max_color, *max_width, *fill, *rectangular, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
@@ -2211,7 +2221,7 @@ __declspec(dllexport) int __cdecl ke_plshade(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plslabelfunc(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plslabelfunc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *label_func, *label_data;
 	label_data = &stack[--top];
 	label_func = &stack[--top];
@@ -2222,7 +2232,7 @@ __declspec(dllexport) int __cdecl ke_plslabelfunc(ke1_t *stack, ke1_t *tokp, int
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsmaj(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsmaj(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *def, *scale;
 	scale = &stack[--top];
 	def = &stack[--top];
@@ -2231,7 +2241,7 @@ __declspec(dllexport) int __cdecl ke_plsmaj(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsmem(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsmem(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *maxx, *maxy, *plotmem;
 	plotmem = &stack[--top];
 	maxy = &stack[--top];
@@ -2241,7 +2251,7 @@ __declspec(dllexport) int __cdecl ke_plsmem(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsmema(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsmema(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *maxx, *maxy, *plotmem;
 	plotmem = &stack[--top];
 	maxy = &stack[--top];
@@ -2251,7 +2261,7 @@ __declspec(dllexport) int __cdecl ke_plsmema(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsmin(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsmin(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *def, *scale;
 	scale = &stack[--top];
 	def = &stack[--top];
@@ -2260,7 +2270,7 @@ __declspec(dllexport) int __cdecl ke_plsmin(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsori(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsori(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *ori;
 	ori = &stack[--top];
 
@@ -2268,7 +2278,7 @@ __declspec(dllexport) int __cdecl ke_plsori(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plspage(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plspage(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xp, *yp, *xleng, *yleng, *xoff, *yoff;
 	yoff = &stack[--top];
 	xoff = &stack[--top];
@@ -2287,7 +2297,7 @@ __declspec(dllexport) int __cdecl ke_plspage(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plspal0(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plspal0(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *filename;
 	filename = &stack[--top];
 
@@ -2295,7 +2305,7 @@ __declspec(dllexport) int __cdecl ke_plspal0(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plspal1(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plspal1(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *filename, *interpolate;
 	interpolate = &stack[--top];
 	filename = &stack[--top];
@@ -2304,7 +2314,7 @@ __declspec(dllexport) int __cdecl ke_plspal1(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsstrm(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsstrm(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *strm;
 	strm = &stack[--top];
 
@@ -2312,7 +2322,7 @@ __declspec(dllexport) int __cdecl ke_plsstrm(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plssub(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plssub(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *nx, *ny;
 	ny = &stack[--top];
 	nx = &stack[--top];
@@ -2321,7 +2331,7 @@ __declspec(dllexport) int __cdecl ke_plssub(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plssym(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plssym(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *def, *scale;
 	scale = &stack[--top];
 	def = &stack[--top];
@@ -2330,7 +2340,7 @@ __declspec(dllexport) int __cdecl ke_plssym(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstar(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstar(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *nx, *ny;
 	ny = &stack[--top];
 	nx = &stack[--top];
@@ -2339,7 +2349,7 @@ __declspec(dllexport) int __cdecl ke_plstar(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstart(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstart(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *devname, *nx, *ny;
 	ny = &stack[--top];
 	nx = &stack[--top];
@@ -2352,7 +2362,7 @@ __declspec(dllexport) int __cdecl ke_plstart(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstransform(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstransform(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *coordinate_transform, *coordinate_transform_data;
 	coordinate_transform_data = &stack[--top];
 	coordinate_transform = &stack[--top];
@@ -2363,7 +2373,7 @@ __declspec(dllexport) int __cdecl ke_plstransform(ke1_t *stack, ke1_t *tokp, int
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstring(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstring(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *string;
 	string = &stack[--top];
 	y = &stack[--top];
@@ -2378,7 +2388,7 @@ __declspec(dllexport) int __cdecl ke_plstring(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstring3(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstring3(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *z, *string;
 	string = &stack[--top];
 	z = &stack[--top];
@@ -2395,7 +2405,7 @@ __declspec(dllexport) int __cdecl ke_plstring3(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstripa(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstripa(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *id, *pen, *x, *y;
 	y = &stack[--top];
 	x = &stack[--top];
@@ -2410,7 +2420,7 @@ __declspec(dllexport) int __cdecl ke_plstripa(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstripc(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstripc(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *id, *xspec, *yspec, *xmin, *xmax, *xjump, *ymin, *ymax, *xlpos, *ylpos, 
 		*y_ascl, *acc, *colbox, *collab, *colline, *styline, *legline, *labx, *laby, *labtop;
 	labtop = &stack[--top];
@@ -2458,7 +2468,7 @@ __declspec(dllexport) int __cdecl ke_plstripc(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstripd(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstripd(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *id;
 	id = &stack[--top];
 
@@ -2466,7 +2476,7 @@ __declspec(dllexport) int __cdecl ke_plstripd(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plstyl(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plstyl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *nms, *mark, *space;
 	space = &stack[--top];
 	mark = &stack[--top];
@@ -2479,7 +2489,7 @@ __declspec(dllexport) int __cdecl ke_plstyl(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsurf3d(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsurf3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = &stack[--top];
 	clevel = &stack[--top];
@@ -2502,7 +2512,7 @@ __declspec(dllexport) int __cdecl ke_plsurf3d(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsurf3dl(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsurf3dl(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel, *indexxmin, *indexxmax, *indexymin, *indexymax;
 	indexymax = &stack[--top];
 	indexymin = &stack[--top];
@@ -2533,7 +2543,7 @@ __declspec(dllexport) int __cdecl ke_plsurf3dl(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsvect(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsvect(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *arrowx, *arrowy, *npts, *fill;
 	fill = &stack[--top];
 	npts = &stack[--top];
@@ -2548,7 +2558,7 @@ __declspec(dllexport) int __cdecl ke_plsvect(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsvpa(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsvpa(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax;
 	ymax = &stack[--top];
 	ymin = &stack[--top];
@@ -2563,7 +2573,7 @@ __declspec(dllexport) int __cdecl ke_plsvpa(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsxax(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsxax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *digmax, *digits;
 	digits = &stack[--top];
 	digmax = &stack[--top];
@@ -2572,7 +2582,7 @@ __declspec(dllexport) int __cdecl ke_plsxax(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsyax(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsyax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *digmax, *digits;
 	digits = &stack[--top];
 	digmax = &stack[--top];
@@ -2581,7 +2591,7 @@ __declspec(dllexport) int __cdecl ke_plsyax(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plsym(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plsym(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *n, *x, *y, *code;
 	code = &stack[--top];
 	y = &stack[--top];
@@ -2596,7 +2606,7 @@ __declspec(dllexport) int __cdecl ke_plsym(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plszax(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plszax(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *digmax, *digits;
 	digits = &stack[--top];
 	digmax = &stack[--top];
@@ -2605,12 +2615,12 @@ __declspec(dllexport) int __cdecl ke_plszax(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pltext(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pltext(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	pltext();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_pltimefmt(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_pltimefmt(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *fmt;
 	fmt = &stack[--top];
 
@@ -2618,7 +2628,7 @@ __declspec(dllexport) int __cdecl ke_pltimefmt(ke1_t *stack, ke1_t *tokp, int to
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plvasp(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plvasp(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *aspect;
 	aspect = &stack[--top];
 
@@ -2626,7 +2636,7 @@ __declspec(dllexport) int __cdecl ke_plvasp(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plvect(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plvect(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *u, *v, *nx, *ny, *scale, *pltr, *pltr_data;
 	pltr_data = &stack[--top];
 	pltr = &stack[--top];
@@ -2647,7 +2657,7 @@ __declspec(dllexport) int __cdecl ke_plvect(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plvpas(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plvpas(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax, *aspect;
 	aspect = &stack[--top];
 	ymax = &stack[--top];
@@ -2664,7 +2674,7 @@ __declspec(dllexport) int __cdecl ke_plvpas(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plvpor(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plvpor(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax;
 	ymax = &stack[--top];
 	ymin = &stack[--top];
@@ -2679,12 +2689,12 @@ __declspec(dllexport) int __cdecl ke_plvpor(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plvsta(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plvsta(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	plvsta();
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plw3d(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plw3d(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *basex,* basey, *height, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *alt, *az;
 	az = &stack[--top];
 	alt = &stack[--top];
@@ -2714,7 +2724,7 @@ __declspec(dllexport) int __cdecl ke_plw3d(ke1_t *stack, ke1_t *tokp, int top) {
 }
 
 
-__declspec(dllexport) int __cdecl ke_plwidth(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plwidth(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *width;
 	width = &stack[--top];
 
@@ -2723,7 +2733,7 @@ __declspec(dllexport) int __cdecl ke_plwidth(ke1_t *stack, ke1_t *tokp, int top)
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plwind(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plwind(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *xmin, *xmax, *ymin, *ymax;
 	ymax = &stack[--top];
 	ymin = &stack[--top];
@@ -2738,7 +2748,7 @@ __declspec(dllexport) int __cdecl ke_plwind(ke1_t *stack, ke1_t *tokp, int top) 
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plxormod(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plxormod(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *mode, *status;
 	status = &stack[--top];
 	mode = &stack[--top];
@@ -2748,7 +2758,7 @@ __declspec(dllexport) int __cdecl ke_plxormod(ke1_t *stack, ke1_t *tokp, int top
 	return top;
 }
 
-__declspec(dllexport) int __cdecl ke_plabort(ke1_t *stack, ke1_t *tokp, int top) {
+SML_EXPORT int __cdecl ke_plabort(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *message;
 	message = &stack[--top];
 

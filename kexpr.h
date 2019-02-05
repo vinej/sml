@@ -7,6 +7,9 @@
 #include <plplot/plplot.h>
 #include <stdint.h>
 #include <stdio.h>
+#if defined(_MSC_VER) || defined(_WIN32)
+#include <Windows.h>
+#endif
 
 #define LOCAL_VAR '_'
 
@@ -89,6 +92,44 @@
 #define KEF_LET   2
 #define KEF_GET   3
 
+#include "kdq.h"
+#include "khash.h"
+
+struct ke1_s;
+
+typedef struct ke1_s* ke1_p;
+
+KHASH_MAP_INIT_STR(5, ke1_p)
+
+KHASH_MAP_INIT_STR(6, int)
+
+struct sml_s;
+typedef struct sml_s {
+	// GLOBAL VARIABLE USED BY ALL FUNCTIONS
+	struct ke1_s ** g_gbl_fields; // array of all global fields of the program to exectue
+	int g_gbl_field_qte;      // number of global fields  
+	int g_tok_idx;            // current program token index
+	struct ke1_s *g_stack;        // stack for the evaluation of the program
+	struct ke1_s ** g_tokens;     // array of pointers of all program tokens
+	int g_mem_count;          // current count of memory allocation
+							  // parser variables
+	int g_isNextDefName;    // flag to indicate that the next token is the def name
+	char g_currentDefName[100]; // current name of the current function
+	int g_sourceCodeLine;  // use to keep the line number to show better error trapping
+	int g_isFirstToken;    // use to remove separators at the beginning of the program
+	int g_isLastTokenNop;  // use to manage the command seperator, the rule is to have one separator between each comand
+	char g_lastErrorMessage[256]; // 
+	struct ke1_s * g_recp[100];
+	int g_rec_qte;        // number of global fields  
+	khash_t(5) *hfunction;
+	khash_t(6) *hname;
+#if defined(_MSC_VER) || defined(_WIN32)
+	HMODULE g_libhandle[40];
+	int g_libhandle_qte;      // number of global fields
+#endif
+} sml_t;
+
+
 struct kexpr_s;
 typedef struct kexpr_s kexpr_t;
 typedef int * reclistt;
@@ -105,10 +146,10 @@ typedef struct ke1_s {
 		void (*builtin)(struct ke1_s *a, struct ke1_s *b); // execution function
 		double (*real_func1)(double);
 		double (*real_func2)(double, double);
-		int (*defprop)(struct ke1_s* stack, struct ke1_s* prop, int top);
-		int (*deffunc)(struct ke1_s* stack, struct ke1_s* tokp, int top);
-		int(*defcmd)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
-		int (*defvcmd)(kexpr_t *ke, struct ke1_s*, int i);
+		int (*defprop)(sml_t* sml, struct ke1_s* prop, int top);
+		int (*deffunc)(sml_t* sml, struct ke1_s* tokp, int top);
+		int(*defcmd)(sml_t* sml, struct kexpr_s*, struct ke1_s*, int, int *);
+		int (*defvcmd)(sml_t* sml, kexpr_t *ke, struct ke1_s*, int i);
 		struct ke1_s * recp;
 	} f;
 	union {  //               
@@ -121,7 +162,7 @@ typedef struct ke1_s {
 		gsl_vector_int * vector_int;
 		gsl_vector * vector;
 		gsl_matrix * matrix;
-	    gsl_complex complex;
+	    gsl_complex tcomplex;
 		reclistt reclist;
 		PLGraphicsIn * plgrin;
 		PLPointer * plptr;
@@ -140,6 +181,9 @@ struct kexpr_s {
 	ke1_t *e;
 };
 
+#define __GLOBAL "g_"
+#define __GLOBAL_SEP "_"
+#define __GLOBAL_DSEP "__"
 
 #ifdef _DEBUG
 void ke_validate_parameter_qte(ke1_t *p, int nb_param, char * function_name);
@@ -150,56 +194,47 @@ void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * func
 #endif // _DEBUG
 
 
-typedef struct ke1_t* ke1_p;
-typedef int(*cmdp)(struct kexpr_s*, struct ke1_s*, struct ke1_s*, int, int *);
-typedef int(*fncp)(struct ke1_s* s, struct ke1_s* t, int);
-typedef int(*vcmdp)(struct kexpr_s*, struct ke1_s*, int);
-char *ke_mystr(char *src, size_t n);
-void ke_hash_add(fncp key, char * name);
+typedef int(*cmdp)(sml_t* sml, struct kexpr_s*, struct ke1_s*, int, int *);
+typedef int(*fncp)(sml_t* sml, struct ke1_s* s, int);
+typedef int(*vcmdp)(sml_t* sml, struct kexpr_s*, struct ke1_s* s, int);
 
-// parse an expression and return errors in $err
-kexpr_t *ke_parse(char *_s, int *err);
-
-// free memory allocated during parsing
-void ke_destroy(kexpr_t *ke);
-// evaluate expression; return error code; final value is returned via pointers
-int ke_eval(kexpr_t *ke, int64_t *_i, double *_r, char **_s, int *ret_type);
-// print the expression in Reverse Polish notation (RPN)
-void ke_print(kexpr_t *ke);
-void ke_print_error_one(kexpr_t *ke, char * fnc, ke1_t *u, int i);
-void ke_print_one(ke1_t * u);
-void ke_fill_hash();
-
-void ke_set_real(ke1_t *e, double x);
-void ke_set_null_vector_int(int ival);
-void ke_set_null_vector(int ival);
-void ke_set_vector(ke1_t *e, gsl_vector * p);
-void ke_set_null_matrix(int ival);
-void ke_set_matrix(ke1_t *e, gsl_matrix * p);
-void ke_set_complex(ke1_t *e, gsl_complex p);
-void ke_set_str(ke1_t *e, char *x);
-void ke_set_str_direct(int ival, char *x);
-//void ke_set_str_direct2(kexpr_t *ke, char *var, char *x);
-void ke_set_int(ke1_t *e, int64_t y);
-void ke_inc_memory();
-void ke_dec_memory();
-void ke_init_memory_count();
-void * ke_calloc_memory(size_t i, size_t x);
-void * ke_malloc_memory(size_t i);
-void ke_free_memory(void *);
-void ke_free_tokens();
-int ke_fill_list(kexpr_t *ke);
-void ke_free_val();
-void ke_free(kexpr_t *ke);
-void ke_free_hash();
-void ke_push_stack(ke1_t *e, int *top);
-void ke_set_local_val(kexpr_t *ke, int i, ke1_t *p, ke1_t *q);
-void ke_set_val(ke1_t* e, ke1_t *q);
-void ke_set_val_index(int i, ke1_t *q);
-ke1_t * ke_get_tok();
-ke1_t * ke_get_tokidx(int idx);
-ke1_t* ke_get_val_index(int i);
-
+char *ke_mystr(sml_t * sml, char *src, size_t n);
+void ke_hash_add(sml_t * sml, fncp key, char * name);
+kexpr_t *ke_parse(sml_t * sml, char *_s, int *err);
+void ke_destroy(sml_t * sml, kexpr_t *ke);
+int ke_eval(sml_t * sml, kexpr_t *ke, int64_t *_i, double *_r, char **_s, int *ret_type);
+void ke_print(sml_t * sml, kexpr_t *ke);
+void ke_print_error_one(sml_t * sml, kexpr_t *ke, char * fnc, ke1_t *u, int i);
+void ke_print_one(sml_t * sml, ke1_t * u);
+void ke_fill_hash(sml_t * sml);
+void ke_set_real(sml_t * sml, ke1_t *e, double x);
+void ke_set_null_vector_int(sml_t * sml, int ival);
+void ke_set_null_vector(sml_t * sml, int ival);
+void ke_set_vector(sml_t * sml, ke1_t *e, gsl_vector * p);
+void ke_set_null_matrix(sml_t * sml, int ival);
+void ke_set_matrix(sml_t * sml, ke1_t *e, gsl_matrix * p);
+void ke_set_complex(sml_t * sml, ke1_t *e, gsl_complex p);
+void ke_set_str(sml_t * sml, ke1_t *e, char *x);
+void ke_set_str_direct(sml_t * sml, int ival, char *x);
+void ke_set_int(sml_t * sml, ke1_t *e, int64_t y);
+void ke_inc_memory(sml_t * sml);
+void ke_dec_memory(sml_t * sml);
+void ke_init_memory_count(sml_t * sml);
+void * ke_calloc_memory(sml_t * sml, size_t i, size_t x);
+void * ke_malloc_memory(sml_t * sml, size_t i);
+void ke_free_memory(sml_t * sml, void *);
+void ke_free_tokens(sml_t * sml);
+int ke_fill_list(sml_t * sml, kexpr_t *ke);
+void ke_free_val(sml_t * sml);
+void ke_free(sml_t * sml, kexpr_t *ke);
+void ke_free_hash(sml_t * sml);
+void ke_push_stack(sml_t * sml, ke1_t *e, int *top);
+void ke_set_local_val(sml_t * sml, kexpr_t *ke, int i, ke1_t *p, ke1_t *q);
+void ke_set_val(sml_t * sml, ke1_t* e, ke1_t *q);
+void ke_set_val_index(sml_t * sml, int i, ke1_t *q);
+ke1_t * ke_get_tok(sml_t * sml);
+ke1_t * ke_get_tokidx(sml_t * sml, int idx);
+ke1_t* ke_get_val_index(sml_t * sml, int i);
 
 #endif
 

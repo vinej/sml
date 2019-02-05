@@ -1,8 +1,8 @@
 #ifndef COMPLEX_H_INCLUDED
 #define COMPLEX_H_INCLUDED
 
-void ke_complex_print(ke1_t *k);
-void ke_complex_hash();
+void ke_complex_print(sml_t* sml, ke1_t *k);
+void ke_complex_hash(sml_t* sml);
 
 #define COMPLEX "complex"
 #define COMPLEX_SET_REAL "complex_set_real"

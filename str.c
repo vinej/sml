@@ -2,9 +2,7 @@
 #include "kexpr.h"
 #include "str.h"
 
-extern ke1_t ** g_gbl_fields;
-
-int ke_str_prop_get_0par(ke1_t *stack, ke1_t *tokp, int top) {
+int ke_str_prop_get_0par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	// b = a[1]  =>  1 a(1) =
 	ke1_t *prop;
 	prop = &stack[top - 1];
@@ -16,7 +14,7 @@ int ke_str_prop_get_0par(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-int ke_str_prop_get_1par(ke1_t *stack, ke1_t *tokp, int top) {
+int ke_str_prop_get_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	// b = a[1]  =>  1 a(1) =
 	ke1_t *prop, *indice;
 	prop = &stack[--top];
@@ -30,7 +28,7 @@ int ke_str_prop_get_1par(ke1_t *stack, ke1_t *tokp, int top) {
 		indice->vtype = KEV_INT;
 	}
 	else {
-		char * sub = ke_calloc_memory(2, 1);
+		char * sub = ke_calloc_memory(sml,2, 1);
 		*sub = prop->obj.s[indice->i];
 		indice->obj.s = sub;
 		indice->ttype = KET_VAL;
@@ -40,7 +38,7 @@ int ke_str_prop_get_1par(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-int ke_str_prop_get_2par(ke1_t *stack, ke1_t *tokp, int top) {
+int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	// b = a[1,2]  =>  1 2 a(2) =
 
 	// 0,2
@@ -65,7 +63,7 @@ int ke_str_prop_get_2par(ke1_t *stack, ke1_t *tokp, int top) {
 		to->i = len + to->i;
 	}
 
-	char * sub = ke_calloc_memory((size_t)(to->i - from->i) + 2, 1);
+	char * sub = ke_calloc_memory(sml,(size_t)(to->i - from->i) + 2, 1);
 	memcpy(sub, &(prop->obj.s[from->i]), (size_t)(to->i - from->i + 1));
 	from->obj.s = sub;
 	from->tofree = 1;
@@ -74,7 +72,7 @@ int ke_str_prop_get_2par(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-int ke_str_prop_set_1par(ke1_t *stack, ke1_t *tokp, int top) {
+int ke_str_prop_set_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	// a[2] = 'z' =>  2 a(1) 'z' =
 	ke1_t *p, *q, *v;
 	v = &stack[--top];
@@ -85,7 +83,7 @@ int ke_str_prop_set_1par(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-int ke_str_prop_set_2par(ke1_t *stack, ke1_t *tokp, int top) {
+int ke_str_prop_set_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	// a{1,2} = 'as'    1 2 a(2) 'sd' =
 	ke1_t *prop, *from, *to, *v;
 	v = &stack[--top];
@@ -96,54 +94,54 @@ int ke_str_prop_set_2par(ke1_t *stack, ke1_t *tokp, int top) {
 	return top;
 }
 
-static int ke_strcpy(ke1_t *stack, ke1_t *tokp, int top) {
+static int ke_strcpy(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
-    char * tmp = (char*)ke_calloc_memory(strlen(q->obj.s)+1, 1);
+    char * tmp = (char*)ke_calloc_memory(sml,strlen(q->obj.s)+1, 1);
     strcpy(tmp, q->obj.s);
-    ke_set_str_direct(p->ifield, tmp);
+    ke_set_str_direct(sml, p->ifield, tmp);
     --top;
     return top;
 }
 
-static int ke_strcat(ke1_t *stack, ke1_t *tokp, int top) {
+static int ke_strcat(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
     size_t plen = (p->obj.s == NULL ? 0 : strlen(p->obj.s));
 	size_t qlen = (q->obj.s == NULL ? 0 : strlen(q->obj.s));
-   	char * tmp = (char*)ke_calloc_memory(plen + qlen + 1,1);
+   	char * tmp = (char*)ke_calloc_memory(sml,plen + qlen + 1,1);
    	if (plen) {
         strcpy(tmp, p->obj.s);
    	}
 	if (q->obj.s != NULL) {
 		strcat(tmp, q->obj.s);
 	}
-    ke_set_str_direct(p->ifield, tmp);
+    ke_set_str_direct(sml, p->ifield, tmp);
     --top;
     return top;
 }
 
-static int ke_strbuf(ke1_t *stack, ke1_t *tokp, int top) {
+static int ke_strbuf(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p, *q;
 	q = &stack[--top];
 	p = &stack[--top];
-	g_gbl_fields[p->ifield]->obj.s = ke_calloc_memory((size_t)q->i,1);
-	g_gbl_fields[p->ifield]->ttype = KET_VAL;
-	g_gbl_fields[p->ifield]->vtype = KEV_STR;
+	sml->g_gbl_fields[p->ifield]->obj.s = ke_calloc_memory(sml,(size_t)q->i,1);
+	sml->g_gbl_fields[p->ifield]->ttype = KET_VAL;
+	sml->g_gbl_fields[p->ifield]->vtype = KEV_STR;
 	return top;
 }
 
-static int ke_strfree(ke1_t *stack, ke1_t *tokp, int top) {
+static int ke_strfree(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
 	ke1_t *p;
 	p = &stack[--top];
-	ke_free_memory(g_gbl_fields[p->ifield]->obj.s);
-	g_gbl_fields[p->ifield]->obj.s = NULL;
+	ke_free_memory(sml, sml->g_gbl_fields[p->ifield]->obj.s);
+	sml->g_gbl_fields[p->ifield]->obj.s = NULL;
 	return top;
 }
 
-static int ke_strlen(ke1_t *stack, ke1_t *tokp, int top) {
+static int ke_strlen(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
    	ke1_t *p;
     p = &stack[top-1];
     p->i = strlen(p->obj.s);
@@ -154,7 +152,7 @@ static int ke_strlen(ke1_t *stack, ke1_t *tokp, int top) {
     return top;
 }
 
-static int ke_strcmp(ke1_t *stack, ke1_t *tokp, int top) {
+static int ke_strcmp(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->g_stack;
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
@@ -165,14 +163,14 @@ static int ke_strcmp(ke1_t *stack, ke1_t *tokp, int top) {
     return top;
 }
 
-void ke_str_hash() {
-	ke_hash_add(&ke_strfree, STR_STRFREE);
-	ke_hash_add(&ke_strbuf, STR_STRBUF);
-	ke_hash_add(&ke_strcpy, STR_STRCPY);
-    ke_hash_add(&ke_strcat, STR_STRCAT);
-    ke_hash_add(&ke_strlen, STR_STRLEN);
-    ke_hash_add(&ke_strcmp, STR_STRCMP);
-    //ke_hash_add(&ke_strstr, STR_STRCHR);
-    //ke_hash_add(&ke_strfmt, STR_STRFMT);
+void ke_str_hash(sml_t* sml) {
+	ke_hash_add(sml,&ke_strfree, STR_STRFREE);
+	ke_hash_add(sml, &ke_strbuf, STR_STRBUF);
+	ke_hash_add(sml, &ke_strcpy, STR_STRCPY);
+    ke_hash_add(sml, &ke_strcat, STR_STRCAT);
+    ke_hash_add(sml, &ke_strlen, STR_STRLEN);
+    ke_hash_add(sml, &ke_strcmp, STR_STRCMP);
+    //ke_hash_add(sml,&ke_strstr, STR_STRCHR);
+    //ke_hash_add(sml,&ke_strfmt, STR_STRFMT);
 }
 
