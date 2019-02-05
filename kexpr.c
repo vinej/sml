@@ -1169,12 +1169,15 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 	*_i = 0, *_r = 0., *ret_type = 0;
 	sml->g_stack = (ke1_t*)ke_malloc_memory(sml, kexpr->n * sizeof(ke1_t));
 	ke1_t *stack = sml->g_stack;
+	struct ke1_s ** fields = sml->g_gbl_fields;
+	struct ke1_s ** tokens = sml->g_tokens;
+
 	ke1_t *tokp = NULL;
 	int n = kexpr->n;
 	for (int itok = 0; itok < n; ++itok) {
 		sml->g_tok_idx = itok;
 		//ke1_t *e = &ke->e[i];
-		tokp = sml->g_tokens[itok];
+		tokp = tokens[itok];
 
 		switch (tokp->ttype) {
 		case KET_CMD:
@@ -1188,14 +1191,14 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
 				if (stack[top - 2].propset) {
 					e = &stack[top - 2];
-					sml->g_gbl_fields[e->ifield]->n_args = e->n_args;
-					stack[top-2] = *sml->g_gbl_fields[e->ifield];
+					fields[e->ifield]->n_args = e->n_args;
+					stack[top-2] = *fields[e->ifield];
 					top = ke_poperty_set(sml, stack, e, top);
 				}
 				else {
 					q = &stack[--top];
 					p = &stack[--top];
-					ke_set_val(sml, sml->g_gbl_fields[p->ifield], q);
+					ke_set_val(sml, fields[p->ifield], q);
 				}
 			}
 			else {
@@ -1220,7 +1223,7 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 			break;
 		case KET_PROP:
 			if (tokp->propget) {
-				stack[top++] = *sml->g_gbl_fields[tokp->ifield];
+				stack[top++] = *fields[tokp->ifield];
 				top = ke_poperty_get(sml, stack, tokp, top);
 			}
 			else {
