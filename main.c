@@ -34,7 +34,7 @@ int main(int argc, char *argv[])
 	//	fprintf(stderr, "\nUsage: %s [-pi] <expr>\n", argv[0]);
 	//	return 1;
 	//}
-	sml_t * sml = calloc(sizeof(sml_t), 1);
+	sml_t * sml = create_sml();
 	ke_init_memory_count(sml);
     char *str = NULL;
 	if (is_file) {

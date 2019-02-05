@@ -1,0 +1,59 @@
+file_xxx # file
+vec_xxx  # vector
+mat_xxx  # matric
+cpl_xxx  # complexe number
+plt_xxx  # plotting
+
+
+
+# define a structure to have field type
+# the order of definition is the order of the field
+rec.key = ''       #str
+rec.name = ''      #str
+rec.date = ''      #date
+rec.qte = 1        #int/boolean
+rec.salary = 1.1   #real
+
+buf = strbuf(1000)
+
+env = db_env('c:/sml/test')
+db = db_open("rec")
+
+for(i,1,10,1)
+  read(rec)
+  db_insert( rec.key, rec )
+next
+
+dbclose(db)
+dbfree(env)
+
+env = db_env('c:/sml/test')
+db = db_open("rec")
+
+cursor = db_search("rec*")
+for
+  if (!db_eof(cursor))	
+    db_read(cursor, rec)
+    printf(rec)
+  else
+    break
+  end
+next
+
+db_close(db)
+db_free(env)
+
+env = db_env('c:/sml/test')
+db = db_open("rec")
+
+cursor = db_search("rec*")
+for
+  if (!db_eof(cursor))	
+    db_delete(cursor, rec)
+  else
+    break
+  end
+next
+
+db_close(db)
+db_free(env)

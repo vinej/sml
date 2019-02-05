@@ -2,12 +2,12 @@
 #define COMMAND_H_INCLUDED
 
 void ke_command_hash(sml_t* sml);
-cmdp ke_command(char * name);
+cmdp ke_command(sml_t* sml, char * name);
 void ke_command_destroy(sml_t* sml);
 //int ke_command_get_rtn();
-vcmdp ke_command_val(char * name);
-int ke_command_icmd(char * name);
-int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens);
+vcmdp ke_command_val(sml_t* sml, char * name);
+int ke_command_icmd(sml_t* sml, char * name);
+int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens);
 
 
 #define CMD_FOR "for"

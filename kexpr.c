@@ -149,9 +149,14 @@ void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * func
 		exit(1);
 	}
 }
-
-
 #endif // _DEBUG
+
+sml_t * create_sml() {
+	sml_t * sml = calloc(sizeof(sml_t), 1);
+	sml->lastDef = -1;
+	sml->g_fortop = 0;
+	return sml;
+}
 
 // MEMORY ALLOCATION FUNCTIONS
 void ke_init_memory_count(sml_t *sml) {
@@ -277,9 +282,9 @@ void ke_load_dll(sml_t *sml, char * p) {
 int ke_manage_function(sml_t *sml, ke1_t * tok, int err) {
 	tok->n_args = 1;
 	tok->sourceLine = sml->sourceCodeLine;
-	tok->f.defcmd = (cmdp)ke_command(tok->name);
+	tok->f.defcmd = (cmdp)ke_command(sml, tok->name);
 	if (tok->f.defcmd != NULL) {
-		tok->icmd = ke_command_icmd(tok->name);
+		tok->icmd = ke_command_icmd(sml, tok->name);
 		tok->ttype = KET_CMD;
 		if (strcmp(tok->name, CMD_DEF) == 0) {
 			sml->isNextDefName = 1;
@@ -411,7 +416,7 @@ int ke_manage_command(sml_t *sml, ke1_t *tok, int err) {
 		*sml->currentDefName = 0;
 	}
 	tok->ttype = KET_VCMD;
-	tok->icmd = ke_command_icmd(tok->name);
+	tok->icmd = ke_command_icmd(sml, tok->name);
 	return err;
 }
 
@@ -618,7 +623,7 @@ ke1_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) //
 				tok.ttype = KET_VAL; // a constant is only a real variable
 			}
 			else {
-				tok.f.defvcmd = (vcmdp)ke_command_val(tok.name);
+				tok.f.defvcmd = (vcmdp)ke_command_val(sml, tok.name);
 				if (tok.f.defvcmd != NULL) {
 					*err = ke_manage_command(sml, &tok, *err);
 				}
@@ -864,7 +869,7 @@ int ke_fill_list(sml_t *sml, kexpr_t *ke)
 		}
         sml->tokens[i] = tokp;
 	}
-	return ke_set_ijmp(ke, sml->tokens);
+	return ke_set_ijmp(sml, ke, sml->tokens);
 }
 
 void ke_set_int(sml_t* sml, ke1_t *tokp, int64_t y)

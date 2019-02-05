@@ -7,6 +7,8 @@
 #include <plplot/plplot.h>
 #include <stdint.h>
 #include <stdio.h>
+#include "stack.h"
+
 #if defined(_MSC_VER) || defined(_WIN32)
 #include <Windows.h>
 #endif
@@ -96,12 +98,21 @@
 #include "khash.h"
 
 struct ke1_s;
+struct kexpr_s;
 
 typedef struct ke1_s* ke1_p;
+typedef int(*cmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s*, int, int *);
+typedef int(*fncp)(struct sml_s * sml, struct ke1_s* s, int);
+typedef int(*vcmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s* s, int);
 
+KHASH_MAP_INIT_STR(0, cmdp)
+KHASH_MAP_INIT_STR(1, vcmdp)
+KHASH_MAP_INIT_STR(2, int)
+KHASH_MAP_INIT_INT(3, int)
 KHASH_MAP_INIT_STR(5, ke1_p)
-
 KHASH_MAP_INIT_STR(6, int)
+
+KDQ_INIT(int)
 
 struct sml_s;
 typedef struct sml_s {
@@ -127,6 +138,18 @@ typedef struct sml_s {
 	HMODULE libhandle[40];
 	int libhandle_qte;      // number of global fields
 #endif
+	kdq_t(int) *callstack;
+	kdq_t(int) *hiforcommand;
+	kdq_t(int) *hinextcommand;
+	khash_t(3) *hidefcommand;
+	khash_t(0) *hcommand;
+	khash_t(1) *hvcommand;
+	khash_t(3) *hdefcommand;
+	stack_t *harg;
+	int g_forstack[20]; 
+	int g_fortop;
+	// g_forstack max 20 level of for
+	int lastDef;
 } sml_t;
 
 
@@ -193,11 +216,7 @@ void ke_validate_parameter_not_null(ke1_t * p, void * ptr, char * param_name, ch
 void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * function_name);
 #endif // _DEBUG
 
-
-typedef int(*cmdp)(sml_t* sml, struct kexpr_s*, struct ke1_s*, int, int *);
-typedef int(*fncp)(sml_t* sml, struct ke1_s* s, int);
-typedef int(*vcmdp)(sml_t* sml, struct kexpr_s*, struct ke1_s* s, int);
-
+sml_t * create_sml();
 char *ke_mystr(sml_t * sml, char *src, size_t n);
 void ke_hash_add(sml_t * sml, fncp key, char * name);
 kexpr_t *ke_parse(sml_t * sml, char *_s, int *err);

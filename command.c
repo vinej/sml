@@ -5,50 +5,23 @@
 #include "command.h"
 #include "stack.h"
 
-// KHASH DEFINITION
-const int KH_CMD = 0;
-const int KH_STR = 1;
-const int KH_VCMD = 2;
-const int KH_ICMD = 3;
-const int KH_IDEF = 4;
-
-KDQ_INIT(int)
-KHASH_MAP_INIT_STR(KH_CMD, cmdp)
-KHASH_MAP_INIT_STR(KH_VCMD, vcmdp)
-KHASH_MAP_INIT_STR(KH_STR, int)
-KHASH_MAP_INIT_INT(KH_IDEF, int)
-kdq_t(int) *callstack;
-kdq_t(int) *hiforcommand;
-kdq_t(int) *hinextcommand;
-khash_t(KH_IDEF) *hidefcommand;
-khash_t(KH_CMD) *hcommand;
-khash_t(KH_VCMD) *hvcommand;
-khash_t(KH_IDEF) *hdefcommand;
-stack_t *harg;
-
-// g_forstack max 20 level of for
-int g_forstack[20]; int g_fortop = 0;
-
-int peekfor() 
+int peekfor(sml_t* sml) 
 {	
 	//printf("\npeek %d\n", g_fortop);
-	return g_forstack[g_fortop-1];
+	return sml->g_forstack[sml->g_fortop-1];
 }
 
-int popfor() { 
+int popfor(sml_t* sml) {
 	//printf("\npop %d\n", g_fortop);
 	//--g_fortop;
-	return g_forstack[--g_fortop]; 
+	return sml->g_forstack[--sml->g_fortop];
 }
 
-void pushfor(int val) { 
+void pushfor(sml_t* sml,int val) { 
 	//printf("\npush %d\n", g_fortop);
-	g_forstack[g_fortop++] = val;
+	sml->g_forstack[sml->g_fortop++] = val;
 	//++g_fortop;
 }
-
-// g_forstack max 20 level of for
-int lastDef = -1;
 
 int ifind_backward_defname(ke1_t ** tokens, int starti, ke1_t * tokp) {
 	for (int i = starti+1; i > -1; --i) {
@@ -126,7 +99,7 @@ int ifind_else_or_end(kexpr_t *kexpr, int starti, ke1_t *tokp) {
 	return -1;
 }
 
-int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
+int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens) {
 	ke1_t *tokp = NULL;
 	int n = kexpr->n;
 	int lastForCmd = 0;
@@ -148,11 +121,11 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				break;
 			case CMD_ICNT:
 				if (!tokp->ijmp) {
-					if (g_fortop < 0) {
+					if (sml->g_fortop < 0) {
 						printf("SML: ERROR: Command <for> not found for token <continue> at line <%d>\n", tokp->sourceLine);
 						return -1;
 					}
-					tokp->ijmp = peekfor();
+					tokp->ijmp = peekfor(sml);
 				}
 				break;
 			case CMD_IEXE:
@@ -160,22 +133,22 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 					int idefname = ifind_backward_defname(tokens, itok, tokp);
 					if (idefname != -1) {
 						ke1_t *def_name = tokens[idefname];
-						khint_t iter = kh_get(KH_IDEF, hidefcommand, def_name->ifield);
-						if (kh_end(hidefcommand) == iter) {
+						khint_t iter = kh_get(3, sml->hidefcommand, def_name->ifield);
+						if (kh_end(sml->hidefcommand) == iter) {
 							printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_name->name, tokp->sourceLine);
 							return -1;
 						}
-						tokp->ijmp = (int)kh_val(hidefcommand, iter);
+						tokp->ijmp = (int)kh_val(sml->hidefcommand, iter);
 					}
 				}
 				break;
 			case CMD_IDEF:
-				lastDef = itok;
+				sml->lastDef = itok;
 				int absent;
 				ke1_t *def_name = tokens[itok - tokp->n_args];
 				def_name->vtype = KEV_DEF;
-				khint_t iter = kh_put(KH_IDEF, hidefcommand, def_name->ifield, &absent);
-				kh_val(hidefcommand, iter) = ((itok) - tokp->n_args - 1);
+				khint_t iter = kh_put(3, sml->hidefcommand, def_name->ifield, &absent);
+				kh_val(sml->hidefcommand, iter) = ((itok) - tokp->n_args - 1);
 
 				if (!tokp->ijmp) {
 					tokp->ijmp = ifind_forward_rtn(kexpr, itok, tokp);
@@ -197,21 +170,21 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 			case CMD_IEND:
 				break;
 			case CMD_IRTN:
-				if (lastDef == -1) {
+				if (sml->lastDef == -1) {
 					printf("SML: ERROR: Command <def> not found for token <enddef> at line <%d>\n", tokp->sourceLine);
 					return -1;
 				}
 				if (!tokp->ijmp) {
-					tokp->ijmp = lastDef;
+					tokp->ijmp = sml->lastDef;
 				}
 				break;
 			case CMD_IFOR:
 				if (tokp->ttype == KET_CMD) {
-					pushfor(lastNop);
+					pushfor(sml, lastNop);
 				}
 				else
 				{
-					pushfor(itok - 1);
+					pushfor(sml,itok - 1);
 				}
 				if (!tokp->ijmp) {
 					tokp->ijmp = ifind_forward_next(kexpr, itok, tokp);
@@ -220,11 +193,11 @@ int ke_set_ijmp(kexpr_t *kexpr, ke1_t ** tokens) {
 				break;
 			case CMD_INEXT:
 				if (!tokp->ijmp) {
-					if (g_fortop < 0) {
+					if (sml->g_fortop < 0) {
 						printf("SML: ERROR: Command <for> not found for token <next> at line <%d>\n", tokp->sourceLine);
 						return -1;
 					}
-					tokp->ijmp = popfor();
+					tokp->ijmp = popfor(sml);
 				}
 			default:
 				break;
@@ -259,7 +232,7 @@ int ke_command_def(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int  * itok
         // set parameter value from the g_stack
         for (int j = 0; j < n-1; ++j) {
            q = &stack[top-n+j+1];
-		   v = stack_pop(harg);
+		   v = stack_pop(sml->harg);
 		   ke_set_val(sml, sml->fields[q->ifield], v);
 		   ke_free_memory(sml, v);
         }
@@ -287,11 +260,11 @@ int ke_command_exe(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp
 		q = &stack[--top];
 		ke1_t * k = ke_malloc_memory(sml, sizeof(ke1_t));
 		memcpy(k, q, sizeof(ke1_t));
-		stack_push(harg, k);
+		stack_push(sml->harg, k);
 		narg--;
 	}
 	p = &stack[top - 1];
-	kdq_push(int, callstack, *itokp);
+	kdq_push(int, sml->callstack, *itokp);
 	*itokp = tokp->ijmp;
 	--top;
 	return top;
@@ -311,13 +284,13 @@ int ke_command_for(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp
 		struct ke1_s * t = tokp->obj.tokp;
 		t->r = min->r;
 		t->i = (int64_t)t->r;
-		pushfor(*itokp);
+		pushfor(sml,*itokp);
 	}
 	else {
 		ke1_t *p = tokp->obj.tokp; // copy of the real variable into the stack
 		if (p->r >= stack[top_m1 + 2].r) {
 			tokp->assigned = 0;
-			popfor();
+			popfor(sml);
 			*itokp = tokp->ijmp;
 		}
 		else {
@@ -360,7 +333,7 @@ int  ke_command_val_end(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 
 int  ke_command_val_brk(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 
-	int ifor = popfor();
+	int ifor = popfor(sml);
 	ke1_t *efor = ke_get_tokidx(sml,ifor);
 	efor->assigned = 0;
 	return tokp->ijmp;
@@ -370,7 +343,7 @@ int  ke_command_val_brk(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 int  ke_command_val_for(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 	if (!tokp->assigned) {
 		tokp->assigned = 1;
-		pushfor(itok);
+		pushfor(sml,itok);
 	}
 	return itok;
 }
@@ -384,60 +357,60 @@ int  ke_command_val_next(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
 }
 
 int  ke_command_val_rtn(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int itok) {
-	return *kdq_pop(int, callstack);
+	return *kdq_pop(int, sml->callstack);
 }
 
-void ke_command_hash_add(cmdp key, char * name) {
+void ke_command_hash_add(sml_t* sml, cmdp key, char * name) {
 	int absent;
-	khint_t iter = kh_put(KH_CMD, hcommand, name, &absent);
-	kh_val(hcommand, iter) = key;
+	khint_t iter = kh_put(0, sml->hcommand, name, &absent);
+	kh_val(sml->hcommand, iter) = key;
 }
 
-void ke_vcommand_hash_add(vcmdp key, char * name) {
+void ke_vcommand_hash_add(sml_t* sml, vcmdp key, char * name) {
 	int absent;
-	khint_t iter = kh_put(KH_VCMD, hvcommand, name, &absent);
-	kh_val(hvcommand, iter) = key;
+	khint_t iter = kh_put(1, sml->hvcommand, name, &absent);
+	kh_val(sml->hvcommand, iter) = key;
 }
 
 void ke_command_hash(sml_t* sml) {
-    callstack = kdq_init(int); ke_inc_memory(sml);
-	harg = stack_create(16);
-    hcommand = kh_init(KH_CMD); ke_inc_memory(sml);
-	hvcommand = kh_init(KH_VCMD); ke_inc_memory(sml);
-	hidefcommand = kh_init(KH_IDEF); ke_inc_memory(sml);
-	hiforcommand = kdq_init(int); ke_inc_memory(sml);
-	hinextcommand = kdq_init(int); ke_inc_memory(sml);
+	sml->callstack = kdq_init(int); ke_inc_memory(sml);
+	sml->harg = stack_create(16);
+	sml->hcommand = kh_init(0); ke_inc_memory(sml);
+	sml->hvcommand = kh_init(1); ke_inc_memory(sml);
+	sml->hidefcommand = kh_init(3); ke_inc_memory(sml);
+	sml->hiforcommand = kdq_init(int); ke_inc_memory(sml);
+	sml->hinextcommand = kdq_init(int); ke_inc_memory(sml);
 
-    ke_command_hash_add((cmdp)&ke_command_if, CMD_IF);
-    ke_command_hash_add((cmdp)&ke_command_print, CMD_PRINT);
+    ke_command_hash_add(sml, (cmdp)&ke_command_if, CMD_IF);
+    ke_command_hash_add(sml, (cmdp)&ke_command_print, CMD_PRINT);
 	//ke_command_hash_add((cmdp)&ke_command_printf, CMD_PRINTF);
 	//ke_command_hash_add((cmdp)&ke_command_sprintf, CMD_SPRINTF);
-	ke_command_hash_add((cmdp)&ke_command_import, CMD_IMPORT);
-	ke_command_hash_add((cmdp)&ke_command_print_nonl, CMD_PRINTNOLN);
-    ke_command_hash_add((cmdp)&ke_command_def, CMD_DEF);
-    ke_command_hash_add((cmdp)&ke_command_exe, CMD_EXE);
-    ke_command_hash_add((cmdp)&ke_command_for, CMD_FOR);
+	ke_command_hash_add(sml, (cmdp)&ke_command_import, CMD_IMPORT);
+	ke_command_hash_add(sml, (cmdp)&ke_command_print_nonl, CMD_PRINTNOLN);
+    ke_command_hash_add(sml, (cmdp)&ke_command_def, CMD_DEF);
+    ke_command_hash_add(sml, (cmdp)&ke_command_exe, CMD_EXE);
+    ke_command_hash_add(sml, (cmdp)&ke_command_for, CMD_FOR);
 
-	ke_vcommand_hash_add((vcmdp)&ke_command_val_for, CMD_FOR);
-	ke_vcommand_hash_add((vcmdp)&ke_command_val_else, CMD_ELSE);
-	ke_vcommand_hash_add((vcmdp)&ke_command_val_end, CMD_END);
-	ke_vcommand_hash_add((vcmdp)&ke_command_val_brk, CMD_BRK);
-	ke_vcommand_hash_add((vcmdp)&ke_command_val_cnt, CMD_CNT);
-	ke_vcommand_hash_add((vcmdp)&ke_command_val_next, CMD_NEXT);
-	ke_vcommand_hash_add((vcmdp)&ke_command_val_rtn, CMD_RTN);
+	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_for, CMD_FOR);
+	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_else, CMD_ELSE);
+	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_end, CMD_END);
+	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_brk, CMD_BRK);
+	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_cnt, CMD_CNT);
+	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_next, CMD_NEXT);
+	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_rtn, CMD_RTN);
 }
 
 
-cmdp ke_command(char * name) {
-    khint_t iter = kh_get(KH_CMD, hcommand, name);
-    if (kh_end(hcommand) != iter) {
-        return (cmdp)kh_val(hcommand, iter);
+cmdp ke_command(sml_t* sml, char * name) {
+    khint_t iter = kh_get(0, sml->hcommand, name);
+    if (kh_end(sml->hcommand) != iter) {
+        return (cmdp)kh_val(sml->hcommand, iter);
     } else {
         return NULL;
     }
 }
 
-int ke_command_icmd(char * name) {
+int ke_command_icmd(sml_t* sml, char * name) {
 	if (strcmp(name, CMD_FOR) == 0) {
 		return CMD_IFOR;
 	}
@@ -474,10 +447,10 @@ int ke_command_icmd(char * name) {
 	}
 }
 
-vcmdp ke_command_val(char * name) {
-	khint_t iter = kh_get(KH_VCMD, hvcommand, name);
-	if (kh_end(hvcommand) != iter) {
-		return (vcmdp)kh_val(hvcommand, iter);
+vcmdp ke_command_val(sml_t* sml,char * name) {
+	khint_t iter = kh_get(1, sml->hvcommand, name);
+	if (kh_end(sml->hvcommand) != iter) {
+		return (vcmdp)kh_val(sml->hvcommand, iter);
 	}
 	else {
 		return NULL;
@@ -485,16 +458,16 @@ vcmdp ke_command_val(char * name) {
 }
 
 void ke_command_destroy(sml_t* sml) {
-	kdq_destroy(int, callstack); ke_dec_memory(sml);
-	kdq_destroy(int, hiforcommand); ke_dec_memory(sml);
-	kdq_destroy(int, hinextcommand); ke_dec_memory(sml);
-	stack_destroy(harg); ke_dec_memory(sml);
+	kdq_destroy(int, sml->callstack); ke_dec_memory(sml);
+	kdq_destroy(int, sml->hiforcommand); ke_dec_memory(sml);
+	kdq_destroy(int, sml->hinextcommand); ke_dec_memory(sml);
+	stack_destroy(sml->harg); ke_dec_memory(sml);
 
-    kh_destroy(KH_CMD, hcommand); ke_dec_memory(sml);
-	kh_destroy(KH_VCMD, hvcommand); ke_dec_memory(sml);
-	kh_destroy(KH_IDEF, hidefcommand); ke_dec_memory(sml);
+    kh_destroy(0, sml->hcommand); ke_dec_memory(sml);
+	kh_destroy(1, sml->hvcommand); ke_dec_memory(sml);
+	kh_destroy(3, sml->hidefcommand); ke_dec_memory(sml);
 }
 
-int ke_command_get_rtn() {
-    return *kdq_pop(int, callstack);
+int ke_command_get_rtn(sml_t* sml) {
+    return *kdq_pop(int, sml->callstack);
 }
