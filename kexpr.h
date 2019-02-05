@@ -106,26 +106,26 @@ KHASH_MAP_INIT_STR(6, int)
 struct sml_s;
 typedef struct sml_s {
 	// GLOBAL VARIABLE USED BY ALL FUNCTIONS
-	struct ke1_s ** g_gbl_fields; // array of all global fields of the program to exectue
-	int g_gbl_field_qte;      // number of global fields  
-	int g_tok_idx;            // current program token index
-	struct ke1_s *g_stack;        // stack for the evaluation of the program
-	struct ke1_s ** g_tokens;     // array of pointers of all program tokens
-	int g_mem_count;          // current count of memory allocation
+	struct ke1_s ** fields; // array of all global fields of the program to exectue
+	int field_qte;      // number of global fields  
+	int tok_idx;            // current program token index
+	struct ke1_s *stack;        // stack for the evaluation of the program
+	struct ke1_s ** tokens;     // array of pointers of all program tokens
+	int mem_count;          // current count of memory allocation
 							  // parser variables
-	int g_isNextDefName;    // flag to indicate that the next token is the def name
-	char g_currentDefName[100]; // current name of the current function
-	int g_sourceCodeLine;  // use to keep the line number to show better error trapping
-	int g_isFirstToken;    // use to remove separators at the beginning of the program
-	int g_isLastTokenNop;  // use to manage the command seperator, the rule is to have one separator between each comand
-	char g_lastErrorMessage[256]; // 
-	struct ke1_s * g_recp[100];
-	int g_rec_qte;        // number of global fields  
+	int isNextDefName;    // flag to indicate that the next token is the def name
+	char currentDefName[100]; // current name of the current function
+	int sourceCodeLine;  // use to keep the line number to show better error trapping
+	int isFirstToken;    // use to remove separators at the beginning of the program
+	int isLastTokenNop;  // use to manage the command seperator, the rule is to have one separator between each comand
+	char lastErrorMessage[256]; // 
+	struct ke1_s * recp[100];
+	int rec_qte;        // number of global fields  
 	khash_t(5) *hfunction;
 	khash_t(6) *hname;
 #if defined(_MSC_VER) || defined(_WIN32)
-	HMODULE g_libhandle[40];
-	int g_libhandle_qte;      // number of global fields
+	HMODULE libhandle[40];
+	int libhandle_qte;      // number of global fields
 #endif
 } sml_t;
 

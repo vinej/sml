@@ -155,32 +155,32 @@ void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * func
 
 // MEMORY ALLOCATION FUNCTIONS
 void ke_init_memory_count(sml_t *sml) {
-	sml->g_mem_count = 0;
+	sml->mem_count = 0;
 }
 
 void ke_inc_memory(sml_t *sml) {
-    ++sml->g_mem_count;
+    ++sml->mem_count;
 }
 
 void ke_dec_memory(sml_t *sml) {
-    --sml->g_mem_count;
+    --sml->mem_count;
 }
 
 void * ke_calloc_memory(sml_t *sml, size_t i, size_t x) {
     void * tmp = calloc(i,x);
-    ++sml->g_mem_count;
+    ++sml->mem_count;
     return tmp;
 }
 
 void * ke_malloc_memory(sml_t *sml, size_t i) {
     void * tmp = malloc(i);
-    ++sml->g_mem_count;
+    ++sml->mem_count;
     return tmp;
 }
 
 void ke_free_memory(sml_t *sml, void * m) {
 	free(m);
-	--sml->g_mem_count;
+	--sml->mem_count;
 }
 
 char *ke_mystrndup(sml_t *sml, char *src, size_t n)
@@ -192,7 +192,7 @@ char *ke_mystrndup(sml_t *sml, char *src, size_t n)
 		printf("TODO clean up the memory");
 		abort();
 	}
-	++sml->g_mem_count;
+	++sml->mem_count;
 	strncpy(dst, src, n);
 	return dst;
 }
@@ -206,7 +206,7 @@ char *ke_mystr(sml_t *sml, char *src, size_t n)
 		printf("TODO clean up the memory");
 		abort();
 	}
-	++sml->g_mem_count;
+	++sml->mem_count;
 	strcpy(dst, "1+1;1+1;");
 	strcat(dst, src);
 	return dst;
@@ -216,12 +216,12 @@ char *ke_mystr(sml_t *sml, char *src, size_t n)
 
 // CURENT TOKEN FUNCTION
 ke1_t * ke_get_tok(sml_t *sml) {
-	return sml->g_tokens[sml->g_tok_idx];
+	return sml->tokens[sml->tok_idx];
 }
 
 
 ke1_t * ke_get_tokidx(sml_t *sml, int idx) {
-	return sml->g_tokens[idx];
+	return sml->tokens[idx];
 }
 //*********************************
 
@@ -241,12 +241,12 @@ void import(sml_t *sml, char * s) {
 #if defined(_MSC_VER) || defined(_WIN32)
 	// load the dll
 	// call method ke_dll_hash(voir * hash_method, global_field)
-	if ((sml->g_libhandle[sml->g_libhandle_qte] = LoadLibrary(TEXT(s))) == NULL)
+	if ((sml->libhandle[sml->libhandle_qte] = LoadLibrary(TEXT(s))) == NULL)
 	{
 		printf("load failed\n");
 		return;
 	}
-	DLLPROC fp = (DLLPROC)GetProcAddress(sml->g_libhandle[sml->g_libhandle_qte], "ke_dll_hash_add");
+	DLLPROC fp = (DLLPROC)GetProcAddress(sml->libhandle[sml->libhandle_qte], "ke_dll_hash_add");
 	if (fp == NULL)
 	{
 		printf("GetProcAddress failed\n");
@@ -254,8 +254,8 @@ void import(sml_t *sml, char * s) {
 		return;
 	}
 
-	fp(ke_hash_add, sml->g_gbl_fields);
-	++sml->g_libhandle_qte;
+	fp(ke_hash_add, sml->fields);
+	++sml->libhandle_qte;
 	//FREE HANDLE
 #else
 	return;
@@ -276,13 +276,13 @@ void ke_load_dll(sml_t *sml, char * p) {
 
 int ke_manage_function(sml_t *sml, ke1_t * tok, int err) {
 	tok->n_args = 1;
-	tok->sourceLine = sml->g_sourceCodeLine;
+	tok->sourceLine = sml->sourceCodeLine;
 	tok->f.defcmd = (cmdp)ke_command(tok->name);
 	if (tok->f.defcmd != NULL) {
 		tok->icmd = ke_command_icmd(tok->name);
 		tok->ttype = KET_CMD;
 		if (strcmp(tok->name, CMD_DEF) == 0) {
-			sml->g_isNextDefName = 1;
+			sml->isNextDefName = 1;
 		}
 		tok->ijmp = 0;
 	}
@@ -292,7 +292,7 @@ int ke_manage_function(sml_t *sml, ke1_t * tok, int err) {
 			tok->ttype = KET_FUNC;
 		}
 		else {
-			strcpy(sml->g_lastErrorMessage, tok->name);
+			strcpy(sml->lastErrorMessage, tok->name);
 			err |= KEE_UNFUNC;
 		}
 	}
@@ -302,7 +302,7 @@ int ke_manage_function(sml_t *sml, ke1_t * tok, int err) {
 int ke_manage_property(sml_t *sml, ke1_t *tok, int err) {
 	// it's a propery
 	tok->n_args = 1;
-	tok->sourceLine = sml->g_sourceCodeLine;
+	tok->sourceLine = sml->sourceCodeLine;
 	tok->ijmp = 0;
 	tok->ttype = KET_PROP;
 	tok->vtype = KEV_REAL;
@@ -316,9 +316,9 @@ int ke_manage_property(sml_t *sml, ke1_t *tok, int err) {
 	else {
 		int absent;
 		khint_t iter = kh_put(6, sml->hname, tok->name, &absent);
-		kh_val(sml->hname, iter) = sml->g_gbl_field_qte;
-		tok->ifield = sml->g_gbl_field_qte;
-		sml->g_gbl_field_qte++;
+		kh_val(sml->hname, iter) = sml->field_qte;
+		tok->ifield = sml->field_qte;
+		sml->field_qte++;
 		//*err |= KEE_UNVAR;
 	}
 	return err;
@@ -326,18 +326,18 @@ int ke_manage_property(sml_t *sml, ke1_t *tok, int err) {
 
 int ke_manage_variable(sml_t *sml, ke1_t *tok, int err) {
 	tok->ttype = KET_VNAME;
-	if (sml->g_isNextDefName) {
-		strcpy(sml->g_currentDefName, tok->name);
-		sml->g_isNextDefName = 0;
+	if (sml->isNextDefName) {
+		strcpy(sml->currentDefName, tok->name);
+		sml->isNextDefName = 0;
 		tok->islocal = 1;
 	}
 	else {
 		// inside a function, the variables are localized with the functon name, except
 		// variables starting with "_g"
-		if ((*sml->g_currentDefName != 0) && (strncmp(tok->name, __GLOBAL, 2) != 0)) {
-			char * localName = ke_calloc_memory(sml, strlen(tok->name) + strlen(sml->g_currentDefName) + 4, 1);
+		if ((*sml->currentDefName != 0) && (strncmp(tok->name, __GLOBAL, 2) != 0)) {
+			char * localName = ke_calloc_memory(sml, strlen(tok->name) + strlen(sml->currentDefName) + 4, 1);
 			strcpy(localName, __GLOBAL_DSEP);
-			strcat(localName, sml->g_currentDefName);
+			strcat(localName, sml->currentDefName);
 			strcat(localName, __GLOBAL_SEP);
 			strcat(localName, tok->name);
 			ke_free_memory(sml, tok->name);
@@ -366,31 +366,31 @@ int ke_manage_variable(sml_t *sml, ke1_t *tok, int err) {
 			khint_t iter = kh_get(6, sml->hname, tok->name);
 			if (kh_end(sml->hname) != iter) {
 				ifield = kh_val(sml->hname, iter);
-				recp = sml->g_recp[ifield];
+				recp = sml->recp[ifield];
 			}
 			else {
 				int absent;
 				char * recName = ke_calloc_memory(sml, strlen(tok->name) + 1, 1);
 				strcpy(recName, tok->name);
 				khint_t iter = kh_put(6, sml->hname, recName, &absent);
-				kh_val(sml->hname, iter) = sml->g_rec_qte;
+				kh_val(sml->hname, iter) = sml->rec_qte;
 				recp = (ke1_t *)ke_calloc_memory(sml,sizeof(ke1_t), 1);
-				recp->ifield = sml->g_rec_qte;
+				recp->ifield = sml->rec_qte;
 				recp->name = recName;
 				recp->ttype = KET_REC;
 				recp->vtype = KEV_REC;
-				sml->g_recp[sml->g_rec_qte] = recp;
-				sml->g_rec_qte++;
+				sml->recp[sml->rec_qte] = recp;
+				sml->rec_qte++;
 			}
 			*dotp = '.';
 		}
 		int absent;
 		khint_t iter = kh_put(6, sml->hname, tok->name, &absent);
-		kh_val(sml->hname, iter) = sml->g_gbl_field_qte;
-		tok->ifield = sml->g_gbl_field_qte;
+		kh_val(sml->hname, iter) = sml->field_qte;
+		tok->ifield = sml->field_qte;
 		// the field of a record contains a pointer to the record
 		tok->f.recp = recp;
-		sml->g_gbl_field_qte++;
+		sml->field_qte++;
 
 		// create the list if not done
 		if (recp) {
@@ -408,7 +408,7 @@ int ke_manage_variable(sml_t *sml, ke1_t *tok, int err) {
 
 int ke_manage_command(sml_t *sml, ke1_t *tok, int err) {
 	if (strcmp(tok->name, CMD_RTN) == 0) {
-		*sml->g_currentDefName = 0;
+		*sml->currentDefName = 0;
 	}
 	tok->ttype = KET_VCMD;
 	tok->icmd = ke_command_icmd(tok->name);
@@ -493,13 +493,13 @@ int ke_manager_operator(sml_t *sml, ke1_t *tok, char **r, char **p, char **q, in
 	else if (**p == '^') tok->op = KEO_BXOR, tok->f.builtin = ke_op_KEO_BXOR, tok->n_args = 2, *r = *q + 1;
 	else if (**p == '~') tok->op = KEO_BNOT, tok->f.builtin = ke_op_KEO_BNOT, tok->n_args = 1, *r = *q + 1;
 	else if (**p == '!') tok->op = KEO_LNOT, tok->f.builtin = ke_op_KEO_LNOT, tok->n_args = 1, *r = *q + 1;
-	else if (**p == ';') tok->op = KEO_NOP, sml->g_isLastTokenNop = 1, tok->f.builtin = ke_op_KEO_NOP, tok->n_args = 2, *r = *q + 1;
+	else if (**p == ';') tok->op = KEO_NOP, sml->isLastTokenNop = 1, tok->f.builtin = ke_op_KEO_NOP, tok->n_args = 2, *r = *q + 1;
 	else {
 		tok->ttype = KET_NULL;
 		err |= KEE_UNOP;
 	}
 
-	sml->g_isFirstToken = 0;
+	sml->isFirstToken = 0;
 	return err;
 }
 
@@ -508,7 +508,7 @@ int ke_manage_comment(sml_t *sml, ke1_t * tok, char **p) {
 	++(*p);
 	while (**p != 0) {
 		if (**p == '\n') {
-			++sml->g_sourceCodeLine;
+			++sml->sourceCodeLine;
 			break;
 		}
 		++(*p);
@@ -527,7 +527,7 @@ int ke_manage_line_continuation(sml_t *sml, ke1_t * tok, char**p) {
 	++(*p);
 	while (**p != 0) {
 		if (**p == '\n') {
-			++sml->g_sourceCodeLine;
+			++sml->sourceCodeLine;
 			++(*p);
 			break;
 		}
@@ -564,15 +564,15 @@ ke1_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) //
 
 		// newline
 		if (*p == '\n') {
-			++sml->g_sourceCodeLine;
-			if (sml->g_isLastTokenNop || sml->g_isFirstToken) { ++p;	continue; }
+			++sml->sourceCodeLine;
+			if (sml->isLastTokenNop || sml->isFirstToken) { ++p;	continue; }
 			*p = ';';
 			break;
 		}
 
 		// command separator. We only keep one separator between commands
 		if (*p == ';') {
-			if (sml->g_isLastTokenNop || sml->g_isFirstToken) { ++p;	continue;	}
+			if (sml->isLastTokenNop || sml->isFirstToken) { ++p;	continue;	}
 			break;
 		}
 
@@ -592,8 +592,8 @@ ke1_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) //
 	if (*p == 0) {	tok.realToken = 0;	return tok; }
 
 	char *q = p;
-	sml->g_isLastTokenNop = 0;
-	tok.sourceLine = sml->g_sourceCodeLine;
+	sml->isLastTokenNop = 0;
+	tok.sourceLine = sml->sourceCodeLine;
 	if (isalpha(*p) || *p == '_') { // a variable or a function
 		for (; *p && (*p == '_' || *p == '.' || isalnum(*p)); ++p);
 		if (*p == 0) {	tok.realToken = 0;	return tok;	}
@@ -805,8 +805,8 @@ ke1_t *ke_parse_core(sml_t* sml, char *_s, int *_n, int *err)
 }
 
 void ke_free_val(sml_t *sml) {
-	for(int i = 1; i < sml->g_gbl_field_qte; ++i) {
-		ke1_t*fieldp = sml->g_gbl_fields[i];
+	for(int i = 1; i < sml->field_qte; ++i) {
+		ke1_t*fieldp = sml->fields[i];
         ke_free_memory(sml, fieldp->name);
 		if (fieldp->vtype == KEV_MAT && fieldp->obj.matrix) {
 			ke_matrix_freemem(sml,fieldp);
@@ -820,11 +820,11 @@ void ke_free_val(sml_t *sml) {
 		}
         ke_free_memory(sml,fieldp);
     }
-	ke_free_memory(sml, sml->g_gbl_fields);
-	sml->g_gbl_fields = NULL;
+	ke_free_memory(sml, sml->fields);
+	sml->fields = NULL;
 
-	for (int i = 0; i < sml->g_rec_qte; ++i) {
-		ke1_t*fieldp = sml->g_recp[i];
+	for (int i = 0; i < sml->rec_qte; ++i) {
+		ke1_t*fieldp = sml->recp[i];
 		ke_free_memory(sml, fieldp->name);
 		ke_free_memory(sml, fieldp->obj.reclist);
 		ke_free_memory(sml, fieldp);
@@ -832,17 +832,17 @@ void ke_free_val(sml_t *sml) {
 }
 
 void ke_free_tokens(sml_t *sml) {
-	ke_free_memory(sml, sml->g_tokens);
+	ke_free_memory(sml, sml->tokens);
 }
 
 int ke_fill_list(sml_t *sml, kexpr_t *ke)
 {
-    sml->g_tokens = ke_calloc_memory(sml, ke->n * sizeof(ke1_t *),1);
+    sml->tokens = ke_calloc_memory(sml, ke->n * sizeof(ke1_t *),1);
 	ke1_t * ne = NULL;
 	for (int i = 0; i < ke->n; ++i) {
         ke1_t *tokp = &ke->e[i];
         if (tokp->ttype == KET_VNAME) {
-			ne = sml->g_gbl_fields[tokp->ifield];
+			ne = sml->fields[tokp->ifield];
 			if (ne == NULL) {
 				char * newname = ke_mystrndup(sml, tokp->name, strlen(tokp->name));
 				ne = ke_malloc_memory(sml, sizeof(ke1_t));
@@ -851,20 +851,20 @@ int ke_fill_list(sml_t *sml, kexpr_t *ke)
 					printf("TODO clean up the memory");
 					abort();
 				}
-				if ((tokp->ifield < sml->g_rec_qte) && (strcmp(sml->g_recp[tokp->ifield]->name, tokp->name) == 0)) {
-					memcpy(ne, sml->g_recp[tokp->ifield], sizeof(ke1_t));
+				if ((tokp->ifield < sml->rec_qte) && (strcmp(sml->recp[tokp->ifield]->name, tokp->name) == 0)) {
+					memcpy(ne, sml->recp[tokp->ifield], sizeof(ke1_t));
 				}
 				else {
 					memcpy(ne, tokp, sizeof(ke1_t));
 				}
 				ne->name = newname;
-				sml->g_gbl_fields[tokp->ifield] = ne;
+				sml->fields[tokp->ifield] = ne;
             }
 			tokp = ne;
 		}
-        sml->g_tokens[i] = tokp;
+        sml->tokens[i] = tokp;
 	}
-	return ke_set_ijmp(ke, sml->g_tokens);
+	return ke_set_ijmp(ke, sml->tokens);
 }
 
 void ke_set_int(sml_t* sml, ke1_t *tokp, int64_t y)
@@ -880,14 +880,14 @@ void ke_set_real(sml_t* sml, ke1_t *tokp, double x)
 
 void ke_set_null_vector(sml_t *sml, int ifield)
 {
-	ke1_t * ftokp = sml->g_gbl_fields[ifield];
+	ke1_t * ftokp = sml->fields[ifield];
     ke_vector_freemem(sml, ftokp);
     ftokp->obj.vector = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
 }
 
 void ke_set_null_vector_int(sml_t *sml, int ifield)
 {
-	ke1_t * ftokp = sml->g_gbl_fields[ifield];
+	ke1_t * ftokp = sml->fields[ifield];
 	ke_vector_int_freemem(sml,ftokp);
 	ftokp->obj.vector_int = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
 }
@@ -906,7 +906,7 @@ void ke_set_vector_int(sml_t * sml, ke1_t *tokp, gsl_vector_int * vecp)
 
 void ke_set_null_matrix(sml_t *sml, int ifield)
 {
-	ke1_t * f = sml->g_gbl_fields[ifield];
+	ke1_t * f = sml->fields[ifield];
 
     ke_matrix_freemem(sml, f);
     f->obj.matrix = NULL, f->vtype = KEV_REAL, f->ttype = KET_VAL, f->assigned = 0;
@@ -941,7 +941,7 @@ void ke_set_str(sml_t* sml,ke1_t *tokp, char *x)
 
 void ke_set_str_direct(sml_t *sml, int ifield, char *x)
 {
-	ke1_t * e = sml->g_gbl_fields[ifield];
+	ke1_t * e = sml->fields[ifield];
 	ke_set_str_internal(sml, e,x);
 }
 
@@ -968,8 +968,8 @@ kexpr_t *ke_parse(sml_t *sml, char *_s, int *err)
 	int n;
 	ke1_t *e;
 	kexpr_t *ke;
-	if (sml->g_gbl_fields == NULL) {
-		sml->g_gbl_fields = ke_calloc_memory(sml, sizeof(ke1_t *) * 1000, 1);
+	if (sml->fields == NULL) {
+		sml->fields = ke_calloc_memory(sml, sizeof(ke1_t *) * 1000, 1);
 	}
 	e = ke_parse_core(sml, _s, &n, err);
 	if (*err == 0) {
@@ -985,15 +985,15 @@ kexpr_t *ke_parse(sml_t *sml, char *_s, int *err)
 		//}
         return ke;
 	} else {
-		if (*err & KEE_ARG) printf("SML: ERROR: Wrong number of arguments at line <%d>\n", sml->g_sourceCodeLine);
-		if (*err & KEE_UNFUNC) printf("SML: ERROR: Function name <%s> not found at line <%d>\n", sml->g_lastErrorMessage, sml->g_sourceCodeLine);
-		if (*err & KEE_UNOP) printf("SML: ERROR: Undefiend operator at line <%d>\n", sml->g_sourceCodeLine);
-		if (*err & KEE_UNLP) printf("SML: ERROR: Unmatched left parentheses at line <%d>\n", sml->g_sourceCodeLine);
-		if (*err & KEE_UNRP) printf("SML: ERROR: Unmatched right parentheses at line <%d>\n", sml->g_sourceCodeLine);
-		if (*err & KEE_UNQU) printf("SML: ERROR: Unmatched quotation marks at line <%d>\n", sml->g_sourceCodeLine);
-		if (*err & KEE_FUNC) printf("SML: ERROR: Wrong function syntax at line <%d>\n", sml->g_sourceCodeLine);
-		if (*err & KEE_NUM) printf("SML: ERROR: Failed to parse number at line <%d>\n", sml->g_sourceCodeLine);
-		if (*err & KEE_UNVAR) printf("SML: ERROR: Variable in line <%d>\n", sml->g_sourceCodeLine);
+		if (*err & KEE_ARG) printf("SML: ERROR: Wrong number of arguments at line <%d>\n", sml->sourceCodeLine);
+		if (*err & KEE_UNFUNC) printf("SML: ERROR: Function name <%s> not found at line <%d>\n", sml->lastErrorMessage, sml->sourceCodeLine);
+		if (*err & KEE_UNOP) printf("SML: ERROR: Undefiend operator at line <%d>\n", sml->sourceCodeLine);
+		if (*err & KEE_UNLP) printf("SML: ERROR: Unmatched left parentheses at line <%d>\n", sml->sourceCodeLine);
+		if (*err & KEE_UNRP) printf("SML: ERROR: Unmatched right parentheses at line <%d>\n", sml->sourceCodeLine);
+		if (*err & KEE_UNQU) printf("SML: ERROR: Unmatched quotation marks at line <%d>\n", sml->sourceCodeLine);
+		if (*err & KEE_FUNC) printf("SML: ERROR: Wrong function syntax at line <%d>\n", sml->sourceCodeLine);
+		if (*err & KEE_NUM) printf("SML: ERROR: Failed to parse number at line <%d>\n", sml->sourceCodeLine);
+		if (*err & KEE_UNVAR) printf("SML: ERROR: Variable in line <%d>\n", sml->sourceCodeLine);
 		ke = (kexpr_t*)ke_calloc_memory(sml, 1, sizeof(kexpr_t));
         ke->n = n, ke->e = e;
         ke_free(sml, ke);
@@ -1021,7 +1021,7 @@ void ke_print_one(sml_t *sml, ke1_t * tokp)
 {
 	if (tokp->vtype == KEV_REC) {
 		for (int i = 0; i < tokp->i; i++) {
-			ke1_t * tmptokp = sml->g_gbl_fields[tokp->obj.reclist[i]];
+			ke1_t * tmptokp = sml->fields[tokp->obj.reclist[i]];
 			printf("%s = ",tmptokp->name);
 			ke_print_one(sml, tmptokp);
 			printf("\n");
@@ -1060,7 +1060,7 @@ void ke_print_one(sml_t *sml, ke1_t * tokp)
 }
 
 void ke_print_stack(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t *stack = sml->g_stack;
+	ke1_t *stack = sml->stack;
     if (top > 3) {
         printf("\n%s", "*****************************");
         printf("\n%s\n", "Stack has more than one value");
@@ -1132,11 +1132,11 @@ void ke_fill_hash(sml_t *sml) {
 }
 
 ke1_t* ke_get_val_index(sml_t *sml, int i) {
-	return sml->g_tokens[i];
+	return sml->tokens[i];
 }
 
 void ke_set_val_index(sml_t *sml, int i, ke1_t *tokp) {
-	ke_set_val(sml, sml->g_tokens[i], tokp);
+	ke_set_val(sml, sml->tokens[i], tokp);
 }
 
 void inline ke_set_val(sml_t* sml, ke1_t* e, ke1_t *q) {
@@ -1167,15 +1167,15 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 	ke1_t *p, *q, *e;
 	int top = 0, err = 0;
 	*_i = 0, *_r = 0., *ret_type = 0;
-	sml->g_stack = (ke1_t*)ke_malloc_memory(sml, kexpr->n * sizeof(ke1_t));
-	ke1_t *stack = sml->g_stack;
-	struct ke1_s ** fields = sml->g_gbl_fields;
-	struct ke1_s ** tokens = sml->g_tokens;
+	sml->stack = (ke1_t*)ke_malloc_memory(sml, kexpr->n * sizeof(ke1_t));
+	ke1_t *stack = sml->stack;
+	struct ke1_s ** fields = sml->fields;
+	struct ke1_s ** tokens = sml->tokens;
 
 	ke1_t *tokp = NULL;
 	int n = kexpr->n;
 	for (int itok = 0; itok < n; ++itok) {
-		sml->g_tok_idx = itok;
+		sml->tok_idx = itok;
 		//ke1_t *e = &ke->e[i];
 		tokp = tokens[itok];
 
@@ -1249,12 +1249,12 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
         printf("\n");
     #endif // DEBUG
 
-	ke_free_memory(sml, sml->g_stack);
+	ke_free_memory(sml, sml->stack);
 	return err;
 }
 
 void ke_push_stack(sml_t * sml, ke1_t * tokp, int *top) {
-	sml->g_stack[*top] = *tokp;
+	sml->stack[*top] = *tokp;
     (*top)++;
 }
 
@@ -1288,8 +1288,8 @@ void ke_free_hash(sml_t *sml)
 	//ke_constants_destroy();
 	ke_command_destroy(sml);
 
-	if (sml->g_mem_count != 0) {
-        printf("%s:%d", "Not all memory has been deallocated", sml->g_mem_count);
+	if (sml->mem_count != 0) {
+        printf("%s:%d", "Not all memory has been deallocated", sml->mem_count);
 	}
 }
 

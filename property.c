@@ -101,7 +101,7 @@ static int ke_poperty_vector_int_set(sml_t* sml, struct ke1_s* stack, struct ke1
 
 int ke_poperty_get(sml_t* sml,struct ke1_s* stack, struct ke1_s* prop, int top) {
 	// get the real name
-	ke1_t* tokp = sml->g_gbl_fields[prop->ifield];
+	ke1_t* tokp = sml->fields[prop->ifield];
 	switch (tokp->vtype) {
 	case KEV_MAT:
 		return ke_poperty_matrix_get(sml, stack, prop, top);
@@ -124,7 +124,7 @@ int ke_poperty_get(sml_t* sml,struct ke1_s* stack, struct ke1_s* prop, int top) 
 
 int ke_poperty_set(sml_t* sml,struct ke1_s* stack, struct ke1_s* prop, int top) {
 	// get the real name
-	ke1_t* tokp = sml->g_gbl_fields[prop->ifield];
+	ke1_t* tokp = sml->fields[prop->ifield];
 	switch (tokp->vtype) {
 	case KEV_MAT:
 		return ke_poperty_matrix_set(sml, stack, prop, top);

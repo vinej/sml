@@ -239,7 +239,7 @@ int ke_command_import(sml_t* sml, kexpr_t *kexpr, ke1_t * tokp, int top, int * i
 }
 
 int ke_command_if(sml_t* sml, kexpr_t *kexpr, ke1_t * tokp, int top, int * itokp) {
-	ke1_t *stack = sml->g_stack;
+	ke1_t *stack = sml->stack;
     ke1_t *p;
     p = NULL;
 	*itokp = (&stack[--top])->i ? *itokp : tokp->ijmp;
@@ -250,7 +250,7 @@ int ke_command_def(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int  * itok
 	ke1_t * p;
 	ke1_t * q;
 	ke1_t * v;
-	ke1_t *stack = sml->g_stack;
+	ke1_t *stack = sml->stack;
     // get the def name
     p = (ke1_t *)&stack[top - tokp->n_args];
     if (tokp->assigned) {
@@ -260,7 +260,7 @@ int ke_command_def(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int  * itok
         for (int j = 0; j < n-1; ++j) {
            q = &stack[top-n+j+1];
 		   v = stack_pop(harg);
-		   ke_set_val(sml, sml->g_gbl_fields[q->ifield], v);
+		   ke_set_val(sml, sml->fields[q->ifield], v);
 		   ke_free_memory(sml, v);
         }
         return top - tokp->n_args;
@@ -281,7 +281,7 @@ int ke_command_def(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int  * itok
 
 int ke_command_exe(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp) {
 	ke1_t *p, *q;
-	ke1_t *stack = sml->g_stack;
+	ke1_t *stack = sml->stack;
 	int narg = tokp->n_args;
 	while (narg > 1) {
 		q = &stack[--top];
@@ -300,14 +300,14 @@ int ke_command_exe(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp
 
 int ke_command_for(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp) {
 	// field min, max inc
-	ke1_t *stack = sml->g_stack;
+	ke1_t *stack = sml->stack;
 	int n = tokp->n_args;
 	int top_m1 = top - n;
 	if (!tokp->assigned) {
 		ke1_t *p = &stack[top_m1]; // copy of the real variable into the stack
 		ke1_t *min = &stack[top_m1 + 1];
 		tokp->assigned = 1;
-		tokp->obj.tokp = sml->g_gbl_fields[p->ifield];
+		tokp->obj.tokp = sml->fields[p->ifield];
 		struct ke1_s * t = tokp->obj.tokp;
 		t->r = min->r;
 		t->i = (int64_t)t->r;
@@ -329,7 +329,7 @@ int ke_command_for(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp
 }
 
 int ke_command_print_nonl(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp) {
-	ke1_t *stack = sml->g_stack;
+	ke1_t *stack = sml->stack;
     int ntmp = tokp->n_args;
     int n = tokp->n_args;
     ke1_t *p;
