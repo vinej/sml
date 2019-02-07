@@ -94,8 +94,8 @@ static int ke_strcpy(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->sta
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
-    char * tmp = (char*)ke_calloc_memory(sml,strlen(q->obj.s)+1, 1);
-    strcpy(tmp, q->obj.s);
+    char * tmp = (char*)ke_calloc_memory(sml,utf8size(q->obj.s)+1, 1);
+    utf8cpy(tmp, q->obj.s);
     ke_set_str_direct(sml, p->ifield, tmp);
     --top;
     return top;
@@ -105,14 +105,14 @@ static int ke_strcat(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->sta
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
-    size_t plen = (p->obj.s == NULL ? 0 : strlen(p->obj.s));
-	size_t qlen = (q->obj.s == NULL ? 0 : strlen(q->obj.s));
+    size_t plen = (p->obj.s == NULL ? 0 : utf8size(p->obj.s));
+	size_t qlen = (q->obj.s == NULL ? 0 : utf8size(q->obj.s));
    	char * tmp = (char*)ke_calloc_memory(sml,plen + qlen + 1,1);
    	if (plen) {
-        strcpy(tmp, p->obj.s);
+        utf8cat(tmp, p->obj.s);
    	}
 	if (q->obj.s != NULL) {
-		strcat(tmp, q->obj.s);
+		utf8cat(tmp, q->obj.s);
 	}
     ke_set_str_direct(sml, p->ifield, tmp);
     --top;
@@ -140,7 +140,7 @@ static int ke_strfree(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->st
 static int ke_strlen(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->stack;
    	ke1_t *p;
     p = &stack[top-1];
-    p->i = strlen(p->obj.s);
+    p->i = utf8len(p->obj.s);
     p->r = (double)p->i;
     p->obj.s = NULL;
     p->ttype = KET_VAL;
@@ -152,7 +152,7 @@ static int ke_strcmp(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->sta
    	ke1_t *p, *q;
     q = &stack[--top];
     p = &stack[top-1];
-    p->i = strcmp(p->obj.s, q->obj.s);
+    p->i = utf8cmp(p->obj.s, q->obj.s);
     p->obj.s = NULL;
     p->ttype = KET_VAL;
     p->vtype = KEV_INT;

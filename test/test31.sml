@@ -15,3 +15,11 @@ print(s[1])
 print( '123' == '123')
 
 
+test = '12'
+strcat(test, "23")
+print(test)
+
+strcpy(t2,test);
+print(t2)
+
+print(strlen(t2))
