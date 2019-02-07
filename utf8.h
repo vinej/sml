@@ -84,8 +84,11 @@ extern "C" {
 	// return the codepoint at position pos
 	utf8_nonnull utf8_pure utf8_weak void * utf8pos(const void *str, size_t pos);
 
-	//return codepoints from to too poss
+	//return codepoints between the range from and to
 	utf8_nonnull utf8_pure utf8_weak void * utf8mid(const void *str, size_t from, size_t to);
+
+	//return pos of str in str
+	utf8_nonnull utf8_pure utf8_weak size_t utf8strstr(const void *str, void * search);
 
 	// Return less than 0, 0, greater than 0 if src1 < src2, src1 == src2, src1 >
 	// src2 respectively, case insensitive.
@@ -264,6 +267,40 @@ extern "C" {
 		}
 
 		return utf8_null;
+	}
+
+	size_t utf8strstr(const void *str, void * search) {
+		const unsigned char *s = (const unsigned char *)str;
+		const unsigned char *p = (const unsigned char *)search;
+		size_t len_search = utf8len(search);
+		size_t len_s = utf8len(str);
+		size_t length = 0;
+		for(int i = 0; i < len_s - len_search, *s != '\0'; ++i) {
+			if (utf8ncmp(s,p, len_search) == 0) {
+				return length;
+			}
+
+			// skip on utf8 char
+			if (0xf0 == (0xf8 & *s)) {
+				// 4-byte utf8 code point (began with 0b11110xxx)
+				s += 4;
+			}
+			else if (0xe0 == (0xf0 & *s)) {
+				// 3-byte utf8 code point (began with 0b1110xxxx)
+				s += 3;
+			}
+			else if (0xc0 == (0xe0 & *s)) {
+				// 2-byte utf8 code point (began with 0b110xxxxx)
+				s += 2;
+			}
+			else { // if (0x00 == (0x80 & *s)) {
+					// 1-byte ascii (began with 0b0xxxxxxx)
+				s += 1;
+			}
+			++length;
+		}
+
+		return -1;
 	}
 
 	void * utf8mid(const void *str, size_t from, size_t to) {

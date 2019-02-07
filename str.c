@@ -22,14 +22,17 @@ int ke_str_prop_get_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml-
 	indice = &stack[top - 1];
 
 	if (indice->vtype == KEV_STR) {
-		indice->obj.s = utf8str(prop->obj.s, indice->obj.s);
+		indice->i = utf8strstr(prop->obj.s, indice->obj.s);
+		indice->ttype = KET_VAL;
+		indice->vtype = KEV_INT;
+		indice->r = (double)indice->i;
 	}
 	else {
 		indice->obj.s = utf8pos(prop->obj.s, indice->i);
 		indice->tofree = 1;
+		indice->ttype = KET_VAL;
+		indice->vtype = KEV_STR;
 	}
-	indice->ttype = KET_VAL;
-	indice->vtype = KEV_STR;
 	return top;
 }
 
@@ -45,7 +48,7 @@ int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml-
 	prop = &stack[--top];
 	to = &stack[--top];
 	from = &stack[top - 1];
-	int len = (int)strlen(prop->obj.s);
+	int len = (int)utf8len(prop->obj.s);
 	if (from->i < 0 && to->i < 0) {
 		int64_t t = from->i;
 		from->i = to->i;
@@ -58,7 +61,7 @@ int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml-
 		to->i = len + to->i;
 	}
 
-	from->obj.s = utf8mid(prop->obj.s, (size_t)from->i- 1, (size_t)to->i);
+	from->obj.s = utf8mid(prop->obj.s, (size_t)from->i, (size_t)to->i);
 	from->tofree = 1;
 	from->ttype = KET_VAL;
 	from->vtype = KEV_STR;
