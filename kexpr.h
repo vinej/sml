@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "stack.h"
+#include "utf8.h"
 
 #if defined(_MSC_VER) || defined(_WIN32)
 #include <Windows.h>
@@ -224,9 +225,9 @@ void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * func
 #endif // _DEBUG
 
 sml_t * ke_create_sml();
-char *ke_mystr(sml_t * sml, char *src, size_t n);
+utf8 *ke_mystr(sml_t * sml, utf8 *src, size_t n);
 void ke_hash_add(sml_t * sml, fncp key, char * name);
-kexpr_t *ke_parse(sml_t * sml, char *_s, int *err);
+kexpr_t *ke_parse(sml_t * sml, utf8 *_s, int *err);
 void ke_destroy(sml_t * sml, kexpr_t *ke);
 int ke_eval(sml_t * sml, kexpr_t *ke, int64_t *_i, double *_r, char **_s, int *ret_type);
 void ke_print(sml_t * sml, kexpr_t *ke);

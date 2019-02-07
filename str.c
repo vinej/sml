@@ -1,12 +1,13 @@
 #include <string.h>
 #include "kexpr.h"
 #include "str.h"
+#include "utf8.h"
 
 int ke_str_prop_get_0par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml->stack;
 	// b = a[1]  =>  1 a(1) =
 	ke1_t *prop;
 	prop = &stack[top - 1];
-	prop->i = strlen(prop->obj.s);
+	prop->i = utf8len(prop->obj.s);
 	prop->r = (double)prop->i;
 	prop->ttype = KET_VAL;
 	prop->vtype = KEV_INT;
@@ -21,20 +22,14 @@ int ke_str_prop_get_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml-
 	indice = &stack[top - 1];
 
 	if (indice->vtype == KEV_STR) {
-		char * pos = strstr(prop->obj.s, indice->obj.s);
-		indice->i = pos - prop->obj.s;
-		indice->r = (double)indice->i;
-		indice->ttype = KET_VAL;
-		indice->vtype = KEV_INT;
+		indice->obj.s = utf8str(prop->obj.s, indice->obj.s);
 	}
 	else {
-		char * sub = ke_calloc_memory(sml,2, 1);
-		*sub = prop->obj.s[indice->i];
-		indice->obj.s = sub;
-		indice->ttype = KET_VAL;
-		indice->vtype = KEV_STR;
+		indice->obj.s = utf8pos(prop->obj.s, indice->i);
 		indice->tofree = 1;
 	}
+	indice->ttype = KET_VAL;
+	indice->vtype = KEV_STR;
 	return top;
 }
 
@@ -63,9 +58,7 @@ int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml-
 		to->i = len + to->i;
 	}
 
-	char * sub = ke_calloc_memory(sml,(size_t)(to->i - from->i) + 2, 1);
-	memcpy(sub, &(prop->obj.s[from->i]), (size_t)(to->i - from->i + 1));
-	from->obj.s = sub;
+	from->obj.s = utf8mid(prop->obj.s, (size_t)from->i- 1, (size_t)to->i);
 	from->tofree = 1;
 	from->ttype = KET_VAL;
 	from->vtype = KEV_STR;

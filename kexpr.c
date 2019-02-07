@@ -15,6 +15,7 @@
 #include "str.h"
 #include "file.h"
 #include "command.h"
+#include "utf8.h"
 
 #if defined(_MSC_VER) || defined(_WIN32)
 #include <Windows.h>
@@ -203,18 +204,20 @@ char *ke_mystrndup(sml_t *sml, char *src, size_t n)
 	return dst;
 }
 
-char *ke_mystr(sml_t *sml, char *src, size_t n)
+utf8 *ke_mystr(sml_t *sml, utf8 *src, size_t n)
 {
-	char *dst;
-	dst = (char*)calloc(n + 10, 1);
+	utf8*dst;
+	char sstart[] = "1+1;1+1;";
+	size_t start = utf8len(sstart);
+	dst = (utf8*)calloc(start + n + 1, 1);
 	if (dst == NULL) {
 		printf("out of memory at ke_mystr");
 		printf("TODO clean up the memory");
 		abort();
 	}
 	++sml->mem_count;
-	strcpy(dst, "1+1;1+1;");
-	strcat(dst, src);
+	utf8cpy(dst, sstart);
+	utf8cat(dst, src);
 	return dst;
 }
 //****************************
@@ -666,7 +669,7 @@ static inline ke1_t *push_back(sml_t *sml, ke1_t **a, int *n, int *m)
 	return &(*a)[(*n)++];
 }
 
-ke1_t *ke_parse_core(sml_t* sml, char *_s, int *_n, int *err)
+ke1_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
 {
     char * p;
 	int n_out, m_out, n_op, m_op, last_is_val = 0;
@@ -677,8 +680,8 @@ ke1_t *ke_parse_core(sml_t* sml, char *_s, int *_n, int *err)
 	ke1_t * last = NULL;
 
 	// remove remark, and normalize line seperator
-	char *s;
-	s = ke_mystr(sml,_s, strlen(_s) + 1); // make a copy
+	utf8 *s;
+	s = ke_mystr(sml,_s, utf8len(_s) + 1); // make a copy
 	//ke_normalize_code(s);
 	*err = 0;
  	*_n = 0;
@@ -969,7 +972,7 @@ void ke_set_file(sml_t *sml, ke1_t *source, ke1_t *dest) {
 	dest->obj.file = source->obj.file;
 }
 
-kexpr_t *ke_parse(sml_t *sml, char *_s, int *err)
+kexpr_t *ke_parse(sml_t *sml, utf8 *_s, int *err)
 {
 	int n;
 	ke1_t *e;

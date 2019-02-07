@@ -3,8 +3,10 @@
 #include <stdio.h>
 #include <time.h>
 #include "kexpr.h"
+#include "utf8.h"
 
 char * gets(char *str);
+utf8* read_utf8_file(utf8* filename);
 
 void ht_timing(void (*f)(void))
 {
@@ -36,26 +38,9 @@ int main(int argc, char *argv[])
 	//}
 	sml_t * sml = ke_create_sml();
 	ke_init_memory_count(sml);
-    char *str = NULL;
+    utf8 *str = NULL;
 	if (is_file) {
-        FILE *fp;
-        fp = fopen(argv[1], "r");
-        if (fp == NULL){
-            printf("\nCould not open file %s",argv[1]);
-            return 1;
-        }
-        fseek(fp, 0L, SEEK_END);
-        int sz = ftell(fp);
-        str = calloc(sz+1,1);
-		if (str == NULL) {
-			printf("out of memory at main");
-			printf("TODO clean up the memory");
-			abort();
-		}
-
-        rewind(fp);
-        fread (str, 1, sz, fp);
-        fclose(fp);
+		str = read_utf8_file(argv[1]);
 	} else if (is_one_expr) {
         str = argv[1];
 	}
