@@ -81,13 +81,22 @@ extern "C" {
 #else
 #define utf8_null 0
 #endif
-	// return the codepoint at position pos
+	// JYV is the codepoint considered as alpha 
+	utf8_nonnull utf8_pure utf8_weak int utf8iscontrol(void ** str);
+
+	// JYV is the codepoint considered as alpha 
+	utf8_nonnull utf8_pure utf8_weak int utf8isalpha(void ** str);
+
+	// JYV is the codepoint considered as alpha 
+	utf8_nonnull utf8_pure utf8_weak int utf8isalnum(void ** str);
+
+	// JYV return the codepoint at position pos
 	utf8_nonnull utf8_pure utf8_weak void * utf8pos(const void *str, size_t pos);
 
-	//return codepoints between the range from and to
+	// JYV return codepoints between the range from and to
 	utf8_nonnull utf8_pure utf8_weak void * utf8mid(const void *str, size_t from, size_t to);
 
-	//return pos of str in str
+	// JYV return pos of str in str
 	utf8_nonnull utf8_pure utf8_weak size_t utf8strstr(const void *str, void * search);
 
 	// Return less than 0, 0, greater than 0 if src1 < src2, src1 == src2, src1 >
@@ -226,6 +235,76 @@ extern "C" {
 #undef utf8_weak
 #undef utf8_pure
 #undef utf8_nonnull
+
+	int utf8isalpha(void ** str) {
+		char **s = (char **)str;
+
+		if (0xf0 == (0xf8 & **s)) {
+			// 4-byte utf8 code point (began with 0b11110xxx)
+			//*s += 3;
+			return 1;
+		}
+		else if (0xe0 == (0xf0 & **s)) {
+			// 3-byte utf8 code point (began with 0b1110xxxx)
+			//*s += 2;
+			return 1;
+		}
+		else if (0xc0 == (0xe0 & **s)) {
+			// 2-byte utf8 code point (began with 0b110xxxxx)
+			//*s += 1;
+			return 1;
+		}
+		else { // if (0x00 == (0x80 & *s)) {
+			   // 1-byte ascii (began with 0b0xxxxxxx)
+			return isalpha(**s);
+		}
+	}
+
+	int utf8isalnum(void ** str) {
+		char **s = (char **)str;
+
+		if (0xf0 == (0xf8 & **s)) {
+			// 4-byte utf8 code point (began with 0b11110xxx)
+			*s += 3;
+			return 1;
+		}
+		else if (0xe0 == (0xf0 & **s)) {
+			// 3-byte utf8 code point (began with 0b1110xxxx)
+			*s += 2;
+			return 1;
+		}
+		else if (0xc0 == (0xe0 & **s)) {
+			// 2-byte utf8 code point (began with 0b110xxxxx)
+			*s += 1;
+			return 1;
+		}
+		else { // if (0x00 == (0x80 & *s)) {
+			   // 1-byte ascii (began with 0b0xxxxxxx)
+			return isalnum(**s);
+		}
+	}
+
+	int utf8iscontrol(void ** str) {
+		char **s = (char **)str;
+		int step = 0;
+
+		if (0xf0 == (0xf8 & **s)) {
+			// 4-byte utf8 code point (began with 0b11110xxx)
+			return 0;
+		}
+		else if (0xe0 == (0xf0 & **s)) {
+			// 3-byte utf8 code point (began with 0b1110xxxx)
+			return 0;
+		}
+		else if (0xc0 == (0xe0 & **s)) {
+			// 2-byte utf8 code point (began with 0b110xxxxx)
+			return 0;
+		}
+		else { // if (0x00 == (0x80 & *s)) {
+			   // 1-byte ascii (began with 0b0xxxxxxx)
+			return **s <= 32;
+		}
+	}
 
 	void * utf8pos(const void *str, size_t pos) {
 		const unsigned char *s = (const unsigned char *)str;

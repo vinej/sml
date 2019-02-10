@@ -586,7 +586,7 @@ ke1_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) //
 		}
 
 		// no control character and space
-		if (*p <= 32) {	++p; continue; }
+		if (utf8iscontrol(&p)) {	++p; continue; }
 
 		// line continuation
 		if (*p == '\\') {
@@ -603,8 +603,8 @@ ke1_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) //
 	char *q = p;
 	sml->isLastTokenNop = 0;
 	tok.sourceLine = sml->sourceCodeLine;
-	if (isalpha(*p) || *p == '_') { // a variable or a function
-		for (; *p && (*p == '_' || *p == '.' || isalnum(*p)); ++p);
+	if (*p == '_' || utf8isalpha(&p) ) { // a variable or a function
+		for (; *p && (*p == '_' || *p == '.' || utf8isalnum(&p)); ++p);
 		if (*p == 0) {	tok.realToken = 0;	return tok;	}
 
 		tok.name = ke_mystrndup(sml, q, p - q);
@@ -681,7 +681,7 @@ ke1_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
 
 	// remove remark, and normalize line seperator
 	utf8 *s;
-	s = ke_mystr(sml,_s, utf8len(_s) + 1); // make a copy
+	s = ke_mystr(sml,_s, utf8size(_s) + 1); // make a copy
 	//ke_normalize_code(s);
 	*err = 0;
  	*_n = 0;

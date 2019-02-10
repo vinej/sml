@@ -17,6 +17,8 @@ void ht_timing(void (*f)(void))
 
 int main(int argc, char *argv[])
 {
+	SetConsoleOutputCP(CP_UTF8);
+	SetConsoleCP(CP_UTF8);
 	printf("%d\n", (int)sizeof(struct ke1_s));
     int MAX = 1;
 	int c = 0 , err = 0 , to_print = 0 , is_console = 0 , is_one_expr = 0, is_file = 1; //, is_int = 0;
