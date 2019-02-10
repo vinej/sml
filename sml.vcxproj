@@ -207,6 +207,7 @@
     <ClInclude Include="command.h" />
     <ClInclude Include="complex.h" />
     <ClInclude Include="constants.h" />
+    <ClInclude Include="date.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="function.h" />
     <ClInclude Include="gdate.h" />
@@ -227,6 +228,7 @@
     <ClCompile Include="command.c" />
     <ClCompile Include="complex.c" />
     <ClCompile Include="constants.c" />
+    <ClCompile Include="date.c" />
     <ClCompile Include="file.c" />
     <ClCompile Include="function.c" />
     <ClCompile Include="gdate.c" />

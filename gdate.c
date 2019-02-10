@@ -257,10 +257,7 @@ g_date_new(void)
 *
 * Returns: a newly-allocated #GDate_t initialized with @day, @month, and @year
 */
-GDate_t*
-g_date_new_dmy(GDateDay   day,
-	GDateMonth m,
-	GDateYear  y)
+GDate_t* g_date_new_dmy(GDateDay   day,	GDateMonth m,	GDateYear  y)
 {
 	//g_return_val_if_fail(g_date_valid_dmy(day, m, y), NULL);
 
@@ -288,8 +285,7 @@ g_date_new_dmy(GDateDay   day,
 *
 * Returns: a newly-allocated #GDate_t initialized with @julian_day
 */
-GDate_t*
-g_date_new_julian(guint32 julian_day)
+GDate_t* g_date_new_julian(guint32 julian_day)
 {
 	//g_return_val_if_fail(g_date_valid_julian(julian_day), NULL);
 
@@ -311,8 +307,7 @@ g_date_new_julian(guint32 julian_day)
 *
 * Frees a #GDate_t returned from g_date_new().
 */
-void
-g_date_free(GDate_t *date)
+void g_date_free(GDate_t *date)
 {
 	//g_return_if_fail(date != NULL);
 
@@ -331,8 +326,7 @@ g_date_free(GDate_t *date)
 *
 * Since: 2.56
 */
-GDate_t *
-g_date_copy(const GDate_t *date)
+GDate_t * g_date_copy(const GDate_t *date)
 {
 	GDate_t *res;
 	//g_return_val_if_fail(date != NULL, NULL);
@@ -358,8 +352,7 @@ g_date_copy(const GDate_t *date)
 *
 * Returns: Whether the date is valid
 */
-gboolean
-g_date_valid(const GDate_t *d)
+gboolean g_date_valid(const GDate_t *d)
 {
 	//g_return_val_if_fail(d != NULL, FALSE);
 
@@ -387,8 +380,7 @@ static const guint16 days_in_year[2][14] =
 *
 * Returns: %TRUE if the month is valid
 */
-gboolean
-g_date_valid_month(GDateMonth m)
+gboolean g_date_valid_month(GDateMonth m)
 {
 	return ((m > G_DATE_BAD_MONTH) && (m < 13));
 }
@@ -402,8 +394,7 @@ g_date_valid_month(GDateMonth m)
 *
 * Returns: %TRUE if the year is valid
 */
-gboolean
-g_date_valid_year(GDateYear y)
+gboolean g_date_valid_year(GDateYear y)
 {
 	return (y > G_DATE_BAD_YEAR);
 }
@@ -418,8 +409,7 @@ g_date_valid_year(GDateYear y)
 * Returns: %TRUE if the day is valid
 */
 
-gboolean
-g_date_valid_day(GDateDay d)
+gboolean g_date_valid_day(GDateDay d)
 {
 	return ((d > G_DATE_BAD_DAY) && (d < 32));
 }
@@ -433,8 +423,7 @@ g_date_valid_day(GDateDay d)
 *
 * Returns: %TRUE if the weekday is valid
 */
-gboolean
-g_date_valid_weekday(GDateWeekday w)
+gboolean g_date_valid_weekday(GDateWeekday w)
 {
 	return ((w > G_DATE_BAD_WEEKDAY) && (w < 8));
 }
@@ -448,8 +437,7 @@ g_date_valid_weekday(GDateWeekday w)
 *
 * Returns: %TRUE if the Julian day is valid
 */
-gboolean
-g_date_valid_julian(guint32 j)
+gboolean g_date_valid_julian(guint32 j)
 {
 	return (j > G_DATE_BAD_JULIAN);
 }
@@ -466,8 +454,7 @@ g_date_valid_julian(guint32 j)
 *
 * Returns: %TRUE if the date is a valid one
 */
-gboolean
-g_date_valid_dmy(GDateDay   d,
+gboolean g_date_valid_dmy(GDateDay   d,
 	GDateMonth m,
 	GDateYear  y)
 {
@@ -485,8 +472,7 @@ g_date_valid_dmy(GDateDay   d,
 /* "Julian days" just means an absolute number of days, where Day 1 ==
 *   Jan 1, Year 1
 */
-static void
-g_date_update_julian(const GDate_t *const_d)
+static void g_date_update_julian(const GDate_t *const_d)
 {
 	GDate_t *d = (GDate_t *)const_d;
 	GDateYear year;
@@ -520,8 +506,7 @@ g_date_update_julian(const GDate_t *const_d)
 	d->julian = TRUE;
 }
 
-static void
-g_date_update_dmy(const GDate_t *const_d)
+static void g_date_update_dmy(const GDate_t *const_d)
 {
 	GDate_t *d = (GDate_t *)const_d;
 	GDateYear y;
@@ -575,8 +560,7 @@ g_date_update_dmy(const GDate_t *const_d)
 *
 * Returns: day of the week as a #GDate_tWeekday.
 */
-GDateWeekday
-g_date_get_weekday(const GDate_t *d)
+GDateWeekday g_date_get_weekday(const GDate_t *d)
 {
 	//g_return_val_if_fail(g_date_valid(d), G_DATE_BAD_WEEKDAY);
 
@@ -596,8 +580,7 @@ g_date_get_weekday(const GDate_t *d)
 *
 * Returns: month of the year as a #GDate_tMonth
 */
-GDateMonth
-g_date_get_month(const GDate_t *d)
+GDateMonth g_date_get_month(const GDate_t *d)
 {
 	//g_return_val_if_fail(g_date_valid(d), G_DATE_BAD_MONTH);
 
@@ -617,8 +600,7 @@ g_date_get_month(const GDate_t *d)
 *
 * Returns: year in which the date falls
 */
-GDateYear
-g_date_get_year(const GDate_t *d)
+GDateYear g_date_get_year(const GDate_t *d)
 {
 	//g_return_val_if_fail(g_date_valid(d), G_DATE_BAD_YEAR);
 
@@ -638,8 +620,7 @@ g_date_get_year(const GDate_t *d)
 *
 * Returns: day of the month
 */
-GDateDay
-g_date_get_day(const GDate_t *d)
+GDateDay g_date_get_day(const GDate_t *d)
 {
 	//g_return_val_if_fail(g_date_valid(d), G_DATE_BAD_DAY);
 
@@ -662,8 +643,7 @@ g_date_get_day(const GDate_t *d)
 *
 * Returns: Julian day
 */
-guint32
-g_date_get_julian(const GDate_t *d)
+guint32 g_date_get_julian(const GDate_t *d)
 {
 	//g_return_val_if_fail(g_date_valid(d), G_DATE_BAD_JULIAN);
 
@@ -684,8 +664,7 @@ g_date_get_julian(const GDate_t *d)
 *
 * Returns: day of the year
 */
-guint
-g_date_get_day_of_year(const GDate_t *d)
+guint g_date_get_day_of_year(const GDate_t *d)
 {
 	gint idx;
 
@@ -711,8 +690,7 @@ g_date_get_day_of_year(const GDate_t *d)
 *
 * Returns: week of the year
 */
-guint
-g_date_get_monday_week_of_year(const GDate_t *d)
+guint g_date_get_monday_week_of_year(const GDate_t *d)
 {
 	GDateWeekday wd;
 	guint day;
@@ -745,8 +723,7 @@ g_date_get_monday_week_of_year(const GDate_t *d)
 *
 * Returns: week number
 */
-guint
-g_date_get_sunday_week_of_year(const GDate_t *d)
+guint g_date_get_sunday_week_of_year(const GDate_t *d)
 {
 	GDateWeekday wd;
 	guint day;
@@ -781,8 +758,7 @@ g_date_get_sunday_week_of_year(const GDate_t *d)
 *
 * Since: 2.6
 **/
-guint
-g_date_get_iso8601_week_of_year(const GDate_t *d)
+guint g_date_get_iso8601_week_of_year(const GDate_t *d)
 {
 	guint j, d4, L, d1, w;
 
@@ -817,8 +793,7 @@ g_date_get_iso8601_week_of_year(const GDate_t *d)
 *
 * Returns: the number of days between @date1 and @date2
 */
-gint
-g_date_days_between(const GDate_t *d1,
+gint g_date_days_between(const GDate_t *d1,
 	const GDate_t *d2)
 {
 	//g_return_val_if_fail(g_date_valid(d1), 0);
@@ -837,21 +812,13 @@ g_date_days_between(const GDate_t *d1,
 * not contain garbage. Useful to init a date declared on the stack.
 * Validity can be tested with g_date_valid().
 */
-void
-g_date_clear(GDate_t *d, guint ndates)
+void g_date_clear(GDate_t *d, guint ndates)
 {
 	//g_return_if_fail(d != NULL);
 	//g_return_if_fail(ndates != 0);
 
 	memset(d, 0x0, ndates * sizeof(GDate_t));
 }
-
-G_LOCK_DEFINE_STATIC(g_date_global);
-
-/* These are for the parser, output to the user should use *
-* g_date_strftime () - this creates more never-freed memory to annoy
-* all those memory debugger users. :-)
-*/
 
 static gchar *long_month_names[13] =
 {
@@ -948,8 +915,7 @@ update_month_match(gsize *longest,
 *
 * Since: 2.10
 */
-void
-g_date_set_time_t(GDate_t *date,
+void g_date_set_time_t(GDate_t *date,
 	time_t timet)
 {
 	struct tm tm;
@@ -1000,9 +966,7 @@ g_date_set_time_t(GDate_t *date,
 *
 * Deprecated: 2.10: Use g_date_set_time_t() instead.
 */
-void
-g_date_set_time(GDate_t *date,
-	GTime  time_)
+void g_date_set_time(GDate_t *date,	GTime  time_)
 {
 	g_date_set_time_t(date, (time_t)time_);
 }
@@ -1020,9 +984,7 @@ g_date_set_time(GDate_t *date,
 *
 * Since: 2.10
 */
-void
-g_date_set_time_val(GDate_t    *date,
-	GTimeVal *timeval)
+void g_date_set_time_val(GDate_t    *date, 	GTimeVal *timeval)
 {
 	g_date_set_time_t(date, (time_t)timeval->tv_sec);
 }
@@ -1035,9 +997,7 @@ g_date_set_time_val(GDate_t    *date,
 * Sets the month of the year for a #GDate_t.  If the resulting
 * day-month-year triplet is invalid, the date will be invalid.
 */
-void
-g_date_set_month(GDate_t     *d,
-	GDateMonth m)
+void g_date_set_month(GDate_t  *d, GDateMonth m)
 {
 	//g_return_if_fail(d != NULL);
 	//g_return_if_fail(g_date_valid_month(m));
@@ -1061,9 +1021,7 @@ g_date_set_month(GDate_t     *d,
 * Sets the day of the month for a #GDate_t. If the resulting
 * day-month-year triplet is invalid, the date will be invalid.
 */
-void
-g_date_set_day(GDate_t    *d,
-	GDateDay  day)
+void g_date_set_day(GDate_t    *d,	GDateDay  day)
 {
 	//g_return_if_fail(d != NULL);
 	//g_return_if_fail(g_date_valid_day(day));
@@ -1087,9 +1045,7 @@ g_date_set_day(GDate_t    *d,
 * Sets the year for a #GDate_t. If the resulting day-month-year
 * triplet is invalid, the date will be invalid.
 */
-void
-g_date_set_year(GDate_t     *d,
-	GDateYear  y)
+void g_date_set_year(GDate_t     *d,	GDateYear  y)
 {
 	//g_return_if_fail(d != NULL);
 	//g_return_if_fail(g_date_valid_year(y));
@@ -1117,11 +1073,7 @@ g_date_set_year(GDate_t     *d,
 * sure it is, call g_date_valid_dmy() to check before you
 * set it.
 */
-void
-g_date_set_dmy(GDate_t      *d,
-	GDateDay    day,
-	GDateMonth  m,
-	GDateYear   y)
+void g_date_set_dmy(GDate_t      *d,	GDateDay    day,	GDateMonth  m,	GDateYear   y)
 {
 	//g_return_if_fail(d != NULL);
 	//g_return_if_fail(g_date_valid_dmy(day, m, y));
@@ -1142,9 +1094,7 @@ g_date_set_dmy(GDate_t      *d,
 *
 * Sets the value of a #GDate_t from a Julian day number.
 */
-void
-g_date_set_julian(GDate_t   *d,
-	guint32  j)
+void g_date_set_julian(GDate_t   *d,	guint32  j)
 {
 	//g_return_if_fail(d != NULL);
 	//g_return_if_fail(g_date_valid_julian(j));
@@ -1163,8 +1113,7 @@ g_date_set_julian(GDate_t   *d,
 *
 * Returns: %TRUE if the date is the first of the month
 */
-gboolean
-g_date_is_first_of_month(const GDate_t *d)
+gboolean g_date_is_first_of_month(const GDate_t *d)
 {
 	//g_return_val_if_fail(g_date_valid(d), FALSE);
 
@@ -1186,8 +1135,7 @@ g_date_is_first_of_month(const GDate_t *d)
 *
 * Returns: %TRUE if the date is the last day of the month
 */
-gboolean
-g_date_is_last_of_month(const GDate_t *d)
+gboolean g_date_is_last_of_month(const GDate_t *d)
 {
 	gint idx;
 
@@ -1213,9 +1161,7 @@ g_date_is_last_of_month(const GDate_t *d)
 * To move forward by weeks, add weeks*7 days.
 * The date must be valid.
 */
-void
-g_date_add_days(GDate_t *d,
-	guint  ndays)
+void g_date_add_days(GDate_t *d, guint  ndays)
 {
 	//g_return_if_fail(g_date_valid(d));
 
@@ -1238,9 +1184,7 @@ g_date_add_days(GDate_t *d,
 * To move by weeks, just move by weeks*7 days.
 * The date must be valid.
 */
-void
-g_date_subtract_days(GDate_t *d,
-	guint  ndays)
+void g_date_subtract_days(GDate_t *d,	guint  ndays)
 {
 	//g_return_if_fail(g_date_valid(d));
 
@@ -1265,9 +1209,7 @@ g_date_subtract_days(GDate_t *d,
 * (because the destination month may not have
 * the current day in it). The date must be valid.
 */
-void
-g_date_add_months(GDate_t *d,
-	guint  nmonths)
+void g_date_add_months(GDate_t *d,	guint  nmonths)
 {
 	guint years, months;
 	gint idx;
@@ -1310,9 +1252,7 @@ g_date_add_months(GDate_t *d,
 * the destination month, the day of the month
 * may change. The date must be valid.
 */
-void
-g_date_subtract_months(GDate_t *d,
-	guint  nmonths)
+void g_date_subtract_months(GDate_t *d,	guint  nmonths)
 {
 	guint years, months;
 	gint idx;
@@ -1359,9 +1299,7 @@ g_date_subtract_months(GDate_t *d,
 * year is not a leap year, the date will be changed
 * to February 28. The date must be valid.
 */
-void
-g_date_add_years(GDate_t *d,
-	guint  nyears)
+void g_date_add_years(GDate_t *d,	guint  nyears)
 {
 	//g_return_if_fail(g_date_valid(d));
 
@@ -1393,9 +1331,7 @@ g_date_add_years(GDate_t *d,
 * then the day is changed to February 29. The date
 * must be valid.
 */
-void
-g_date_subtract_years(GDate_t *d,
-	guint  nyears)
+void g_date_subtract_years(GDate_t *d,	guint  nyears)
 {
 	//g_return_if_fail(g_date_valid(d));
 
@@ -1429,8 +1365,7 @@ g_date_subtract_years(GDate_t *d,
 *
 * Returns: %TRUE if the year is a leap year
 */
-gboolean
-g_date_is_leap_year(GDateYear year)
+gboolean g_date_is_leap_year(GDateYear year)
 {
 	//g_return_val_if_fail(g_date_valid_year(year), FALSE);
 
@@ -1448,8 +1383,7 @@ g_date_is_leap_year(GDateYear year)
 *
 * Returns: number of days in @month during the @year
 */
-guint8
-g_date_get_days_in_month(GDateMonth month,
+guint8 g_date_get_days_in_month(GDateMonth month,
 	GDateYear  year)
 {
 	gint idx;
@@ -1476,8 +1410,7 @@ g_date_get_days_in_month(GDateMonth month,
 *
 * Returns: number of Mondays in the year
 */
-guint8
-g_date_get_monday_weeks_in_year(GDateYear year)
+guint8 g_date_get_monday_weeks_in_year(GDateYear year)
 {
 	GDate_t d;
 
@@ -1512,8 +1445,7 @@ g_date_get_monday_weeks_in_year(GDateYear year)
 *
 * Returns: the number of weeks in @year
 */
-guint8
-g_date_get_sunday_weeks_in_year(GDateYear year)
+guint8 g_date_get_sunday_weeks_in_year(GDateYear year)
 {
 	GDate_t d;
 
@@ -1545,8 +1477,7 @@ g_date_get_sunday_weeks_in_year(GDateYear year)
 * Returns: 0 for equal, less than zero if @lhs is less than @rhs,
 *     greater than zero if @lhs is greater than @rhs
 */
-gint
-g_date_compare(const GDate_t *lhs,
+gint g_date_compare(const GDate_t *lhs,
 	const GDate_t *rhs)
 {
 	//g_return_val_if_fail(lhs != NULL, 0);
@@ -1602,8 +1533,7 @@ g_date_compare(const GDate_t *lhs,
 * Fills in the date-related bits of a struct tm using the @date value.
 * Initializes the non-date parts with something sane but meaningless.
 */
-void
-g_date_to_struct_tm(const GDate_t *d,
+void g_date_to_struct_tm(const GDate_t *d,
 	struct tm   *tm)
 {
 	GDateWeekday day;
@@ -1651,8 +1581,7 @@ g_date_to_struct_tm(const GDate_t *d,
 * Either of @min_date and @max_date may be %NULL.
 * All non-%NULL dates must be valid.
 */
-void
-g_date_clamp(GDate_t       *date,
+void g_date_clamp(GDate_t       *date,
 	const GDate_t *min_date,
 	const GDate_t *max_date)
 {
@@ -1682,8 +1611,7 @@ g_date_clamp(GDate_t       *date,
 * Checks if @date1 is less than or equal to @date2,
 * and swap the values if this is not the case.
 */
-void
-g_date_order(GDate_t *date1,
+void g_date_order(GDate_t *date1,
 	GDate_t *date2)
 {
 	//g_return_if_fail(g_date_valid(date1));

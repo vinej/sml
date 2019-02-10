@@ -14,6 +14,7 @@
 #include "property.h"
 #include "str.h"
 #include "file.h"
+#include "date.h"
 #include "command.h"
 #include "utf8.h"
 
@@ -821,11 +822,12 @@ void ke_free_val(sml_t *sml) {
 			ke_matrix_freemem(sml,fieldp);
 		} else if (fieldp->vtype == KEV_VEC && fieldp->obj.vector) {
 			ke_vector_freemem(sml, fieldp);
-		}
-		else if (fieldp->vtype == KEV_VEC_INT && fieldp->obj.vector_int) {
+		} else if (fieldp->vtype == KEV_VEC_INT && fieldp->obj.vector_int) {
 			ke_vector_int_freemem(sml, fieldp);
 		} else if (fieldp->vtype == KEV_STR && fieldp->obj.s) {
             ke_free_memory(sml, fieldp->obj.s);
+		} else if (fieldp->vtype == KEV_DATE && fieldp->obj.s) {
+			ke_free_memory(sml, fieldp->obj.date);
 		}
         ke_free_memory(sml,fieldp);
     }
@@ -911,6 +913,17 @@ void ke_set_vector_int(sml_t * sml, ke1_t *tokp, gsl_vector_int * vecp)
 {
 	ke_vector_int_freemem(sml,tokp);
 	tokp->obj.vector_int = vecp, tokp->vtype = KEV_VEC_INT, tokp->ttype = KET_VAL, tokp->assigned = 1;
+}
+
+void ke_set_date(sml_t * sml, ke1_t *tokp, GDate_t * datep)
+{
+	if (tokp->obj.date && tokp->vtype == KEV_DATE) {
+		free(tokp->obj.date);
+	}
+	tokp->obj.date = datep;
+	tokp->vtype = KEV_DATE;
+	tokp->ttype = KET_VAL;
+	tokp->assigned = 1;
 }
 
 void ke_set_null_matrix(sml_t *sml, int ifield)
@@ -1018,7 +1031,8 @@ void ke_print_one_stack(ke1_t * tokp)
             if (tokp->vtype == KEV_STR) printf("'%s'", tokp->obj.s);
             if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
             if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
-        }
+			if (tokp->vtype == KEV_DATE) printf("Y:%d M:%d D:%d", tokp->obj.date->year, tokp->obj.date->month, tokp->obj.date->day);
+		}
     } else if (tokp->ttype == KET_OP) {
         printf("%s", ke_opstr[tokp->op]);
     } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_PROP || tokp->ttype == KET_CMD) {
@@ -1048,13 +1062,15 @@ void ke_print_one(sml_t *sml, ke1_t * tokp)
 		#ifdef DEBUG
 			if (tokp->name != NULL) printf("%s=", tokp->name);
 		#endif // DEBUG
-        if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
-        else if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
-        else if (tokp->vtype == KEV_STR && tokp->obj.s != NULL) {
+        if (tokp->vtype == KEV_REAL) 
+			printf("%g", tokp->r);
+        else if (tokp->vtype == KEV_INT) 
+			printf("%lld", (long long)tokp->i);
+        else if (tokp->vtype == KEV_STR && tokp->obj.s != NULL) 
             printf("%s", tokp->obj.s);
-        }
-    }
-	if (tokp->tofree == 1) {
+        else if (tokp->vtype == KEV_DATE && tokp->obj.s != NULL) 
+			printf("dd-mm-yyyy: %d-%d-%d",  tokp->obj.date->day, tokp->obj.date->month, tokp->obj.date->year );
+	} else if (tokp->tofree == 1) {
 		if (tokp->vtype == KEV_STR) {
 			ke_free_memory(sml, tokp->obj.s);
 		}
@@ -1100,10 +1116,6 @@ void ke_print_error_one(sml_t * sml,kexpr_t *kexpr, char * name, ke1_t * e, int 
     ke1_t *tokp = &kexpr->e[itok];
     printf("    ");
     ke_print_one(sml, tokp);
-    if (tokp != tokp) {
-        printf("    ");
-        ke_print_one(sml, tokp);
-    }
     printf("\n    ");
     ke_print_range(kexpr, itok - 3, itok + 3);
     printf("****\n");
@@ -1137,7 +1149,8 @@ void ke_fill_hash(sml_t *sml) {
     ke_matrix_hash(sml);
     ke_function_hash(sml);
     ke_str_hash(sml);
-    //ke_constants_hash(sml);
+	ke_date_hash(sml);
+	//ke_constants_hash(sml);
 }
 
 ke1_t* ke_get_val_index(sml_t *sml, int i) {
@@ -1160,6 +1173,7 @@ void inline ke_set_val(sml_t* sml, ke1_t* e, ke1_t *q) {
 	 else if (q->vtype == KEV_REC) ke_set_record(sml, q, e);
 	 else if (q->vtype == KEV_IMAGE) ke_set_image(sml, q, e);
 	 else if (q->vtype == KEV_FILE) ke_set_file(sml, q, e);
+	 else if (q->vtype == KEV_DATE) ke_set_date(sml, e, q->obj.date);
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
@@ -1311,7 +1325,8 @@ void ke_free(sml_t* sml,kexpr_t *kexpr)
             ke_free_memory(sml, e->obj.s);
             e->obj.s = NULL;
 		}
-        if (e->name) {
+
+		if (e->name) {
             ke_free_memory(sml, e->name);
             e->name = NULL;
         }

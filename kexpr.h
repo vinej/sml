@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include "stack.h"
 #include "utf8.h"
+#include "gdate.h"
 
 #if defined(_MSC_VER) || defined(_WIN32)
 #include <Windows.h>
@@ -45,8 +46,7 @@
 #define KEV_IMAGE 11
 #define KEV_FILE 12
 #define KEV_BUFFER 13
-
-
+#define KEV_DATE 14
 
 #define KEO_NULL  0
 #define KEO_POS   1
@@ -190,6 +190,7 @@ typedef struct ke1_s {
 		char ** ms;
 		FILE *file;
 		void *buffer;
+		GDate_t * date;
 		gsl_vector_int * vector_int;
 		gsl_vector * vector;
 		gsl_matrix * matrix;
