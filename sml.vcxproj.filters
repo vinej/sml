@@ -66,6 +66,9 @@
     <ClInclude Include="utf8.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="gdate.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="command.c">
@@ -105,6 +108,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="utf8util.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="gdate.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

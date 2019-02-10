@@ -209,6 +209,7 @@
     <ClInclude Include="constants.h" />
     <ClInclude Include="file.h" />
     <ClInclude Include="function.h" />
+    <ClInclude Include="gdate.h" />
     <ClInclude Include="kdq.h" />
     <ClInclude Include="kexpr.h" />
     <ClInclude Include="khash.h" />
@@ -228,6 +229,7 @@
     <ClCompile Include="constants.c" />
     <ClCompile Include="file.c" />
     <ClCompile Include="function.c" />
+    <ClCompile Include="gdate.c" />
     <ClCompile Include="kexpr.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="matrix.c" />
