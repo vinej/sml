@@ -40,6 +40,7 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+#include <ctype.h>
 
 #if defined(_MSC_VER)
 #pragma warning(pop)
@@ -354,7 +355,8 @@ extern "C" {
 		size_t len_search = utf8len(search);
 		size_t len_s = utf8len(str);
 		size_t length = 0;
-		for(int i = 0; i < len_s - len_search, *s != '\0'; ++i) {
+		for(size_t i = 0; i < (len_s - len_search); ++i) {
+			if (!*s) break;
 			if (utf8ncmp(s,p, len_search) == 0) {
 				return length;
 			}
