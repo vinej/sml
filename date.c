@@ -26,8 +26,68 @@ static int ke_date_now(sml_t* sml, ke1_t *tokp, int top) {
 	return top;
 }
 
+static int ke_date_add_years(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
+	ke1_t *date, *year;
+	year = &stack[--top];
+	date = &stack[--top];
+	g_date_add_years(sml->fields[date->ifield]->obj.date, (guint)year->i);
+	return top;
+}
+
+static int ke_date_add_months(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
+	ke1_t *date, *months;
+	months = &stack[--top];
+	date = &stack[--top];
+	g_date_add_months(sml->fields[date->ifield]->obj.date, (guint)months->i);
+	return top;
+}
+
+static int ke_date_add_days(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
+	ke1_t *date, *days;
+	days = &stack[--top];
+	date = &stack[--top];
+	g_date_add_days(sml->fields[date->ifield]->obj.date, (guint)days->i);
+	return top;
+}
+
+static int ke_date_sub_years(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
+	ke1_t *date, *year;
+	year = &stack[--top];
+	date = &stack[--top];
+	g_date_subtract_years(sml->fields[date->ifield]->obj.date, (guint)year->i);
+	return top;
+}
+
+static int ke_date_sub_months(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
+	ke1_t *date, *months;
+	months = &stack[--top];
+	date = &stack[--top];
+	g_date_subtract_months(sml->fields[date->ifield]->obj.date, (guint)months->i);
+	return top;
+}
+
+static int ke_date_sub_days(sml_t* sml, ke1_t *tokp, int top) {
+	ke1_t *stack = sml->stack;
+	ke1_t *date, *days;
+	days = &stack[--top];
+	date = &stack[--top];
+	g_date_subtract_days(sml->fields[date->ifield]->obj.date, (guint)days->i);
+	return top;
+}
+
 void ke_date_hash(sml_t* sml) {
 	ke_hash_add(sml, (fncp)&ke_date_dmy, DATE_NEW);
 	ke_hash_add(sml, (fncp)&ke_date_dmy, DATE_DMY);
 	ke_hash_add(sml, (fncp)&ke_date_now, DATE_NOW);
+	ke_hash_add(sml, (fncp)&ke_date_add_years, DATE_ADD_YEARS);
+	ke_hash_add(sml, (fncp)&ke_date_add_months, DATE_ADD_MONTHS);
+	ke_hash_add(sml, (fncp)&ke_date_add_days, DATE_ADD_DAYS);
+	ke_hash_add(sml, (fncp)&ke_date_sub_years, DATE_SUB_YEARS);
+	ke_hash_add(sml, (fncp)&ke_date_sub_months, DATE_SUB_MONTHS);
+	ke_hash_add(sml, (fncp)&ke_date_sub_days, DATE_SUB_DAYS);
 }

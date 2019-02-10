@@ -14,6 +14,7 @@
 #include "property.h"
 #include "str.h"
 #include "file.h"
+#include "gdate.h"
 #include "date.h"
 #include "command.h"
 #include "utf8.h"
@@ -1031,7 +1032,7 @@ void ke_print_one_stack(ke1_t * tokp)
             if (tokp->vtype == KEV_STR) printf("'%s'", tokp->obj.s);
             if (tokp->vtype == KEV_REAL) printf("%g", tokp->r);
             if (tokp->vtype == KEV_INT) printf("%lld", (long long)tokp->i);
-			if (tokp->vtype == KEV_DATE) printf("Y:%d M:%d D:%d", tokp->obj.date->year, tokp->obj.date->month, tokp->obj.date->day);
+			if (tokp->vtype == KEV_DATE) printf("Y:%d M:%d D:%d", g_date_get_year(tokp->obj.date), g_date_get_month(tokp->obj.date), g_date_get_day(tokp->obj.date));
 		}
     } else if (tokp->ttype == KET_OP) {
         printf("%s", ke_opstr[tokp->op]);
@@ -1068,8 +1069,8 @@ void ke_print_one(sml_t *sml, ke1_t * tokp)
 			printf("%lld", (long long)tokp->i);
         else if (tokp->vtype == KEV_STR && tokp->obj.s != NULL) 
             printf("%s", tokp->obj.s);
-        else if (tokp->vtype == KEV_DATE && tokp->obj.s != NULL) 
-			printf("dd-mm-yyyy: %d-%d-%d",  tokp->obj.date->day, tokp->obj.date->month, tokp->obj.date->year );
+        else if (tokp->vtype == KEV_DATE && tokp->obj.date != NULL) 
+			 printf("dd-mm-yyyy: %d-%d-%d", g_date_get_day(tokp->obj.date), g_date_get_month(tokp->obj.date), g_date_get_year(tokp->obj.date));
 	} else if (tokp->tofree == 1) {
 		if (tokp->vtype == KEV_STR) {
 			ke_free_memory(sml, tokp->obj.s);
