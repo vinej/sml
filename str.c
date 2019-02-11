@@ -28,7 +28,7 @@ int ke_str_prop_get_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t *stack = sml-
 		indice->r = (double)indice->i;
 	}
 	else {
-		indice->obj.s = utf8pos(prop->obj.s, indice->i);
+		indice->obj.s = utf8pos(prop->obj.s, (size_t)indice->i);
 		indice->tofree = 1;
 		indice->ttype = KET_VAL;
 		indice->vtype = KEV_STR;

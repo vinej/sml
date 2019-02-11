@@ -238,10 +238,9 @@
 *
 * Returns: a newly-allocated #GDate_t
 */
-GDate_t*
-g_date_new(void)
+GDate_t* g_date_new(sml_t* sml)
 {
-	GDate_t *d = calloc(sizeof(GDate_t), 1); /* happily, 0 is the invalid flag for everything. */
+	GDate_t *d = ke_calloc_memory(sml, sizeof(GDate_t), 1); /* happily, 0 is the invalid flag for everything. */
 	return d;
 }
 
@@ -257,11 +256,11 @@ g_date_new(void)
 *
 * Returns: a newly-allocated #GDate_t initialized with @day, @month, and @year
 */
-GDate_t* g_date_new_dmy(GDateDay   day,	GDateMonth m,	GDateYear  y)
+GDate_t* g_date_new_dmy(sml_t * sml, GDateDay   day,	GDateMonth m,	GDateYear  y)
 {
 	//g_return_val_if_fail(g_date_valid_dmy(day, m, y), NULL);
 
-	GDate_t *d = calloc(sizeof(GDate_t), 1); /* happily, 0 is the invalid flag for everything. */
+	GDate_t *d = ke_calloc_memory(sml, sizeof(GDate_t), 1); /* happily, 0 is the invalid flag for everything. */
 
 	d->julian = 0;
 	d->dmy = 1;
@@ -285,11 +284,11 @@ GDate_t* g_date_new_dmy(GDateDay   day,	GDateMonth m,	GDateYear  y)
 *
 * Returns: a newly-allocated #GDate_t initialized with @julian_day
 */
-GDate_t* g_date_new_julian(guint32 julian_day)
+GDate_t* g_date_new_julian(sml_t * sml, guint32 julian_day)
 {
 	//g_return_val_if_fail(g_date_valid_julian(julian_day), NULL);
 
-	GDate_t *d = calloc(sizeof(GDate_t), 1); /* happily, 0 is the invalid flag for everything. */
+	GDate_t *d = ke_calloc_memory(sml, sizeof(GDate_t), 1); /* happily, 0 is the invalid flag for everything. */
 
 	d->julian = 1;
 	d->dmy = 0;
@@ -326,16 +325,16 @@ void g_date_free(GDate_t *date)
 *
 * Since: 2.56
 */
-GDate_t * g_date_copy(const GDate_t *date)
+GDate_t * g_date_copy(sml_t * sml, const GDate_t *date)
 {
 	GDate_t *res;
 	//g_return_val_if_fail(date != NULL, NULL);
 
 	if (g_date_valid(date))
-		res = g_date_new_julian(g_date_get_julian(date));
+		res = g_date_new_julian(sml, g_date_get_julian(date));
 	else
 	{
-		res = g_date_new();
+		res = g_date_new(sml);
 		*res = *date;
 	}
 

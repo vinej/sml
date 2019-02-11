@@ -116,11 +116,11 @@ struct _GDate
 };
 typedef struct _GDate GDate_t;
 
-GDate_t* g_date_new(void);
-GDate_t* g_date_new_dmy(GDateDay day, GDateMonth   month, GDateYear  year);
-GDate_t* g_date_new_julian(guint32 julian_day);
+GDate_t* g_date_new(struct sml_s * sml);
+GDate_t* g_date_new_dmy(struct sml_s * sml, GDateDay day, GDateMonth   month, GDateYear  year);
+GDate_t* g_date_new_julian(struct sml_s * sml, guint32 julian_day);
 void g_date_free(GDate_t  *date);
-GDate_t*       g_date_copy(const GDate_t *date);
+GDate_t*       g_date_copy(struct sml_s *, const GDate_t *date);
 gboolean     g_date_valid(const GDate_t *date);
 gboolean     g_date_valid_day(GDateDay day);
 gboolean     g_date_valid_month(GDateMonth month);

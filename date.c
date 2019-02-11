@@ -8,7 +8,7 @@ static int ke_date_dmy(sml_t* sml, ke1_t *tokp, int top) {
 	y = &stack[--top],
 	m = &stack[--top];
 	d = &stack[top - 1];
-	d->obj.date = g_date_new_dmy( (GDateDay)d->i, (GDateMonth)m->i, (GDateYear)y->i);
+	d->obj.date = g_date_new_dmy(sml, (GDateDay)d->i, (GDateMonth)m->i, (GDateYear)y->i);
 	d->ttype = KET_VAL;
 	d->vtype = KEV_DATE;
 	return top;
@@ -19,7 +19,7 @@ static int ke_date_now(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *p;
 	p = &stack[top - 1];
 	time_t now = time(NULL);
-	p->obj.date = g_date_new();
+	p->obj.date = g_date_new(sml);
 	g_date_set_time_t(p->obj.date, now);
 	p->ttype = KET_VAL;
 	p->vtype = KEV_DATE;
