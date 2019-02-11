@@ -154,7 +154,7 @@ typedef struct sml_s {
 	khash_t(0) *hcommand;
 	khash_t(1) *hvcommand;
 	khash_t(3) *hdefcommand;
-	stack_t *harg;
+	kstack_t *harg;
 	int g_forstack[20]; 
 	int g_fortop;
 	int lastDef;

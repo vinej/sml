@@ -16,6 +16,6 @@ set (SML_VERSION_MINOR 1)
 include_directories("${CMAKE_SOURCE_DIR}/include" "/usr/lib")
 link_directories(/usr/local/lib)
 
-add_executable(SML main.c stack.c command.c complex.c constants.c file.c function.c kexpr.c  matrix.c property.c str.c vector.c)
+add_executable(SML main.c stack.c utf8util.c gdate.c date.c command.c complex.c constants.c file.c function.c kexpr.c  matrix.c property.c str.c vector.c)
 
 target_link_libraries (SML gsl gslcblas m)

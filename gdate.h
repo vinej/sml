@@ -6,17 +6,17 @@
 #define G_LOG_DOMAIN    ((gchar*) 0)
 typedef long glong;
 typedef size_t gsize;
-typedef unsigned int guint;
+typedef uint32_t guint;
 typedef unsigned char guchar;
 typedef char gchar;
-typedef __int32 guint32;
+typedef int32_t guint32;
 typedef int gboolean;
-typedef unsigned __int8  guint8;
+typedef uint8_t guint8;
 typedef int gint;
-typedef unsigned __int16 guint16;
-typedef __int32 GTime;
-typedef __int16 GDateYear;
-typedef __int8  GDateDay;   /* day of the month */
+typedef uint16_t guint16;
+typedef int GTime;
+typedef int16_t GDateYear;
+typedef int8_t  GDateDay;   /* day of the month */
 typedef struct _GTimeVal GTimeVal;
 
 #define G_LOG_DOMAIN    ((gchar*) 0)

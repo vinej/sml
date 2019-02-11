@@ -10,9 +10,9 @@ struct stack {
 	size_t  size;
 };
 
-stack_t * stack_create(int size) {
+kstack_t * stack_create(int size) {
 
-	stack_t *stack;
+	kstack_t *stack;
 
 	// alloc the struct
 	stack = calloc(1, sizeof(*stack));
@@ -30,7 +30,7 @@ stack_t * stack_create(int size) {
 	return stack;
 }
 
-static void stack_ensure_space(stack_t * stack, size_t add_len)
+static void stack_ensure_space(kstack_t * stack, size_t add_len)
 {
 	if (stack == NULL || add_len == 0 || (size_t)stack->top + 1 < stack->size)
 		return;
@@ -44,7 +44,7 @@ static void stack_ensure_space(stack_t * stack, size_t add_len)
 	stack->data = realloc(stack, stack->size * sizeof(void *));
 }
 
-void stack_destroy(stack_t * stack)
+void stack_destroy(kstack_t * stack)
 {
 	if (stack == NULL) return;
 
@@ -53,18 +53,18 @@ void stack_destroy(stack_t * stack)
 }
 
 
-int stack_isempty(stack_t * stack) {
+int stack_isempty(kstack_t * stack) {
 	if (stack->top == -1)
 		return 1;
 	else
 		return 0;
 }
 
-int stack_len(stack_t * stack) {
+int stack_len(kstack_t * stack) {
 	return stack->top + 1;
 }
 
-void * stack_peek(stack_t * stack) {
+void * stack_peek(kstack_t * stack) {
 	if (stack->top == -1) {
 		return NULL;
 	}
@@ -73,7 +73,7 @@ void * stack_peek(stack_t * stack) {
 	}
 }
 
-void * stack_pop(stack_t * stack) {
+void * stack_pop(kstack_t * stack) {
 	void * data;
 
 	if (!stack_isempty(stack)) {
@@ -87,7 +87,7 @@ void * stack_pop(stack_t * stack) {
 	}
 }
 
-void stack_push(stack_t * stack, void * data) {
+void stack_push(kstack_t * stack, void * data) {
 	stack_ensure_space(stack, 1);
 
 	stack->top = stack->top + 1;

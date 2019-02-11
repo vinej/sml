@@ -1,14 +1,14 @@
 #include <stdio.h>
 
 struct stack;
-typedef struct stack stack_t;
+typedef struct stack kstack_t;
 
-stack_t * stack_create(int size);
-void stack_destroy(stack_t *);
-int stack_isempty(stack_t *);
-int stack_isfull(stack_t *);
-int stack_len(stack_t *);
-void * stack_peek(stack_t *);
-void * stack_pop(stack_t *);
-void stack_push(stack_t *, void * data);
+kstack_t * stack_create(int size);
+void stack_destroy(kstack_t *);
+int stack_isempty(kstack_t *);
+int stack_isfull(kstack_t *);
+int stack_len(kstack_t *);
+void * stack_peek(kstack_t *);
+void * stack_pop(kstack_t *);
+void stack_push(kstack_t *, void * data);
 

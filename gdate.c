@@ -263,8 +263,8 @@ GDate_t* g_date_new_dmy(GDateDay   day,	GDateMonth m,	GDateYear  y)
 
 	GDate_t *d = calloc(sizeof(GDate_t), 1); /* happily, 0 is the invalid flag for everything. */
 
-	d->julian = FALSE;
-	d->dmy = TRUE;
+	d->julian = 0;
+	d->dmy = 1;
 
 	d->month = m;
 	d->day = day;
@@ -291,8 +291,8 @@ GDate_t* g_date_new_julian(guint32 julian_day)
 
 	GDate_t *d = calloc(sizeof(GDate_t), 1); /* happily, 0 is the invalid flag for everything. */
 
-	d->julian = TRUE;
-	d->dmy = FALSE;
+	d->julian = 1;
+	d->dmy = 0;
 
 	d->julian_days = julian_day;
 
@@ -503,7 +503,7 @@ static void g_date_update_julian(const GDate_t *const_d)
 
 	//g_return_if_fail(g_date_valid_julian(d->julian_days));
 
-	d->julian = TRUE;
+	d->julian = 1;
 }
 
 static void g_date_update_dmy(const GDate_t *const_d)
@@ -549,7 +549,7 @@ static void g_date_update_dmy(const GDate_t *const_d)
 	d->day = day;
 	d->year = y;
 
-	d->dmy = TRUE;
+	d->dmy = 1;
 }
 
 /**
@@ -859,7 +859,7 @@ static const GDateYear twodigit_start_year = 1930;
 /* It is impossible to enter a year between 1 AD and 99 AD with this
 * in effect.
 */
-static gboolean using_twodigit_years = FALSE;
+static gboolean using_twodigit_years = 0;
 
 /* Adjustment of locale era to AD, non-zero means using locale era
 */
@@ -881,17 +881,17 @@ update_month_match(gsize *longest,
 	gsize length;
 
 	if (needle == NULL)
-		return FALSE;
+		return 0;
 
 	length = strlen(needle);
 	if (*longest >= length)
-		return FALSE;
+		return 0;
 
 	if (strstr(haystack, needle) == NULL)
-		return FALSE;
+		return 0;
 
 	*longest = length;
-	return TRUE;
+	return 1;
 }
 
 #define NUM_LEN 10
@@ -944,7 +944,7 @@ void g_date_set_time_t(GDate_t *date,
 	}
 #endif
 
-	date->julian = FALSE;
+	date->julian = 0;
 
 	date->month = tm.tm_mon + 1;
 	date->day = tm.tm_mday;
@@ -952,7 +952,7 @@ void g_date_set_time_t(GDate_t *date,
 
 	//g_return_if_fail(g_date_valid_dmy(date->day, date->month, date->year));
 
-	date->dmy = TRUE;
+	date->dmy = 1;
 }
 
 
@@ -1003,14 +1003,14 @@ void g_date_set_month(GDate_t  *d, GDateMonth m)
 	//g_return_if_fail(g_date_valid_month(m));
 
 	if (d->julian && !d->dmy) g_date_update_dmy(d);
-	d->julian = FALSE;
+	d->julian = 0;
 
 	d->month = m;
 
 	if (g_date_valid_dmy(d->day, d->month, d->year))
-		d->dmy = TRUE;
+		d->dmy = 1;
 	else
-		d->dmy = FALSE;
+		d->dmy = 0;
 }
 
 /**
@@ -1027,14 +1027,14 @@ void g_date_set_day(GDate_t    *d,	GDateDay  day)
 	//g_return_if_fail(g_date_valid_day(day));
 
 	if (d->julian && !d->dmy) g_date_update_dmy(d);
-	d->julian = FALSE;
+	d->julian = 0;
 
 	d->day = day;
 
 	if (g_date_valid_dmy(d->day, d->month, d->year))
-		d->dmy = TRUE;
+		d->dmy = 1;
 	else
-		d->dmy = FALSE;
+		d->dmy = 0;
 }
 
 /**
@@ -1051,14 +1051,14 @@ void g_date_set_year(GDate_t     *d,	GDateYear  y)
 	//g_return_if_fail(g_date_valid_year(y));
 
 	if (d->julian && !d->dmy) g_date_update_dmy(d);
-	d->julian = FALSE;
+	d->julian = 0;
 
 	d->year = y;
 
 	if (g_date_valid_dmy(d->day, d->month, d->year))
-		d->dmy = TRUE;
+		d->dmy = 1;
 	else
-		d->dmy = FALSE;
+		d->dmy = 0;
 }
 
 /**
@@ -1078,13 +1078,13 @@ void g_date_set_dmy(GDate_t      *d,	GDateDay    day,	GDateMonth  m,	GDateYear  
 	//g_return_if_fail(d != NULL);
 	//g_return_if_fail(g_date_valid_dmy(day, m, y));
 
-	d->julian = FALSE;
+	d->julian = 0;
 
 	d->month = m;
 	d->day = day;
 	d->year = y;
 
-	d->dmy = TRUE;
+	d->dmy = 1;
 }
 
 /**
@@ -1100,8 +1100,8 @@ void g_date_set_julian(GDate_t   *d,	guint32  j)
 	//g_return_if_fail(g_date_valid_julian(j));
 
 	d->julian_days = j;
-	d->julian = TRUE;
-	d->dmy = FALSE;
+	d->julian = 1;
+	d->dmy = 0;
 }
 
 /**
@@ -1122,8 +1122,8 @@ gboolean g_date_is_first_of_month(const GDate_t *d)
 
 	//g_return_val_if_fail(d->dmy, FALSE);
 
-	if (d->day == 1) return TRUE;
-	else return FALSE;
+	if (d->day == 1) return 1;
+	else return 0;
 }
 
 /**
@@ -1148,8 +1148,8 @@ gboolean g_date_is_last_of_month(const GDate_t *d)
 
 	idx = g_date_is_leap_year(d->year) ? 1 : 0;
 
-	if (d->day == days_in_months[idx][d->month]) return TRUE;
-	else return FALSE;
+	if (d->day == days_in_months[idx][d->month]) return 1;
+	else return 0;
 }
 
 /**
@@ -1172,7 +1172,7 @@ void g_date_add_days(GDate_t *d, guint  ndays)
 	//g_return_if_fail(ndays <= MAXINT32 - d->julian_days);
 
 	d->julian_days += ndays;
-	d->dmy = FALSE;
+	d->dmy = 0;
 }
 
 /**
@@ -1195,7 +1195,7 @@ void g_date_subtract_days(GDate_t *d,	guint  ndays)
 	//g_return_if_fail(d->julian_days > ndays);
 
 	d->julian_days -= ndays;
-	d->dmy = FALSE;
+	d->dmy = 0;
 }
 
 /**
@@ -1237,7 +1237,7 @@ void g_date_add_months(GDate_t *d,	guint  nmonths)
 	if (d->day > days_in_months[idx][d->month])
 		d->day = days_in_months[idx][d->month];
 
-	d->julian = FALSE;
+	d->julian = 0;
 
 	//g_return_if_fail(g_date_valid(d));
 }
@@ -1284,7 +1284,7 @@ void g_date_subtract_months(GDate_t *d,	guint  nmonths)
 	if (d->day > days_in_months[idx][d->month])
 		d->day = days_in_months[idx][d->month];
 
-	d->julian = FALSE;
+	d->julian = 0;
 
 	//g_return_if_fail(g_date_valid(d));
 }
@@ -1317,7 +1317,7 @@ void g_date_add_years(GDate_t *d,	guint  nyears)
 			d->day = 28;
 	}
 
-	d->julian = FALSE;
+	d->julian = 0;
 }
 
 /**
@@ -1349,7 +1349,7 @@ void g_date_subtract_years(GDate_t *d,	guint  nyears)
 			d->day = 28;
 	}
 
-	d->julian = FALSE;
+	d->julian = 0;
 }
 
 /**
@@ -1487,7 +1487,7 @@ gint g_date_compare(const GDate_t *lhs,
 
 	/* Remember the self-comparison case! I think it works right now. */
 
-	while (TRUE)
+	while (1)
 	{
 		if (lhs->julian && rhs->julian)
 		{
