@@ -3,9 +3,11 @@
 
 #include <time.h>
 
+struct sml_s;
+
 #define G_LOG_DOMAIN    ((gchar*) 0)
 
-#if defined(_WIN32) || defined(_M_X64) || defined(__x86_64__) || defined(__x86_64)
+#if defined(_WIN32) || defined(_M_X64)
 typedef long glong;
 typedef size_t gsize;
 typedef unsigned int guint;
@@ -18,7 +20,7 @@ typedef int gint;
 typedef unsigned __int16 guint16;
 typedef __int32 GTime;
 typedef __int16 GDateYear;
-typedef __int8  GDateDay;   /* day of the month */
+typedef __int8  GDateDay;
 typedef struct _GTimeVal GTimeVal;
 #else 
 typedef long glong;
@@ -37,13 +39,12 @@ typedef int8_t  GDateDay;   /* day of the month */
 typedef struct _GTimeVal GTimeVal;
 #endif
 
-#define G_LOG_DOMAIN    ((gchar*) 0)
-
 struct _GTimeVal
 {
 	glong tv_sec;
 	glong tv_usec;
 };
+
 /* enum used to specify order of appearance in parsed date strings */
 typedef enum
 {
@@ -52,13 +53,12 @@ typedef enum
 	G_DATE_YEAR = 2
 } GDateDMY;
 
-typedef struct _GError GError;
-
 struct _GError
 {
 	gint         code;
 	gchar       *message;
 };
+typedef struct _GError GError;
 
 /* actual week and month values */
 typedef enum
@@ -72,6 +72,7 @@ typedef enum
 	G_DATE_SATURDAY = 6,
 	G_DATE_SUNDAY = 7
 } GDateWeekday;
+
 typedef enum
 {
 	G_DATE_BAD_MONTH = 0,
@@ -98,29 +99,22 @@ typedef enum
 * of this struct can be invalid at any given time. Use the functions,
 * or you will get hosed, I promise.
 */
-struct _GDate
+struct _GDate;
+typedef struct _GDate
 {
-	guint julian_days : 32; /* julian days representation - we use a
-							*  bitfield hoping that 64 bit platforms
-							*  will pack this whole struct in one big
-							*  int
-							*/
-
-	guint julian : 1;    /* julian is valid */
-	guint dmy : 1;    /* dmy is valid */
-
-					  /* DMY representation */
+	guint julian_days : 32; 
+	guint julian : 1;
+	guint dmy : 1; 
 	guint day : 6;
 	guint month : 4;
 	guint year : 16;
-};
-typedef struct _GDate GDate_t;
+} GDate_t;
 
-GDate_t* g_date_new(struct sml_s * sml);
-GDate_t* g_date_new_dmy(struct sml_s * sml, GDateDay day, GDateMonth   month, GDateYear  year);
-GDate_t* g_date_new_julian(struct sml_s * sml, guint32 julian_day);
-void g_date_free(GDate_t  *date);
-GDate_t*       g_date_copy(struct sml_s *, const GDate_t *date);
+GDate_t*     g_date_new(struct sml_s * sml);
+GDate_t*     g_date_new_dmy(struct sml_s * sml, GDateDay day, GDateMonth   month, GDateYear  year);
+GDate_t*     g_date_new_julian(struct sml_s * sml, guint32 julian_day);
+void		 g_date_free(GDate_t  *date);
+GDate_t*     g_date_copy(struct sml_s *, const GDate_t *date);
 gboolean     g_date_valid(const GDate_t *date);
 gboolean     g_date_valid_day(GDateDay day);
 gboolean     g_date_valid_month(GDateMonth month);
