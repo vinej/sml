@@ -1137,7 +1137,7 @@ void ke_print(sml_t* sml, kexpr_t *kexpr)
 void ke_hash_add(sml_t *sml, fncp key, char * name) {
     int absent;
     khint_t iter = kh_put(5, sml->hfunction, name, &absent);
-    kh_val(sml->hfunction, iter) = (ke1_p)key;
+    kh_val(sml->hfunction, iter) = (fncp)key;
 }
 
 void ke_fill_hash(sml_t *sml) {

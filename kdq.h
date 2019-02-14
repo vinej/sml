@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define __KDQ_TYPE(type) \
-	typedef struct { \
-		size_t front:26, bits:6, count, mask; \
-		type *a; \
-	} kdq_##type##_t;
+#if defined(_M_X64)
+	#define __KDQ_TYPE(type) typedef struct { size_t front:52, bits:6, count, mask; type *a;  } kdq_##type##_t;
+#else
+	#define __KDQ_TYPE(type) typedef struct { size_t front:26, bits:6, count, mask; type *a;  } kdq_##type##_t;
+#endif
 
 #define kdq_t(type) kdq_##type##_t
 #define kdq_size(q) ((q)->count)

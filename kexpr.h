@@ -112,7 +112,7 @@ KHASH_MAP_INIT_STR(0, cmdp)
 KHASH_MAP_INIT_STR(1, vcmdp)
 KHASH_MAP_INIT_STR(2, int)
 KHASH_MAP_INIT_INT(3, int)
-KHASH_MAP_INIT_STR(5, ke1_p)
+KHASH_MAP_INIT_STR(5, fncp)
 KHASH_MAP_INIT_STR(6, int)
 
 #pragma warning( push )
