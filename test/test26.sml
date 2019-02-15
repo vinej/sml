@@ -27,4 +27,5 @@ strfree(buf)
 mybuf=''
 printf("saisir un code :")
 scanf("%s",mybuf)
+
 printf("%s\n",mybuf)

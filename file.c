@@ -735,7 +735,7 @@ static int ke_file_vscanf(sml_t* sml, ke1_t *tokp, int top) {
 		} else {
 			printf("Error: ke_file_vscanf :  max 16 arguments");
 		}
-		if (count == tokp->n_args -1 ) {
+		if (count != tokp->n_args -1 ) {
 			printf("Error: ke_file_xvfscanf");
 		}
 		ke_free_memory(sml,va);
