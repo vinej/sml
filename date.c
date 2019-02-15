@@ -3,11 +3,11 @@
 #include "date.h"
 
 static int ke_date_dmy(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
 	ke1_t *d, *m, *y;
-	y = &stack[--top],
-	m = &stack[--top];
-	d = &stack[top - 1];
+	y = stack[--top],
+	m = stack[--top];
+	d = stack[top - 1];
 	d->obj.date = g_date_new_dmy(sml, (GDateDay)d->i, (GDateMonth)m->i, (GDateYear)y->i);
 	d->ttype = KET_VAL;
 	d->vtype = KEV_DATE;
@@ -15,9 +15,9 @@ static int ke_date_dmy(sml_t* sml, ke1_t *tokp, int top) {
 }
 
 static int ke_date_now(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
 	ke1_t *p;
-	p = &stack[top - 1];
+	p = stack[top - 1];
 	time_t now = time(NULL);
 	p->obj.date = g_date_new(sml);
 	g_date_set_time_t(p->obj.date, now);
@@ -27,55 +27,55 @@ static int ke_date_now(sml_t* sml, ke1_t *tokp, int top) {
 }
 
 static int ke_date_add_years(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
 	ke1_t *date, *year;
-	year = &stack[--top];
-	date = &stack[--top];
+	year = stack[--top];
+	date = stack[--top];
 	g_date_add_years(sml->fields[date->ifield]->obj.date, (guint)year->i);
 	return top;
 }
 
 static int ke_date_add_months(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
 	ke1_t *date, *months;
-	months = &stack[--top];
-	date = &stack[--top];
+	months = stack[--top];
+	date = stack[--top];
 	g_date_add_months(sml->fields[date->ifield]->obj.date, (guint)months->i);
 	return top;
 }
 
 static int ke_date_add_days(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
 	ke1_t *date, *days;
-	days = &stack[--top];
-	date = &stack[--top];
+	days = stack[--top];
+	date = stack[--top];
 	g_date_add_days(sml->fields[date->ifield]->obj.date, (guint)days->i);
 	return top;
 }
 
 static int ke_date_sub_years(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
 	ke1_t *date, *year;
-	year = &stack[--top];
-	date = &stack[--top];
+	year = stack[--top];
+	date = stack[--top];
 	g_date_subtract_years(sml->fields[date->ifield]->obj.date, (guint)year->i);
 	return top;
 }
 
 static int ke_date_sub_months(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
 	ke1_t *date, *months;
-	months = &stack[--top];
-	date = &stack[--top];
+	months = stack[--top];
+	date = stack[--top];
 	g_date_subtract_months(sml->fields[date->ifield]->obj.date, (guint)months->i);
 	return top;
 }
 
 static int ke_date_sub_days(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
 	ke1_t *date, *days;
-	days = &stack[--top];
-	date = &stack[--top];
+	days = stack[--top];
+	date = stack[--top];
 	g_date_subtract_days(sml->fields[date->ifield]->obj.date, (guint)days->i);
 	return top;
 }

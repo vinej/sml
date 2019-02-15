@@ -1086,12 +1086,12 @@ void ke_print_one(sml_t *sml, ke1_t * tokp)
 }
 
 void ke_print_stack(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t *stack = sml->stack;
+	ke1_t **stack = sml->stack;
     if (top > 3) {
         printf("\n%s", "*****************************");
         printf("\n%s\n", "Stack has more than one value");
         while(top) {
-            ke_print_one(sml, stack);
+            ke_print_one(sml, stack[0]);
             putchar(' ');
             stack++;
             top--;
@@ -1189,10 +1189,12 @@ void inline ke_set_val(sml_t* sml, ke1_t* e, ke1_t *q) {
 int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 {
 	ke1_t *p, *q, *e;
+	ke1_t out;
 	int top = 0, err = 0;
 	*_i = 0, *_r = 0., *ret_type = 0;
-	sml->stack = (ke1_t*)ke_malloc_memory(sml, kexpr->n * sizeof(ke1_t));
-	ke1_t *stack = sml->stack;
+
+	sml->stack = (ke1_t**)ke_malloc_memory(sml, kexpr->n * sizeof(ke1_t *));
+	ke1_t **stack = sml->stack;
 	struct ke1_s ** fields = sml->fields;
 	struct ke1_s ** tokens = sml->tokens;
 
@@ -1212,49 +1214,51 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 		case KET_OP:
 			if (tokp->op == KEO_NOP) continue;
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
-				if (stack[top - 2].propset) {
-					e = &stack[top - 2];
+				if (stack[top - 2]->propset) {
+					e = stack[top - 2];
 					fields[e->ifield]->n_args = e->n_args;
-					stack[top-2] = *fields[e->ifield];
+					stack[top-2] = fields[e->ifield];
 					top = ke_poperty_set(sml, stack, e, top);
 				}
 				else {
-					q = &stack[--top];
-					p = &stack[--top];
+					q = stack[--top];
+					p = stack[--top];
 					ke_set_val(sml, fields[p->ifield], q);
 				}
 			}
 			else {
 				if (tokp->n_args == 2) {
-					q = &stack[--top];
-					p = &stack[top-1];
+					q = stack[--top];
+					p = stack[top-1];
 					tokp->f.builtin(p, q);
 
 				}
 				else {
-					p = &stack[top - 1];
-					tokp->f.builtin(&stack[top - 1], 0);
+					p = stack[top - 1];
+					tokp->f.builtin(stack[top - 1], 0);
 				}
 			}
 			break;
 		case KET_FUNC:
 			if (tokp->n_args == 0) {
 				// always need something in the stack
-				stack[top++] = *tokp;
+				stack[top++] = tokp;
 			}
+			stack[top++] = &out;
 			top = (tokp->f.deffunc)(sml, tokp, top);
 			break;
 		case KET_PROP:
 			if (tokp->propget) {
-				stack[top++] = *fields[tokp->ifield];
+				stack[top++] = fields[tokp->ifield];
 				top = ke_poperty_get(sml, stack, tokp, top);
 			}
 			else {
-				stack[top++] = *tokp;
+				stack[top++] = tokp;
 			}
 			break;
 		default:
-			stack[top++] = *tokp;
+			//memcpy(stack[top++], tokp, sizeof(ke1_t));
+			stack[top++] = tokp;
 			break;
 		}
 	}
@@ -1263,8 +1267,8 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
         ke_print_stack(sml, tokp, top);
     #endif // DEBUG
 
-	*ret_type = stack->vtype;
-	*_i = stack->i, *_r = stack->r, *_p = stack->obj.s;
+	*ret_type = stack[0]->vtype;
+	*_i = stack[0]->i, *_r = stack[0]->r, *_p = stack[0]->obj.s;
 
 	#ifdef DEBUG
         printf("= ");
@@ -1277,7 +1281,7 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 }
 
 void ke_push_stack(sml_t * sml, ke1_t * tokp, int *top) {
-	sml->stack[*top] = *tokp;
+	sml->stack[*top] = tokp;
     (*top)++;
 }
 

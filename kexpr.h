@@ -131,7 +131,7 @@ typedef struct sml_s {
 	struct ke1_s ** fields; // array of all global fields of the program to exectue
 	int field_qte;      // number of global fields  
 	int tok_idx;            // current program token index
-	struct ke1_s *stack;        // stack for the evaluation of the program
+	struct ke1_s **stack;        // stack for the evaluation of the program
 	struct ke1_s ** tokens;     // array of pointers of all program tokens
 	int mem_count;          // current count of memory allocation
 							  // parser variables
