@@ -22,8 +22,8 @@ int main(int argc, char *argv[])
 	SetConsoleCP(CP_UTF8);
 #endif
 	printf("%d\n", (int)sizeof(struct ke1_s));
-    int MAX = 1;
-	int c = 0 , err = 0 , to_print = 0 , is_console = 0 , is_one_expr = 0, is_file = 1; //, is_int = 0;
+	int MAX = 1;
+	int c = 0, err = 0, to_print = 0, is_console = 0, is_one_expr = 0, is_file = 1; //, is_int = 0;
 	kexpr_t *ke;
 
 	if (argc == 1) {
@@ -42,55 +42,49 @@ int main(int argc, char *argv[])
 	//}
 	sml_t * sml = ke_create_sml();
 	ke_init_memory_count(sml);
-    utf8 *str = NULL;
+	utf8 *str = NULL;
 	if (is_file) {
 		str = read_utf8_file(argv[1]);
-	} else if (is_one_expr) {
-        str = argv[1];
+	}
+	else if (is_one_expr) {
+		str = argv[1];
 	}
 
 	if (!is_console) {
-        ke_fill_hash(sml);
-        ke = ke_parse(sml,str, &err);
-		int status = ke_fill_list(sml,ke);
+		ke_fill_hash(sml);
+		ke = ke_parse(sml, str, &err);
+		int status = ke_fill_list(sml, ke);
 		if (status == -1 || err || ke == NULL) {
-            fprintf(stderr, "\nParse error: 0x%x\n", err);
-            ke_free_val(sml);
-            ke_free_hash(sml);
-            return 1;
-        }
+			fprintf(stderr, "\nParse error: 0x%x\n", err);
+			ke_free_val(sml);
+			ke_free_hash(sml);
+			return 1;
+		}
 
-        for(int i = 0; i < MAX; ++i) {
-            if (!to_print) {
-				int64_t vi;
-                double vr;
-                char *vs;
-                int ret_type;
-                clock_t start_t = clock();
-                err |= ke_eval(sml,ke, &vi, &vr, &vs, &ret_type);
-                clock_t end_t = clock();
-                double total_t = (double)((double)end_t - start_t) / CLOCKS_PER_SEC;
-                printf("Total time taken by CPU: %.6lf second\n", total_t );
-                //printf("\n[ht_timing] %.6lf sec\n", (double)(clock() - t) / CLOCKS_PER_SEC);
-                if (err) {
-                    fprintf(stderr, "\nParse error: 0x%x\n", err);
-                    ke_free(sml,ke);
-					ke_free_tokens(sml);
-					ke_free_val(sml);
-                    ke_free_hash(sml);
-                    exit(1);
-                }
-            } else ke_print(sml,ke);
-        }
-        //printf("\n[ht_timing] %.6lf sec\n", (double)(clock() - t) / CLOCKS_PER_SEC);
-        if (is_file) {
-            free(str);
-        }
+		if (!to_print) {
+			int64_t vi;
+			double vr;
+			char *vs;
+			int ret_type;
+			clock_t start_t = clock();
+			err |= ke_eval(sml, ke, &vi, &vr, &vs, &ret_type);
+			clock_t end_t = clock();
+			double total_t = (double)((double)end_t - start_t) / CLOCKS_PER_SEC;
+			printf("Total time taken by CPU: %.6lf second\n", total_t);
+		}
+		else ke_print(sml, ke);
+		if (is_file) {
+			free(str);
+		}
 		ke_free_tokens(sml);
 		ke_free_val(sml);
-        ke_destroy(sml,ke);
-	}
-    else {
+		ke_destroy(sml, ke);
+
+		free(sml);
+		if (err) {
+			fprintf(stderr, "\nParse error: 0x%x\n", err);
+		}
+	} else {
         ke_fill_hash(sml);
         char str[1000];
 

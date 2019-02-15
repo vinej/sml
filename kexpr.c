@@ -195,14 +195,14 @@ void ke_free_memory(sml_t *sml, void * m) {
 char *ke_mystrndup(sml_t *sml, char *src, size_t n)
 {
 	char *dst;
-	dst = (char*)calloc(n + 1, 1);
+	dst = (char*)calloc(n+1, 1);
 	if (dst == NULL) {
 		printf("out of memory at ke_mystrndup");
 		printf("TODO clean up the memory");
 		abort();
 	}
 	++sml->mem_count;
-	strncpy(dst, src, n);
+	memcpy(dst, src, n);
 	return dst;
 }
 
@@ -816,9 +816,9 @@ ke1_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
 }
 
 void ke_free_val(sml_t *sml) {
-	for(int i = 1; i < sml->field_qte; ++i) {
+	for(int i = 0; i < sml->field_qte; ++i) {
 		ke1_t*fieldp = sml->fields[i];
-        ke_free_memory(sml, fieldp->name);
+        //ke_free_memory(sml, fieldp->name);
 		if (fieldp->vtype == KEV_MAT && fieldp->obj.matrix) {
 			ke_matrix_freemem(sml,fieldp);
 		} else if (fieldp->vtype == KEV_VEC && fieldp->obj.vector) {
@@ -856,7 +856,7 @@ int ke_fill_list(sml_t *sml, kexpr_t *ke)
         if (tokp->ttype == KET_VNAME) {
 			ne = sml->fields[tokp->ifield];
 			if (ne == NULL) {
-				char * newname = ke_mystrndup(sml, tokp->name, strlen(tokp->name));
+				//char * newname = ke_mystrndup(sml, tokp->name, strlen(tokp->name));
 				ne = ke_malloc_memory(sml, sizeof(ke1_t));
 				if (ne == NULL) {
 					printf("out of memory at ke_fill_list");
@@ -869,7 +869,7 @@ int ke_fill_list(sml_t *sml, kexpr_t *ke)
 				else {
 					memcpy(ne, tokp, sizeof(ke1_t));
 				}
-				ne->name = newname;
+				ne->name = tokp->name;
 				sml->fields[tokp->ifield] = ne;
             }
 			tokp = ne;
@@ -1202,7 +1202,6 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 		sml->tok_idx = itok;
 		//ke1_t *e = &ke->e[i];
 		tokp = tokens[itok];
-
 		switch (tokp->ttype) {
 		case KET_CMD:
 			top = (tokp->f.defcmd)(sml, kexpr, tokp, top, &itok);

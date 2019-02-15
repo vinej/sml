@@ -1,5 +1,6 @@
 #ifndef KEXPR_H
 #define KEXPR_H
+#pragma warning( disable : 991)
 
 #include <gsl/gsl_vector.h>
 #include <gsl/gsl_matrix.h>
@@ -116,6 +117,7 @@ KHASH_MAP_INIT_STR(5, fncp)
 KHASH_MAP_INIT_STR(6, int)
 
 #pragma warning( push )
+#pragma warning( disable : 273)
 #pragma warning( disable : 4018)
 #pragma warning( disable : 4334)
 #pragma warning( disable : 4627)

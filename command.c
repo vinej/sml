@@ -374,7 +374,7 @@ void ke_vcommand_hash_add(sml_t* sml, vcmdp key, char * name) {
 
 void ke_command_hash(sml_t* sml) {
 	sml->callstack = kdq_init(int); ke_inc_memory(sml);
-	sml->harg = stack_create(16);
+	sml->harg = stack_create(16); ke_inc_memory(sml);
 	sml->hcommand = kh_init(0); ke_inc_memory(sml);
 	sml->hvcommand = kh_init(1); ke_inc_memory(sml);
 	sml->hidefcommand = kh_init(3); ke_inc_memory(sml);

@@ -1,3 +1,5 @@
+#pragma warning( disable : 991)
+/*
 // stb_sprintf - v1.05 - public domain snprintf() implementation
 // originally by Jeff Roberts / RAD Game Tools, 2015/10/20
 // http://github.com/nothings/stb
@@ -19,6 +21,7 @@
 // LICENSE:
 //
 //   See end of file for license information.
+*/
 #include <stdint.h>
 
 #ifndef STB_SPRINTF_H_INCLUDE
