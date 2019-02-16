@@ -219,6 +219,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="buildin.h" />
     <ClInclude Include="command.h" />
     <ClInclude Include="complex.h" />
     <ClInclude Include="constants.h" />
@@ -240,6 +241,7 @@
     <ClInclude Include="vector.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="buildin.c" />
     <ClCompile Include="command.c" />
     <ClCompile Include="complex.c" />
     <ClCompile Include="constants.c" />

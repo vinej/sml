@@ -18,6 +18,7 @@
 #include "date.h"
 #include "command.h"
 #include "utf8.h"
+#include "buildin.h"
 
 #if defined(_MSC_VER) || defined(_WIN32)
 #include <Windows.h>
@@ -59,61 +60,6 @@ static const char *ke_opstr[] = {
 	"=" ,
 	";"
 };
-
-/**********************
- * Operator functions *
- **********************/
-
-#define KE_GEN_CMP(_type, _op) \
-	static void ke_op_##_type(ke1_t *p, ke1_t *q) { \
-		if (p->vtype == KEV_STR && q->vtype == KEV_STR) p->i = (strcmp(p->obj.s, q->obj.s) _op 0); \
-		else p->i = p->vtype == KEV_REAL || q->vtype == KEV_REAL? (p->r _op q->r) : (p->i _op q->i); \
-		p->r = (double)p->i; \
-		p->vtype = KEV_INT; \
-	}
-
-KE_GEN_CMP(KEO_LT, <)
-KE_GEN_CMP(KEO_LE, <=)
-KE_GEN_CMP(KEO_GT, >)
-KE_GEN_CMP(KEO_GE, >=)
-KE_GEN_CMP(KEO_EQ, ==)
-KE_GEN_CMP(KEO_NE, !=)
-
-#define KE_GEN_BIN_INT(_type, _op) \
-	static void ke_op_##_type(ke1_t *p, ke1_t *q) { \
-		p->i _op q->i; p->r = (double)p->i; \
-		p->vtype = KEV_INT; \
-	}
-
-KE_GEN_BIN_INT(KEO_BAND, &=)
-KE_GEN_BIN_INT(KEO_BOR, |=)
-KE_GEN_BIN_INT(KEO_BXOR, ^=)
-KE_GEN_BIN_INT(KEO_LSH, <<=)
-KE_GEN_BIN_INT(KEO_RSH, >>=)
-KE_GEN_BIN_INT(KEO_MOD, %=)
-KE_GEN_BIN_INT(KEO_IDIV, /=)
-
-#define KE_GEN_BIN_BOTH(_type, _op) \
-	static void ke_op_##_type(ke1_t *p, ke1_t *q) { \
-		p->i _op q->i; p->r _op q->r; \
-		p->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL? KEV_REAL : KEV_INT; \
-	}
-
-KE_GEN_BIN_BOTH(KEO_ADD, +=)
-KE_GEN_BIN_BOTH(KEO_SUB, -=)
-KE_GEN_BIN_BOTH(KEO_MUL, *=)
-
-static void ke_op_KEO_DIV(ke1_t *p, ke1_t *q)  { p->r /= q->r, p->i = (int64_t)(p->r + .5); p->vtype = KEV_REAL; }
-static void ke_op_KEO_LAND(ke1_t *p, ke1_t *q) { p->i = (p->i && q->i); p->r = (double)p->i; p->vtype = KEV_INT; }
-static void ke_op_KEO_LOR(ke1_t *p, ke1_t *q)  { p->i = (p->i || q->i); p->r = (double)p->i; p->vtype = KEV_INT; }
-static void ke_op_KEO_POW(ke1_t *p, ke1_t *q)  { p->r = pow(p->r, q->r), p->i = (int64_t)(p->r + .5); p->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL? KEV_REAL : KEV_INT; }
-static void ke_op_KEO_BNOT(ke1_t *p, ke1_t *q) { p->i = ~p->i; p->r = (double)p->i; p->vtype = KEV_INT; }
-static void ke_op_KEO_LNOT(ke1_t *p, ke1_t *q) { p->i = !p->i; p->r = (double)p->i; p->vtype = KEV_INT; }
-static void ke_op_KEO_POS(ke1_t *p, ke1_t *q)  { } // do nothing
-static void ke_op_KEO_NOP(ke1_t *p, ke1_t *q)  { } // do nothing
-static void ke_op_KEO_NEG(ke1_t *p, ke1_t *q)  { p->i = -p->i, p->r = -p->r; }
-
-static void ke_func1_abs(ke1_t *p, ke1_t *q) { if (p->vtype == KEV_INT) p->i = (int64_t)abs((int)p->i), p->r = (double)p->i; else p->r = fabs(p->r), p->i = (int64_t)(p->r + .5); }
 
 // VALIDATION
 

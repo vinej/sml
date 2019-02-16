@@ -72,6 +72,9 @@
     <ClInclude Include="date.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="buildin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="command.c">
@@ -117,6 +120,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="date.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="buildin.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
