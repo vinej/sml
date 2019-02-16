@@ -7,7 +7,7 @@ int ke_str_prop_get_0par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 	// b = a[1]  =>  1 a(1) =
 	ke1_t *out, *prop;
 	prop = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = utf8len(prop->obj.s);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -21,7 +21,7 @@ int ke_str_prop_get_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 	ke1_t *out, *prop, *indice;
 	prop = stack[--top];
 	indice = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 
 	if (indice->vtype == KEV_STR) {
 		out->i = utf8strstr(prop->obj.s, indice->obj.s);
@@ -50,7 +50,7 @@ int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 	prop = stack[--top];
 	to = stack[--top];
 	from = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	int64_t to_i = to->i;
 	int64_t from_i = from->i;
 
@@ -126,24 +126,24 @@ static int ke_strbuf(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->st
 	ke1_t *p, *q;
 	q = stack[--top];
 	p = stack[--top];
-	sml->fields[p->ifield]->obj.s = ke_calloc_memory(sml,(size_t)q->i,1);
-	sml->fields[p->ifield]->ttype = KET_VAL;
-	sml->fields[p->ifield]->vtype = KEV_STR;
+	p->obj.s = ke_calloc_memory(sml,(size_t)q->i,1);
+	p->ttype = KET_VAL;
+	p->vtype = KEV_STR;
 	return top;
 }
 
 static int ke_strfree(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
 	ke1_t *p;
 	p = stack[--top];
-	ke_free_memory(sml, sml->fields[p->ifield]->obj.s);
-	sml->fields[p->ifield]->obj.s = NULL;
+	ke_free_memory(sml, p->obj.s);
+	p->obj.s = NULL;
 	return top;
 }
 
 static int ke_strlen(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
    	ke1_t *out,*p;
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = utf8len(p->obj.s);
 	out->r = (double)out->i;
 	out->obj.s = NULL;
@@ -156,7 +156,7 @@ static int ke_strcmp(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->st
    	ke1_t *out, *p, *q;
     q = stack[--top];
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
     p->i = utf8cmp(p->obj.s, q->obj.s);
     p->obj.s = NULL;
     p->ttype = KET_VAL;

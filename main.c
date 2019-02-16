@@ -17,10 +17,10 @@ void ht_timing(void (*f)(void))
 
 int main(int argc, char *argv[])
 {
-#ifdef __WIN32
+	//#ifdef __WIN32
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
-#endif
+	//#endif
 	printf("%d\n", (int)sizeof(struct ke1_s));
 	int MAX = 1;
 	int c = 0, err = 0, to_print = 0, is_console = 0, is_one_expr = 0, is_file = 1; //, is_int = 0;
@@ -53,7 +53,12 @@ int main(int argc, char *argv[])
 	if (!is_console) {
 		ke_fill_hash(sml);
 		ke = ke_parse(sml, str, &err);
-		int status = ke_fill_list(sml, ke);
+		int status = 0;
+		if (ke != NULL) {
+			status = ke_fill_list(sml, ke);
+		} else {
+			status = -1;
+		}
 		if (status == -1 || err || ke == NULL) {
 			fprintf(stderr, "\nParse error: 0x%x\n", err);
 			ke_free_val(sml);
@@ -89,7 +94,7 @@ int main(int argc, char *argv[])
         char str[1000];
 
         while(1) {
-            printf( "jyv>>> : Vava2019");
+            printf( "jyv>>> : ");
             fgets( str,999,stdin );
             char * p = str;
             while(*p) {

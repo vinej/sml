@@ -199,6 +199,7 @@ int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens) {
 					}
 					tokp->ijmp = popfor(sml);
 				}
+				break;
 			default:
 				break;
 			}
@@ -263,10 +264,9 @@ int ke_command_exe(sml_t* sml, kexpr_t *kexpr, ke1_t *tokp, int top, int * itokp
 		stack_push(sml->harg, k);
 		narg--;
 	}
-	p = stack[top - 1];
+	p = stack[--top];
 	kdq_push(int, sml->callstack, *itokp);
 	*itokp = tokp->ijmp;
-	--top;
 	return top;
 }
 

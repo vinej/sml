@@ -107,7 +107,8 @@ typedef struct ke1_s* ke1_p;
 typedef int(*cmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s*, int, int *);
 typedef int(*fncp)(struct sml_s * sml, struct ke1_s* s, int);
 typedef int(*vcmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s* s, int);
-typedef void(*dllke_hash_add_t)(struct sml_s *sml, fncp key, char * name);
+typedef void(__cdecl *dllke_hash_add_t)(struct sml_s *sml, fncp key, char * name);
+typedef void(__cdecl *dllke_get_out_t)(struct sml_s *sml);
 
 KHASH_MAP_INIT_STR(0, cmdp)
 KHASH_MAP_INIT_STR(1, vcmdp)
@@ -128,7 +129,8 @@ KDQ_INIT(int)
 struct sml_s;
 typedef struct sml_s {
 	// GLOBAL VARIABLE USED BY ALL FUNCTIONS
-	struct ke1_s *out;
+	struct ke1_s **out;
+	int out_qte;
 	struct ke1_s ** fields; // array of all global fields of the program to exectue
 	int field_qte;      // number of global fields  
 	int tok_idx;            // current program token index
@@ -162,6 +164,7 @@ typedef struct sml_s {
 	int g_fortop;
 	int lastDef;
 	dllke_hash_add_t dllke_hash_add;
+	dllke_get_out_t dllke_get_out;
 } sml_t;
 
 struct kexpr_s;
@@ -267,6 +270,6 @@ void ke_set_val_index(sml_t * sml, int i, ke1_t *q);
 ke1_t * ke_get_tok(sml_t * sml);
 ke1_t * ke_get_tokidx(sml_t * sml, int idx);
 ke1_t* ke_get_val_index(sml_t * sml, int i);
-
+ke1_t * ke_get_out(sml_t *sml);
 #endif
 

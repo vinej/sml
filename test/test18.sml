@@ -225,9 +225,9 @@ else
 end
 
 if (12 % 5 == 2)
-	print('success : % (mod)')
+	print('success : \%(mod)')
 else
-	print('failed : % (mod)')
+	print('failed : (mod)')
 end
 
 if (gcd(81,153) == 9)

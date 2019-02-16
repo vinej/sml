@@ -9,7 +9,7 @@ static int ke_matrix_alloc(sml_t* sml, ke1_t *tokp, int top) {
    	ke1_t *out, *p, *q;
     q = stack[--top],
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
     out->obj.matrix = gsl_matrix_alloc((size_t)p->i, (size_t)q->i); 
 	ke_inc_memory(sml);
 	out->ttype = KET_VAL;
@@ -23,7 +23,7 @@ int ke_matrix_prop_get(sml_t* sml, ke1_t *tokp, int top) {
 	p = stack[--top];
 	v = stack[--top];
 	q = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->r = gsl_matrix_get(p->obj.matrix, (size_t)q->i, (size_t)v->i);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_REAL;
@@ -37,7 +37,7 @@ int ke_matrix_get(sml_t* sml, ke1_t *tokp, int top) {
     v = stack[--top],
     q = stack[--top],
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->r = gsl_matrix_get(p->obj.matrix, (size_t)q->i, (size_t)v->i);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_REAL;
@@ -255,7 +255,7 @@ static int ke_matrix_min(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
    	ke1_t *out, *p;
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->r = gsl_matrix_min(p->obj.matrix);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_REAL;
@@ -267,7 +267,7 @@ static int ke_matrix_max(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->r = gsl_matrix_max(p->obj.matrix);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_REAL;
@@ -279,7 +279,7 @@ static int ke_matrix_isnull(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_matrix_isnull(p->obj.matrix);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_INT;
@@ -291,7 +291,7 @@ static int ke_matrix_ispos(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_matrix_ispos(p->obj.matrix);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_INT;
@@ -303,7 +303,7 @@ static int ke_matrix_isneg(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_matrix_isneg(p->obj.matrix);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_INT;
@@ -315,7 +315,7 @@ static int ke_matrix_isnonneg(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_matrix_isnonneg(p->obj.matrix);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_INT;
@@ -328,7 +328,7 @@ static int ke_matrix_equal(sml_t* sml, ke1_t *tokp, int top) {
    	ke1_t *out, *p, *q;
     q = stack[--top],
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_matrix_equal(p->obj.matrix, q->obj.matrix);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_INT;
@@ -338,7 +338,7 @@ static int ke_matrix_equal(sml_t* sml, ke1_t *tokp, int top) {
 
 static int ke_matrix_fscanf(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
+	ke1_t *p, *q;
 	q = stack[--top],
 	p = stack[--top];
 	FILE * f = fopen(q->obj.s, "r");

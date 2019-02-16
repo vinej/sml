@@ -20,7 +20,7 @@ static int ke_file_alloc_buffer(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_INT, "buffer_size", FILE_NEWBUFFER);
 	ke_validate_parameter_int_gt_zero(p, "buffer_size", FILE_NEWBUFFER);
@@ -88,7 +88,7 @@ static int ke_file_feof(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FEOF);
 #endif // SML_VALIDATION
@@ -108,7 +108,7 @@ static int ke_file_ferror(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FERROR);
 #endif // SML_VALIDATION
@@ -145,7 +145,7 @@ static int ke_file_fgetpos(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->vtype = KEV_INT;
 	out->ttype = KET_VAL;
 	out->r = (double)p->i;
@@ -162,7 +162,7 @@ static int ke_file_fopen(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *out, *p, *mode;
 	mode = stack[--top];
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_STR, "filename", FILE_FOPEN);
 	ke_validate_parameter_vtype(mode, KEV_STR, "mode", FILE_FOPEN);
@@ -185,7 +185,7 @@ static int ke_file_fread(sml_t* sml, ke1_t *tokp, int top) {
 	nmemb = stack[--top];
 	size = stack[--top];
 	ptr = stack[--top ];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(ptr, KEV_BUFFER, "buffer_name", FILE_FREAD);
 	ke_validate_parameter_vtype(size, KEV_INT, "size", FILE_FREAD);
@@ -211,7 +211,7 @@ static int ke_file_freopen(sml_t* sml, ke1_t *tokp, int top) {
 	stream = stack[--top];
 	mode = stack[--top];
 	filename = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(filename, KEV_STR, "filename", FILE_FREOPEN);
 	ke_validate_parameter_vtype(mode, KEV_STR, "mode", FILE_FREOPEN);
@@ -273,7 +273,7 @@ static int ke_file_ftell(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FSETPOS);
 #endif // SML_VALIDATION
@@ -296,7 +296,7 @@ static int ke_file_fwrite(sml_t* sml, ke1_t *tokp, int top) {
 	nmemb = stack[--top];
 	size = stack[--top];
 	ptr = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(ptr, KEV_BUFFER, "buffer_name", FILE_FWRITE);
 	ke_validate_parameter_vtype(nmemb, KEV_INT, "nmemb", FILE_FWRITE);
@@ -352,7 +352,7 @@ static int ke_file_rewind(sml_t* sml, ke1_t *tokp, int top) {
 #ifdef _DEBUG
 	ke_validate_parameter_qte(tokp, 1, FILE_REWIND);
 #endif // SML_VALIDATION
-	ke1_t *stream;
+	ke1_t *stream = stack[--top];
 	--top;  // don't need out
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(stream, KEV_STR, "file", FILE_REWIND);
@@ -413,7 +413,7 @@ static int ke_file_tmpfile(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->obj.file = tmpfile();
 	out->vtype = KEV_FILE;
 	out->ttype = KET_VAL;
@@ -429,20 +429,9 @@ static int ke_file_tmpnam(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	char * buf = ke_calloc_memory(sml, MAX_BUF + 1, 1);
-	//if (mkstemp(buf) == 0) {
-	//	printf("Error: ke_file_tmpnam");
-	//}
-	if (p->vtype == KEV_STR) {
-		ke_free_memory(sml, sml->fields[p->ifield]->obj.s);
-	}
-	else {
-		sml->fields[p->ifield]->vtype = KEV_STR;
-	}
 	size_t len = strlen(buf);
-	sml->fields[p->ifield]->obj.s = ke_malloc_memory(sml,len + 1);
-	memcpy(sml->fields[p->ifield]->obj.s, buf, len + 1);
 	out->vtype = KEV_STR;
 	out->obj.s = buf;
 	return top;
@@ -536,9 +525,9 @@ static int ke_file_xvfprintf(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	if (tokp->n_args > 3) {
 		char * va = gen_valist(sml, (size_t)tokp->n_args - 2, top);
-		stbsp_vsprintf(sml->fields[buf->ifield]->obj.s, format->obj.s, va);
-		strrepl(sml->fields[buf->ifield]->obj.s, "\\n", "\n");
-		fputs(sml->fields[buf->ifield]->obj.s, stream->obj.file);
+		stbsp_vsprintf(buf->obj.s, format->obj.s, va);
+		strrepl(buf->obj.s, "\\n", "\n");
+		fputs(buf->obj.s, stream->obj.file);
 		ke_free_memory(sml,va);
 	}
 	else {
@@ -588,9 +577,9 @@ static int ke_file_xvprintf(sml_t* sml, ke1_t *tokp, int top) {
 
 	if (tokp->n_args > 2) {
 		char * va = gen_valist(sml,(size_t)tokp->n_args - 1, top);
-		stbsp_vsprintf(sml->fields[buf->ifield]->obj.s, format->obj.s, (char *)va);
-		strrepl(sml->fields[buf->ifield]->obj.s, "\\n", "\n");
-		fputs(sml->fields[buf->ifield]->obj.s, stdout);
+		stbsp_vsprintf(buf->obj.s, format->obj.s, (char *)va);
+		strrepl(buf->obj.s, "\\n", "\n");
+		fputs(buf->obj.s, stdout);
 		ke_free_memory(sml,va);
 		gen_freelist(sml,(size_t)tokp->n_args - 1, top);
 	}
@@ -625,8 +614,8 @@ static int ke_file_vsprintf(sml_t* sml, ke1_t *tokp, int top) {
 	char * str2 = ke_malloc_memory(sml,len + 1);
 	memcpy(str2, buf, len + 1);
 	ke_free_memory(sml,buf);
-	sml->fields[str->ifield]->obj.s = str2;
-	sml->fields[str->ifield]->vtype = KEV_STR;
+	str->obj.s = str2;
+	str->vtype = KEV_STR;
 	gen_freelist(sml, (size_t)tokp->n_args, top);
 	return top - tokp->n_args;
 }
@@ -642,7 +631,7 @@ static int ke_file_xvsprintf(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	if (tokp->n_args > 2) {
 		char * va = gen_valist(sml,(size_t)tokp->n_args - 1, top);
-		stbsp_vsprintf(sml->fields[buf->ifield]->obj.s, format->obj.s, va);
+		stbsp_vsprintf(buf->obj.s, format->obj.s, va);
 		ke_free_memory(sml,va);
 	}
 	else {
@@ -659,15 +648,15 @@ void** gen_scan_valist(sml_t*sml, size_t n_args, int top) {
 	for (int i = top - (int)n_args + 1, j = 0; i < top; i++, j++) {
 		q = stack[i];
 		if (q->vtype == KEV_STR) {
-			ke_free_memory(sml,sml->fields[q->ifield]->obj.s);
-			sml->fields[q->ifield]->obj.s = ke_calloc_memory(sml,MAX_BUF+1, 1);
-			va[j] = (char*)sml->fields[q->ifield]->obj.s; /* puts the next value */
+			ke_free_memory(sml, q->obj.s);
+			q->obj.s = ke_calloc_memory(sml,MAX_BUF+1, 1);
+			va[j] = (char*)q->obj.s; /* puts the next value */
 		}
 		else if (q->vtype == KEV_INT) {
-			va[j] = (int64_t *)&(sml->fields[q->ifield]->i);
+			va[j] = (int64_t *)&(q->i);
 		}
 		else if (q->vtype == KEV_REAL) {
-			va[j] = (double *)&(sml->fields[q->ifield]->r);
+			va[j] = (double *)&(q->r);
 		}
 	}
 	return va;
@@ -680,13 +669,13 @@ void ** gen_xscan_valist(sml_t*sml, size_t n_args, int top) {
 	for (int i = top - (int)n_args + 1, j = 0; i < top; i++, j++) {
 		q = stack[i];
 		if (q->vtype == KEV_STR) {
-			va[j] = sml->fields[q->ifield]->obj.s; /* puts the next value */
+			va[j] = q->obj.s; /* puts the next value */
 		}
 		else if (q->vtype == KEV_INT) {
-			va[j] = (int*)&(sml->fields[q->ifield]->i);
+			va[j] = (int*)&(q->i);
 		}
 		else if (q->vtype == KEV_REAL) {
-			va[j] = (double*)&(sml->fields[q->ifield]->r);
+			va[j] = (double*)&(q->r);
 		}
 	}
 	return va;
@@ -698,16 +687,16 @@ void set_i_r(sml_t*sml, size_t n_args, int top) {
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = stack[i];
 		if (q->vtype == KEV_STR) {
-			size_t len = strlen(sml->fields[q->ifield]->obj.s);
+			size_t len = strlen(q->obj.s);
 			char * tmp = ke_calloc_memory(sml,len + 1,1);
-			memcpy(tmp, sml->fields[q->ifield]->obj.s, len + 1);
-			ke_free_memory(sml,sml->fields[q->ifield]->obj.s);
-			sml->fields[q->ifield]->obj.s = tmp;
+			memcpy(tmp, q->obj.s, len + 1);
+			ke_free_memory(sml,q->obj.s);
+			q->obj.s = tmp;
 		} else if (q->vtype == KEV_INT) {
-			sml->fields[q->ifield]->r = (double)sml->fields[q->ifield]->i;
+			q->r = (double)q->i;
 		}
 		else if (q->vtype == KEV_REAL) {
-			sml->fields[q->ifield]->i = (int64_t)sml->fields[q->ifield]->r;
+			q->i = (int64_t)q->r;
 		}
 	}
 }
@@ -718,10 +707,10 @@ void set_xi_r(sml_t*sml, size_t n_args, int top) {
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = stack[i];
 		if (q->vtype == KEV_INT) {
-			sml->fields[q->ifield]->r = (double)sml->fields[q->ifield]->i;
+			q->r = (double)q->i;
 		}
 		else if (q->vtype == KEV_REAL) {
-			sml->fields[q->ifield]->i = (int64_t)sml->fields[q->ifield]->r;
+			q->i = (int64_t)q->r;
 		}
 	}
 }
@@ -886,7 +875,7 @@ static int ke_file_fgetc(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = fgetc(p->obj.file);
 	out->vtype = KEV_INT;
 	out->ttype = KET_VAL;
@@ -911,14 +900,14 @@ static int ke_file_fgets(sml_t* sml, ke1_t *tokp, int top) {
 		//printf("Error: ke_file_fgets");
 	}
 	if (str->vtype == KEV_STR) {
-		ke_free_memory(sml, sml->fields[str->ifield]->obj.s);
+		ke_free_memory(sml, str->obj.s);
 	}
 	else {
-		sml->fields[str->ifield]->vtype = KEV_STR;
+		str->vtype = KEV_STR;
 	}
 	size_t len = strlen(buf);
-	sml->fields[str->ifield]->obj.s = ke_calloc_memory(sml,len + 1,1);
-	memcpy(sml->fields[str->ifield]->obj.s, buf, len + 1);
+	str->obj.s = ke_calloc_memory(sml,len + 1,1);
+	memcpy(str->obj.s, buf, len + 1);
 	return top;
 }
 
@@ -932,7 +921,7 @@ static int ke_file_xfgets(sml_t* sml, ke1_t *tokp, int top) {
 	file = stack[--top];
 	size = stack[--top];
 	buf = stack[--top];
-	if ( fgets(sml->fields[buf->ifield]->obj.s, (int)size->i, file->obj.file) == NULL) {
+	if ( fgets(buf->obj.s, (int)size->i, file->obj.file) == NULL) {
 		//printf("Error: ke_file_xfgets");
 	}
 	return top;
@@ -976,7 +965,7 @@ static int ke_file_getc(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top ];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = fgetc(p->obj.file);
 	out->vtype = KEV_INT;
 	out->ttype = KET_VAL;
@@ -993,7 +982,7 @@ static int ke_file_getchar(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = getchar();
 	out->vtype = KEV_INT;
 	out->ttype = KET_VAL;
@@ -1015,14 +1004,14 @@ static int ke_file_gets(sml_t* sml, ke1_t *tokp, int top) {
 		printf("Error: ke_file_gets");
 	}
 	if (str->vtype == KEV_STR) {
-		ke_free_memory(sml,sml->fields[str->ifield]->obj.s);
+		ke_free_memory(sml,str->obj.s);
 	}
 	else {
-		sml->fields[str->ifield]->vtype = KEV_STR;
+		str->vtype = KEV_STR;
 	}
 	size_t len = strlen(buf);
-	sml->fields[str->ifield]->obj.s = ke_calloc_memory(sml, len + 1,1);
-	memcpy(sml->fields[str->ifield]->obj.s, buf, len + 1);
+	str->obj.s = ke_calloc_memory(sml, len + 1,1);
+	memcpy(str->obj.s, buf, len + 1);
 	return top;
 }
 
@@ -1035,7 +1024,7 @@ static int ke_file_xgets(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *buf, *size;
 	size = stack[--top];
 	buf = stack[--top];
-	if ( fgets(sml->fields[buf->ifield]->obj.s, (int)size->i, stdin) == 0) {
+	if ( fgets(buf->obj.s, (int)size->i, stdin) == 0) {
 		printf("Error ke_file_xgets");
 	}
 	return top;
@@ -1108,15 +1097,15 @@ static int ke_file_perror(sml_t* sml, ke1_t *tokp, int top) {
 	char * buf = ke_calloc_memory(sml,MAX_BUF+1, 1);
 	perror(buf);
 	if (str->vtype == KEV_STR) {
-		ke_free_memory(sml, sml->fields[str->ifield]->obj.s);
+		ke_free_memory(sml, str->obj.s);
 	}
 	else {
-		sml->fields[str->ifield]->vtype = KEV_STR;
+		str->vtype = KEV_STR;
 	}
 
 	size_t len = strlen(buf);
-	sml->fields[str->ifield]->obj.s = ke_calloc_memory(sml,len + 1,1);
-	memcpy(sml->fields[str->ifield]->obj.s, buf, len + 1);
+	str->obj.s = ke_calloc_memory(sml,len + 1,1);
+	memcpy(str->obj.s, buf, len + 1);
 	return top;
 }
 

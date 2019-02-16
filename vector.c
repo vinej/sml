@@ -9,7 +9,7 @@ static int ke_vector_alloc(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
    	ke1_t *out, *p;
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->obj.vector = gsl_vector_alloc((size_t)p->i); 
 	ke_inc_memory(sml);
 	out->ttype = KET_VAL;
@@ -21,7 +21,7 @@ static int ke_vector_int_alloc(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->obj.vector_int = gsl_vector_int_alloc((size_t)p->i);
 	ke_inc_memory(sml);
 	out->ttype = KET_VAL;
@@ -50,7 +50,7 @@ int ke_vector_get(sml_t* sml, ke1_t *tokp, int top) {
    	ke1_t *out, *p, *q;
 	p = stack[--top];
 	q = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->r = gsl_vector_get(p->obj.vector, (size_t)q->i);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_REAL;
@@ -63,7 +63,7 @@ int ke_vector_int_get(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *out, *p, *q;
 	p = stack[--top];
 	q = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_int_get(p->obj.vector_int, (size_t)q->i);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_INT;
@@ -296,7 +296,7 @@ static int ke_vector_int_add_constant(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *p, *q;
 	q = stack[--top];
-	p = stack[top - 1];
+	p = stack[--top];
 	gsl_vector_int_add_constant(p->obj.vector_int, (int)q->i);
 	return top;
 }
@@ -377,7 +377,7 @@ static int ke_vector_min(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
    	ke1_t *out, *p;
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->r = gsl_vector_min(p->obj.vector);
 	out->ttype = KET_VAL;
 	out->vtype = KEV_REAL;
@@ -389,7 +389,7 @@ static int ke_vector_int_min(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i= gsl_vector_int_min(p->obj.vector_int);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -402,7 +402,7 @@ static int ke_vector_max(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->r = gsl_vector_max(p->obj.vector);
 	out->i = (int64_t)out->r;
 	out->ttype = KET_VAL;
@@ -415,7 +415,7 @@ static int ke_vector_int_max(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_int_max(p->obj.vector_int);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -428,7 +428,7 @@ static int ke_vector_isnull(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_isnull(p->obj.vector);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -441,7 +441,7 @@ static int ke_vector_int_isnull(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_int_isnull(p->obj.vector_int);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -454,7 +454,7 @@ static int ke_vector_ispos(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_ispos(p->obj.vector);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -467,7 +467,7 @@ static int ke_vector_int_ispos(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_int_ispos(p->obj.vector_int);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -480,7 +480,7 @@ static int ke_vector_isneg(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_isneg(p->obj.vector);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -493,7 +493,7 @@ static int ke_vector_int_isneg(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_int_isneg(p->obj.vector_int);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -506,7 +506,7 @@ static int ke_vector_isnonneg(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_isnonneg(p->obj.vector);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -519,7 +519,7 @@ static int ke_vector_int_isnonneg(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *out, *p;
 	p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_int_isnonneg(p->obj.vector_int);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -533,7 +533,7 @@ static int ke_vector_equal(sml_t* sml, ke1_t *tokp, int top) {
    	ke1_t *out, *p, *q;
     q = stack[--top],
     p = stack[--top];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_equal(p->obj.vector, q->obj.vector);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;
@@ -547,7 +547,7 @@ static int ke_vector_int_equal(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *out, *p, *q;
 	q = stack[--top];
 	p = stack[--top ];
-	stack[top++] = sml->out; out = sml->out;
+	stack[top] = ke_get_out(sml); out = stack[top++];
 	out->i = gsl_vector_int_equal(p->obj.vector_int, q->obj.vector_int);
 	out->r = (double)out->i;
 	out->ttype = KET_VAL;

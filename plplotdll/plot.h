@@ -1,7 +1,15 @@
 #ifndef PLOT_H_INCLUDED
 #define PLOT_H_INCLUDED
 
-void ke_plot_hash();
+#if defined(_MSC_VER) || defined(_WIN32)
+#define SML_EXPORT __declspec(dllexport) 
+#define SML_CALL __cdecl
+#else
+#define SML_EXPORT __declspec(dllexport) 
+#define SML_CALL __cdecl
+#endif
+
+SML_EXPORT void SML_CALL dllke_plot_hash(sml_t* sml);
 
 #define PLOT_IMLOAD "plimload"
 #define PLOT_IMFREE "plimfree"
