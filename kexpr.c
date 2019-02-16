@@ -166,6 +166,11 @@ sml_t * ke_create_sml() {
 	return sml;
 }
 
+void ke_free_sml(sml_t *sml) {
+	free(sml->out);
+	free(sml);
+}
+
 // MEMORY ALLOCATION FUNCTIONS
 void ke_init_memory_count(sml_t *sml) {
 	sml->mem_count = 0;

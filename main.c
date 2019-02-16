@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 		ke_free_val(sml);
 		ke_destroy(sml, ke);
 
-		free(sml);
+		ke_free_sml(sml);
 		if (err) {
 			fprintf(stderr, "\nParse error: 0x%x\n", err);
 		}

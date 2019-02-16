@@ -229,6 +229,7 @@ void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * func
 #endif // _DEBUG
 
 sml_t * ke_create_sml();
+void ke_free_sml(sml_t *sml);
 utf8 *ke_mystr(sml_t * sml, utf8 *src, size_t n);
 void ke_hash_add(sml_t * sml, fncp key, char * name);
 kexpr_t *ke_parse(sml_t * sml, utf8 *_s, int *err);
