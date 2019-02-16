@@ -1,4 +1,4 @@
-import('plplotdll.dll')
+﻿import('plplotdll.dll')
 
 def(plot1)
     print('string plot1')
@@ -32,7 +32,7 @@ def(plot2)
     plcol0( 1 )
     plenv( -2.0 , 10.0, -0.4, 1.2, 0, 1 )
     plcol0( 2 )
-    pllab( "(x)", "sin(x)/x", "#frPLplot Example 1 - Sinc Function" )
+    pllab( "(x)", "sin(x)/x", "PLplot Example 1 - Sine Function" )
     for (i,0,99,1)
         g_x[i] = (i - 19.0) / 6.0
         g_y[i] = 1.0
@@ -65,7 +65,7 @@ def(plot3)
     plbox( "g", 30.0, 0, "g", 0.2, 0 )
     plstyl( 0, mark0, space0 )
     plcol0( 3 )
-    pllab( "Angle (degrees)", "sin", "#frPLplot Example 1 - Sine function" )
+    pllab( "Angle (degrees)", "sin", "PLplot Example 1 - Sine function" )
     for (i,0,100,1)
         g_x[i] = 3.6 * i
         g_y[i] = sin(g_x[i] * m_pi / 180.0) 

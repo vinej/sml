@@ -267,7 +267,6 @@ void ke_import(sml_t *sml, char * s) {
 
 	fp(sml);
 	++sml->libhandle_qte;
-	//FREE HANDLE
 #else
 	return;
 #endif

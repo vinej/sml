@@ -29,6 +29,7 @@ int(*dllke_hash_add)(sml_t* sml, fncp key, char * name) = NULL;
 void dllke_plot_hash(sml_t* sml);
 
 SML_EXPORT int SML_CALL ke_dll_hash_add(sml_t* sml) {
+	dllke_hash_add = sml->dllke_hash_add;
 	dllke_plot_hash(sml);
 	return 0;
 }
@@ -439,21 +440,21 @@ SML_EXPORT int __cdecl ke_plcolorbar(sml_t* sml, ke1_t *tokp, int top) {
 
 SML_EXPORT int __cdecl ke_plconfigtime(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t *stack = sml->stack;
-	ke1_t *scale, *oﬀset1, *oﬀset2, *ccontrol, *ifbtime_oﬀset, *year, *month, *day, *hour, *min, *sec;
+	ke1_t *scale, *offset1, *offset2, *ccontrol, *ifbtime_offset, *year, *month, *day, *hour, *min, *sec;
 	sec = &stack[--top];
 	min = &stack[--top];
 	hour = &stack[--top];
 	day = &stack[--top];
 	month = &stack[--top];
 	year = &stack[--top];
-	ifbtime_oﬀset = &stack[--top];
+	ifbtime_offset = &stack[--top];
 	ccontrol = &stack[--top];
-	oﬀset2 = &stack[--top];
-	oﬀset1 = &stack[--top];
+	offset2 = &stack[--top];
+	offset1 = &stack[--top];
 	scale = &stack[--top];
 
-	plconfigtime((PLFLT)scale->r, (PLFLT)oﬀset1->r, (PLFLT)oﬀset2->r, (PLINT)ccontrol->i, 
-		(PLINT)ifbtime_oﬀset->i, (PLINT)year->i, (PLINT)month->i, (PLINT)day->i, 
+	plconfigtime((PLFLT)scale->r, (PLFLT)offset1->r, (PLFLT)offset2->r, (PLINT)ccontrol->i, 
+		(PLINT)ifbtime_offset->i, (PLINT)year->i, (PLINT)month->i, (PLINT)day->i, 
 		(PLINT)hour->i, (PLINT)min->i, (PLFLT)sec->r);
 	return top;
 }
@@ -482,11 +483,11 @@ SML_EXPORT int __cdecl ke_plcont(sml_t* sml, ke1_t *tokp, int top) {
 
 SML_EXPORT int __cdecl ke_plcpstrm(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t *stack = sml->stack;
-	ke1_t *iplsr, *ﬂags;
-	ﬂags = &stack[--top];
+	ke1_t *iplsr, *flags;
+	flags = &stack[--top];
 	iplsr = &stack[--top];
 
-	plcpstrm((PLINT)iplsr->i, (PLBOOL)ﬂags->i);
+	plcpstrm((PLINT)iplsr->i, (PLBOOL)flags->i);
 	return top;
 }
 
@@ -848,9 +849,9 @@ SML_EXPORT int __cdecl ke_plglevel(sml_t* sml, ke1_t *tokp, int top) {
 
 SML_EXPORT int __cdecl ke_plgpage(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t *stack = sml->stack;
-	ke1_t *p_xp, *p_yp, *p_xleng, *p_yleng, *p_xoﬀ, *p_yoﬀ;
-	p_yoﬀ = &stack[--top];
-	p_xoﬀ = &stack[--top];
+	ke1_t *p_xp, *p_yp, *p_xleng, *p_yleng, *p_xoff, *p_yoff;
+	p_yoff = &stack[--top];
+	p_xoff = &stack[--top];
 	p_yleng = &stack[--top];
 	p_xleng = &stack[--top];
 	p_yp = &stack[--top];
@@ -860,16 +861,16 @@ SML_EXPORT int __cdecl ke_plgpage(sml_t* sml, ke1_t *tokp, int top) {
 	sml->fields[p_yp->ifield]->vtype = KEV_REAL;
 	sml->fields[p_xleng->ifield]->vtype = KEV_INT;
 	sml->fields[p_yleng->ifield]->vtype = KEV_INT;
-	sml->fields[p_xoﬀ->ifield]->vtype = KEV_INT;
-	sml->fields[p_yoﬀ->ifield]->vtype = KEV_INT;
+	sml->fields[p_xoff->ifield]->vtype = KEV_INT;
+	sml->fields[p_yoff->ifield]->vtype = KEV_INT;
 
 	plgpage(
 		(PLFLT_NC_SCALAR)(&(sml->fields[p_xp->ifield]->r)),
 		(PLFLT_NC_SCALAR)(&(sml->fields[p_yp->ifield]->r)),
 		(PLINT_NC_SCALAR)(&(sml->fields[p_xleng->ifield]->i)),
 		(PLINT_NC_SCALAR)(&(sml->fields[p_yleng->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(sml->fields[p_xoﬀ->ifield]->i)),
-		(PLINT_NC_SCALAR)(&(sml->fields[p_yoﬀ->ifield]->i)));
+		(PLINT_NC_SCALAR)(&(sml->fields[p_xoff->ifield]->i)),
+		(PLINT_NC_SCALAR)(&(sml->fields[p_yoff->ifield]->i)));
 	return top;
 }
 
@@ -1206,8 +1207,8 @@ SML_EXPORT int __cdecl ke_pllegend(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *stack = sml->stack;
 	ke1_t *p_legend_width, *p_legend_height, *opt, *position, *x, *y, 
 		*plot_width, *bg_color, *bb_color, *bb_style, *nrow, *ncolumn,
-		*nlegend, *opt_array, *text_oﬀset, *text_scale, *text_spacing, 
-		*text_justiﬁcation, *text_colors, *text, *box_colors, *box_patterns, 
+		*nlegend, *opt_array, *text_offset, *text_scale, *text_spacing, 
+		*text_justification, *text_colors, *text, *box_colors, *box_patterns, 
 		*box_scales, *box_line_widths, *line_colors, *line_styles, *line_widths, 
 		*symbol_colors, *symbol_scales, *symbol_numbers, *symbols;
 
@@ -1224,10 +1225,10 @@ SML_EXPORT int __cdecl ke_pllegend(sml_t* sml, ke1_t *tokp, int top) {
 	box_colors = &stack[--top];
 	text = &stack[--top];
 	text_colors = &stack[--top];
-	text_justiﬁcation = &stack[--top];
+	text_justification = &stack[--top];
 	text_spacing = &stack[--top];
 	text_scale = &stack[--top];
-	text_oﬀset = &stack[--top];
+	text_offset = &stack[--top];
 	opt_array = &stack[--top];
 	nlegend = &stack[--top];
 	ncolumn = &stack[--top];
@@ -1258,10 +1259,10 @@ SML_EXPORT int __cdecl ke_pllegend(sml_t* sml, ke1_t *tokp, int top) {
 		(PLINT)ncolumn->i,
 		(PLINT)nlegend->i,
 		(PLINT_VECTOR)gsl_vector_int_const_ptr(opt_array->obj.vector_int, 0),
-		(PLINT)text_oﬀset->i, 
+		(PLINT)text_offset->i, 
 		(PLFLT)text_scale->r, 
 		(PLFLT)text_spacing->r, 
-		(PLFLT)text_justiﬁcation->r, 
+		(PLFLT)text_justification->r, 
 		(PLINT_VECTOR)gsl_vector_int_const_ptr(text_colors->obj.vector_int, 0),
 		(PLCHAR_MATRIX)text->obj.s,
 		(PLINT_VECTOR)gsl_vector_int_const_ptr(box_colors->obj.vector_int, 0),
