@@ -1,4 +1,4 @@
-import('plplotdll.dll')
+﻿import('plplotdll.dll')
 
 def(plot1)
     print('string plot1')
@@ -117,3 +117,4 @@ print('plot 3')
 exe(plot3)
 plspause(1)
 plend()
+
