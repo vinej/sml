@@ -1226,27 +1226,18 @@ void ke_push_stack(sml_t * sml, ke1_t * tokp, int *top) {
     (*top)++;
 }
 
-/*
-void ke_free_dll() {
-	for (int i = 0; i < g_libhandle_qte; ++i) {
-		FreeLibrary(g_libhandle[i]);
-	}
-}
-*/
 
-/*
-void ke_free_image() {
-	for (int i = 0; i < g_libhandle_qte; ++i) {
-		FreeLibrary(g_libhandle[i]);
+void ke_free_dll(sml_t *sml) {
+	for (int i = 0; i < sml->libhandle_qte; ++i) {
+		FreeLibrary(sml->libhandle[i]);
 	}
 }
-*/
 
 void ke_destroy(sml_t *sml, kexpr_t *kexpr)
 {
     ke_free(sml, kexpr);
 	ke_free_hash(sml);
-	//ke_free_dll();
+	ke_free_dll(sml);
 }
 
 void ke_free_hash(sml_t *sml)
