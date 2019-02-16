@@ -35,19 +35,20 @@ SML_EXPORT int SML_CALL ke_dll_hash_add(sml_t* sml) {
 
 SML_EXPORT int SML_CALL ke_plimload(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
-	ke1_t *filename, *x, *y, *n, *zero;
+	ke1_t *out, *filename, *x, *y, *n, *zero;
 	zero = stack[--top];
 	n = stack[--top];
 	y = stack[--top];
 	x = stack[--top];
-	filename = stack[top-1];
-
+	filename = stack[--top];
+	stack[top++] = sml->out; out = sml->out;
+	
 	int xx,yy,nn;
 
 	unsigned char *data = stbi_load(filename->obj.s,&xx,&yy,&nn,(int)zero->i);
 	//ke_inc_memory();
-	filename->vtype = KEV_IMAGE;
-	filename->obj.image = data;
+	out->vtype = KEV_IMAGE;
+	out->obj.image = data;
 	sml->fields[x->ifield]->i = xx;
 	sml->fields[y->ifield]->i = yy;
 	sml->fields[n->ifield]->i = nn;
@@ -101,7 +102,7 @@ SML_EXPORT int __cdecl ke_plimwrite(sml_t* sml, ke1_t *tokp, int top) {
 
 SML_EXPORT int __cdecl ke_plimresize(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
-	ke1_t *in, *in_w, *in_h, *in_stride, *out_w, *out_h, *out_stride, *nb_channel;
+	ke1_t *out, *in, *in_w, *in_h, *in_stride, *out_w, *out_h, *out_stride, *nb_channel;
 
 	nb_channel = stack[--top];
 	out_stride = stack[--top];
@@ -110,14 +111,15 @@ SML_EXPORT int __cdecl ke_plimresize(sml_t* sml, ke1_t *tokp, int top) {
 	in_stride = stack[--top];
 	in_h = stack[--top];
 	in_w = stack[--top];
-	in = stack[top-1];
+	in = stack[--top];
+	stack[top++] = sml->out; out = sml->out;
 
 	char *tout = malloc(out_h->i * out_w->i * nb_channel->i);
 	stbir_resize_uint8(in->obj.image, (int)in_w->i, (int)in_h->i, (int)in_stride->i,
 		tout, (int)out_w->i, (int)out_h->i, (int)out_stride->i, (int)nb_channel->i);
-	in->vtype = KEV_IMAGE;
-	in->ttype = KET_VAL;
-	in->obj.image = tout;
+	out->vtype = KEV_IMAGE;
+	out->ttype = KET_VAL;
+	out->obj.image = tout;
 	return top;
 }
 
@@ -767,13 +769,13 @@ SML_EXPORT int __cdecl ke_plgdiplt(sml_t* sml, ke1_t *tokp, int top) {
 
 SML_EXPORT int __cdecl ke_function_plgdrawmode(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
-	ke1_t *p;
-	p = stack[top - 1];
-	stack[top++] = *p;
-	p = stack[top - 1];
-	p->i = (PLINT)plgdrawmode();
-	p->vtype = KEV_INT;
-	p->ttype = KET_VAL;
+	ke1_t *out,*p;
+	p = stack[--top];
+	stack[top++] = sml->out; out = sml->out;
+	out->i = (PLINT)plgdrawmode();
+	out->r = (double)out->i;
+	out->vtype = KEV_INT;
+	out->ttype = KET_VAL;
 	return top;
 }
 
@@ -1643,18 +1645,20 @@ SML_EXPORT int __cdecl ke_plot3dl(sml_t* sml, ke1_t *tokp, int top) {
 
 SML_EXPORT int __cdecl ke_plparseopts(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
-	ke1_t *p_argc, *argv, *mode;
+	ke1_t *out, *p_argc, *argv, *mode;
 	mode = stack[--top];
 	argv = stack[--top];
-	p_argc = stack[top - 1];
-	
+	p_argc = stack[--top];
+	stack[top++] = sml->out; out = sml->out;
+
 	PLINT st = plparseopts(
 		(int *)(&(sml->fields[p_argc->ifield]->i)),
 		(PLCHAR_NC_MATRIX)argv->obj.s,
 		(PLINT)mode->i);
-	p_argc->i = st;
-	p_argc->vtype = KEV_INT;
-	p_argc->ttype = KET_VAL;
+	out->i = st;
+	out->r = (double)out->i;
+	out->vtype = KEV_INT;
+	out->ttype = KET_VAL;
 	return top;
 }
 
@@ -1822,14 +1826,13 @@ SML_EXPORT int __cdecl ke_plptex3(sml_t* sml, ke1_t *tokp, int top) {
 
 SML_EXPORT int __cdecl ke_plrandd(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
-	ke1_t *p;
-	p = stack[top - 1];
-	stack[top++] = *p;
-	p = stack[top - 1];
-	
-	p->r = plrandd();
-	p->vtype = KEV_REAL;
-	p->ttype = KET_VAL;
+	ke1_t *out, *p;
+	p = stack[--top];
+	stack[top++] = sml->out; out = sml->out;
+
+	out->r = plrandd();
+	out->vtype = KEV_REAL;
+	out->ttype = KET_VAL;
 	return top;
 }
 
@@ -2202,14 +2205,15 @@ SML_EXPORT int __cdecl ke_plsesc(sml_t* sml, ke1_t *tokp, int top) {
 
 SML_EXPORT int __cdecl ke_plsetopt(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
-	ke1_t *opt, *optarg;
+	ke1_t *out, *opt, *optarg;
 	optarg = stack[--top];
-	opt = stack[top - 1];
+	opt = stack[--top];
+	stack[top++] = sml->out; out = sml->out;
 
 	PLINT st = plsetopt( (PLCHAR_VECTOR)opt->obj.s, (PLCHAR_VECTOR)optarg->obj.s);
-	opt->i = st;
-	opt->vtype = KEV_INT;
-	opt->ttype = KET_VAL;
+	out->i = st;
+	out->vtype = KEV_INT;
+	out->ttype = KET_VAL;
 	return top;
 }
 

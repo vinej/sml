@@ -10,8 +10,7 @@ static int ke_complex_alloc(sml_t* sml, ke1_t *tokp, int top) {
    	ke1_t *out,*p, *q;
     q = stack[--top];
     p = stack[--top];
-	stack[top++] = sml->out;
-	out = sml->out;
+	stack[top++] = sml->out; out = sml->out;
 	GSL_SET_COMPLEX(&out->obj.tcomplex, (double)p->i, (double)q->i);
     out->ttype = KET_VAL;
     out->vtype = KEV_COMPLEX;
