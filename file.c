@@ -20,7 +20,7 @@ static int ke_file_alloc_buffer(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_INT, "buffer_size", FILE_NEWBUFFER);
 	ke_validate_parameter_int_gt_zero(p, "buffer_size", FILE_NEWBUFFER);
@@ -39,7 +39,6 @@ static int ke_file_free_buffer(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *p;
 	p = stack[--top];
-	--top; // don't need out
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_BUFFER, "buffer_name", FILE_FREBUFFER);
 	ke_validate_parameter_not_null(p, p->obj.buffer, "buffer_name", FILE_FREBUFFER);
@@ -57,7 +56,6 @@ static int ke_file_fclose(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *p;
 	p = stack[--top];
-	--top; // don't need out
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FCLOSE);
 #endif // SML_VALIDATION
@@ -74,7 +72,6 @@ static int ke_file_clearerr(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *p;
 	p = stack[--top];
-	--top; // don't need out
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file",FILE_CLEARERR);
 #endif // SML_VALIDATION
@@ -91,7 +88,7 @@ static int ke_file_feof(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FEOF);
 #endif // SML_VALIDATION
@@ -111,7 +108,7 @@ static int ke_file_ferror(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FERROR);
 #endif // SML_VALIDATION
@@ -132,7 +129,6 @@ static int ke_file_fflush(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *p;
 	p = stack[--top];
-	--top; // don't need out
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FFLUSH);
 #endif // SML_VALIDATION
@@ -149,7 +145,7 @@ static int ke_file_fgetpos(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 	out->vtype = KEV_INT;
 	out->ttype = KET_VAL;
 	out->r = (double)p->i;
@@ -166,7 +162,7 @@ static int ke_file_fopen(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *out, *p, *mode;
 	mode = stack[--top];
 	p = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_STR, "filename", FILE_FOPEN);
 	ke_validate_parameter_vtype(mode, KEV_STR, "mode", FILE_FOPEN);
@@ -189,7 +185,7 @@ static int ke_file_fread(sml_t* sml, ke1_t *tokp, int top) {
 	nmemb = stack[--top];
 	size = stack[--top];
 	ptr = stack[--top ];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(ptr, KEV_BUFFER, "buffer_name", FILE_FREAD);
 	ke_validate_parameter_vtype(size, KEV_INT, "size", FILE_FREAD);
@@ -215,7 +211,7 @@ static int ke_file_freopen(sml_t* sml, ke1_t *tokp, int top) {
 	stream = stack[--top];
 	mode = stack[--top];
 	filename = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(filename, KEV_STR, "filename", FILE_FREOPEN);
 	ke_validate_parameter_vtype(mode, KEV_STR, "mode", FILE_FREOPEN);
@@ -239,7 +235,6 @@ static int ke_file_fseek(sml_t* sml, ke1_t *tokp, int top) {
 	whence = stack[--top];
 	offset = stack[--top];
 	stream = stack[--top];
-	--top; // don't need out
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(whence, KEV_INT, "whence", FILE_FSEEK);
 	ke_validate_parameter_vtype(offset, KEV_INT, "offset", FILE_FSEEK);
@@ -260,7 +255,6 @@ static int ke_file_fsetpos(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *p, *pos;
 	pos = stack[--top];
 	p = stack[--top];
-	--top; //don't need out
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(pos, KEV_INT, "file", FILE_FSETPOS);
 	ke_validate_parameter_vtype(p, KEV_FILE, "pos",  FILE_FSETPOS);
@@ -279,7 +273,7 @@ static int ke_file_ftell(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FSETPOS);
 #endif // SML_VALIDATION
@@ -302,7 +296,7 @@ static int ke_file_fwrite(sml_t* sml, ke1_t *tokp, int top) {
 	nmemb = stack[--top];
 	size = stack[--top];
 	ptr = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(ptr, KEV_BUFFER, "buffer_name", FILE_FWRITE);
 	ke_validate_parameter_vtype(nmemb, KEV_INT, "nmemb", FILE_FWRITE);
@@ -325,7 +319,6 @@ static int ke_file_remove(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *filename;
 	filename = stack[--top];
-	--top; // don't need top
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(filename, KEV_STR, "filename", FILE_REMOVE);
 #endif // SML_VALIDATION
@@ -344,7 +337,6 @@ static int ke_file_rename(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *old_filename, *new_filename;
 	new_filename = stack[--top];
 	old_filename = stack[--top];
-	--top;  // don't need top
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(new_filename, KEV_STR, "new_filename", FILE_RENAME);
 	ke_validate_parameter_vtype(old_filename, KEV_STR, "old_filename", FILE_RENAME);
@@ -361,7 +353,6 @@ static int ke_file_rewind(sml_t* sml, ke1_t *tokp, int top) {
 	ke_validate_parameter_qte(tokp, 1, FILE_REWIND);
 #endif // SML_VALIDATION
 	ke1_t *stream;
-	stream = stack[--top];
 	--top;  // don't need out
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(stream, KEV_STR, "file", FILE_REWIND);
@@ -380,7 +371,6 @@ static int ke_file_setbuf(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t *stream, *buffer;
 	buffer = stack[--top];
 	stream = stack[--top];
-	--top;  // don't need top
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_SETBUF);
 	ke_validate_parameter_vtype(buffer, KEV_BUFFER, "buffer_name", FILE_SETBUF);
@@ -402,7 +392,6 @@ static int ke_file_setvbuf(sml_t* sml, ke1_t *tokp, int top) {
 	mode = stack[--top];
 	buffer = stack[--top];
 	stream = stack[--top];
-	--top; // don't need top
 #ifdef _DEBUG
 	ke_validate_parameter_vtype(size, KEV_INT, "size", FILE_SETVBUF);
 	ke_validate_parameter_vtype(mode, KEV_STR, "mode", FILE_SETVBUF);
@@ -424,7 +413,7 @@ static int ke_file_tmpfile(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	out = stack[top - 1];
+	stack[top++] = sml->out; out = sml->out;
 	out->obj.file = tmpfile();
 	out->vtype = KEV_FILE;
 	out->ttype = KET_VAL;
@@ -440,10 +429,7 @@ static int ke_file_tmpnam(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
-	out = stack[top - 1];
-#ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_STR, "str", FILE_TMPNAME);
-#endif // SML_VALIDATION
+	stack[top++] = sml->out; out = sml->out;
 	char * buf = ke_calloc_memory(sml, MAX_BUF + 1, 1);
 	//if (mkstemp(buf) == 0) {
 	//	printf("Error: ke_file_tmpnam");
@@ -534,7 +520,7 @@ static int ke_file_vfprintf(sml_t* sml, ke1_t *tokp, int top) {
 		fputs(format->obj.s, stream->obj.file);
 	}
 	gen_freelist(sml, (size_t)tokp->n_args - 1, top);
-	return top - tokp->n_args;
+	return top - tokp->n_args;  
 }
 
 static int ke_file_xvfprintf(sml_t* sml, ke1_t *tokp, int top) { 
@@ -755,7 +741,7 @@ static int ke_file_vscanf(sml_t* sml, ke1_t *tokp, int top) {
 		} else {
 			printf("Error: ke_file_vscanf :  max 16 arguments");
 		}
-		if (count != tokp->n_args -1 ) {
+		if (count != tokp->n_args - 1 ) {
 			printf("Error: ke_file_xvfscanf");
 		}
 		ke_free_memory(sml,va);
@@ -898,12 +884,13 @@ static int ke_file_fgetc(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 #ifdef _DEBUG
 	ke_validate_parameter_qte(tokp, 1, FILE_FGETC);
 #endif // SML_VALIDATION
-	ke1_t *p;
-	p = stack[top - 1];
-	p->i = fgetc(p->obj.file);
-	p->vtype = KEV_INT;
-	p->ttype = KET_VAL;
-	p->r = (double)p->i;
+	ke1_t *out, *p;
+	p = stack[--top];
+	stack[top++] = sml->out; out = sml->out;
+	out->i = fgetc(p->obj.file);
+	out->vtype = KEV_INT;
+	out->ttype = KET_VAL;
+	out->r = (double)out->i;
 	return top;
 }
 
@@ -987,12 +974,13 @@ static int ke_file_getc(sml_t* sml, ke1_t *tokp, int top) {
 #ifdef _DEBUG
 	ke_validate_parameter_qte(tokp, 1, FILE_FGETC);
 #endif // SML_VALIDATION
-	ke1_t *p;
-	p = stack[top - 1];
-	p->i = fgetc(p->obj.file);
-	p->vtype = KEV_INT;
-	p->ttype = KET_VAL;
-	p->r = (double)p->i;
+	ke1_t *out, *p;
+	p = stack[--top ];
+	stack[top++] = sml->out; out = sml->out;
+	out->i = fgetc(p->obj.file);
+	out->vtype = KEV_INT;
+	out->ttype = KET_VAL;
+	out->r = (double)out->i;
 	return top;
 }
 
@@ -1003,12 +991,13 @@ static int ke_file_getchar(sml_t* sml, ke1_t *tokp, int top) {
 #ifdef _DEBUG
 	ke_validate_parameter_qte(tokp, 1, FILE_GETCHAR);
 #endif // SML_VALIDATION
-	ke1_t *p;
-	p = stack[top - 1];
-	p->i = getchar();
-	p->vtype = KEV_INT;
-	p->ttype = KET_VAL;
-	p->r = (double)p->i;
+	ke1_t *out, *p;
+	p = stack[--top];
+	stack[top++] = sml->out; out = sml->out;
+	out->i = getchar();
+	out->vtype = KEV_INT;
+	out->ttype = KET_VAL;
+	out->r = (double)out->i;
 	return top;
 }
 
@@ -1021,7 +1010,6 @@ static int ke_file_gets(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *str;
 	str = stack[--top];
-
 	char * buf = ke_calloc_memory(sml,MAX_BUF+1, 1);
 	if (fgets(buf, MAX_BUF, stdin) == 0) {
 		printf("Error: ke_file_gets");
@@ -1117,7 +1105,6 @@ static int ke_file_perror(sml_t* sml, ke1_t *tokp, int top) {
 #endif // SML_VALIDATION
 	ke1_t *str;
 	str = stack[--top];
-
 	char * buf = ke_calloc_memory(sml,MAX_BUF+1, 1);
 	perror(buf);
 	if (str->vtype == KEV_STR) {

@@ -128,6 +128,7 @@ KDQ_INIT(int)
 struct sml_s;
 typedef struct sml_s {
 	// GLOBAL VARIABLE USED BY ALL FUNCTIONS
+	struct ke1_s *out;
 	struct ke1_s ** fields; // array of all global fields of the program to exectue
 	int field_qte;      // number of global fields  
 	int tok_idx;            // current program token index
@@ -176,7 +177,7 @@ typedef struct ke1_s {
 	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
 	int32_t sourceLine; // fast jmp  
 	union {    //                                                                                                 
-		void (*builtin)(struct ke1_s *a, struct ke1_s *b); // execution function
+		void (*builtin)(struct ke1_s *a, struct ke1_s *b, struct ke1_s *out); // execution function
 		double (*real_func1)(double);
 		double (*real_func2)(double, double);
 		int (*defprop)(sml_t* sml, struct ke1_s* prop, int top);

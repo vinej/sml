@@ -65,55 +65,58 @@ static const char *ke_opstr[] = {
  **********************/
 
 #define KE_GEN_CMP(_type, _op) \
-	static void ke_op_##_type(ke1_t *p, ke1_t *q) { \
-		if (p->vtype == KEV_STR && q->vtype == KEV_STR) p->i = (strcmp(p->obj.s, q->obj.s) _op 0); \
-		else p->i = p->vtype == KEV_REAL || q->vtype == KEV_REAL? (p->r _op q->r) : (p->i _op q->i); \
-		p->r = (double)p->i; \
-		p->vtype = KEV_INT; \
+	static void ke_op_##_type(ke1_t *p, ke1_t *q, ke1_t *out) { \
+		if (p->vtype == KEV_STR && q->vtype == KEV_STR) out->i = (strcmp(p->obj.s, q->obj.s) _op 0); \
+		else out->i = p->vtype == KEV_REAL || q->vtype == KEV_REAL? (p->r _op q->r) : (p->i _op q->i); \
+		out->r = (double)out->i; \
+		out->vtype = KEV_INT; out->ttype = KET_VAL;\
 	}
 
-KE_GEN_CMP(KEO_LT, <)
-KE_GEN_CMP(KEO_LE, <=)
-KE_GEN_CMP(KEO_GT, >)
-KE_GEN_CMP(KEO_GE, >=)
-KE_GEN_CMP(KEO_EQ, ==)
-KE_GEN_CMP(KEO_NE, !=)
+KE_GEN_CMP(KEO_LT, < )
+	KE_GEN_CMP(KEO_LE, <= )
+	KE_GEN_CMP(KEO_GT, > )
+	KE_GEN_CMP(KEO_GE, >= )
+	KE_GEN_CMP(KEO_EQ, == )
+	KE_GEN_CMP(KEO_NE, != )
 
 #define KE_GEN_BIN_INT(_type, _op) \
-	static void ke_op_##_type(ke1_t *p, ke1_t *q) { \
-		p->i _op q->i; p->r = (double)p->i; \
-		p->vtype = KEV_INT; \
+	static void ke_op_##_type(ke1_t *p, ke1_t *q, ke1_t *out) { \
+		out->i = p->i; \
+		out->i _op q->i; out->r = (double)out->i; \
+		out->vtype = KEV_INT; out->ttype = KET_VAL;\
 	}
 
-KE_GEN_BIN_INT(KEO_BAND, &=)
-KE_GEN_BIN_INT(KEO_BOR, |=)
-KE_GEN_BIN_INT(KEO_BXOR, ^=)
-KE_GEN_BIN_INT(KEO_LSH, <<=)
-KE_GEN_BIN_INT(KEO_RSH, >>=)
-KE_GEN_BIN_INT(KEO_MOD, %=)
-KE_GEN_BIN_INT(KEO_IDIV, /=)
+	KE_GEN_BIN_INT(KEO_BAND, &=)
+	KE_GEN_BIN_INT(KEO_BOR, |=)
+	KE_GEN_BIN_INT(KEO_BXOR, ^=)
+	KE_GEN_BIN_INT(KEO_LSH, <<=)
+	KE_GEN_BIN_INT(KEO_RSH, >>=)
+	KE_GEN_BIN_INT(KEO_MOD, %=)
+	KE_GEN_BIN_INT(KEO_IDIV, /=)
 
 #define KE_GEN_BIN_BOTH(_type, _op) \
-	static void ke_op_##_type(ke1_t *p, ke1_t *q) { \
-		p->i _op q->i; p->r _op q->r; \
-		p->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL? KEV_REAL : KEV_INT; \
+	static void ke_op_##_type(ke1_t *p, ke1_t *q, ke1_t *out) { \
+		out->i = p->i; out->r = p->r; \
+		out->i _op q->i; out->r _op q->r; \
+		out->ttype = KET_VAL; \
+		out->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL? KEV_REAL : KEV_INT; \
 	}
 
 KE_GEN_BIN_BOTH(KEO_ADD, +=)
 KE_GEN_BIN_BOTH(KEO_SUB, -=)
 KE_GEN_BIN_BOTH(KEO_MUL, *=)
 
-static void ke_op_KEO_DIV(ke1_t *p, ke1_t *q)  { p->r /= q->r, p->i = (int64_t)(p->r + .5); p->vtype = KEV_REAL; }
-static void ke_op_KEO_LAND(ke1_t *p, ke1_t *q) { p->i = (p->i && q->i); p->r = (double)p->i; p->vtype = KEV_INT; }
-static void ke_op_KEO_LOR(ke1_t *p, ke1_t *q)  { p->i = (p->i || q->i); p->r = (double)p->i; p->vtype = KEV_INT; }
-static void ke_op_KEO_POW(ke1_t *p, ke1_t *q)  { p->r = pow(p->r, q->r), p->i = (int64_t)(p->r + .5); p->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL? KEV_REAL : KEV_INT; }
-static void ke_op_KEO_BNOT(ke1_t *p, ke1_t *q) { p->i = ~p->i; p->r = (double)p->i; p->vtype = KEV_INT; }
-static void ke_op_KEO_LNOT(ke1_t *p, ke1_t *q) { p->i = !p->i; p->r = (double)p->i; p->vtype = KEV_INT; }
-static void ke_op_KEO_POS(ke1_t *p, ke1_t *q)  { } // do nothing
-static void ke_op_KEO_NOP(ke1_t *p, ke1_t *q)  { } // do nothing
-static void ke_op_KEO_NEG(ke1_t *p, ke1_t *q)  { p->i = -p->i, p->r = -p->r; }
+static void ke_op_KEO_DIV(ke1_t *p, ke1_t *q, ke1_t *out) { out->r = p->r;  out->r /= q->r, out->i = (int64_t)(out->r + .5); out->vtype = KEV_REAL; out->ttype = KET_VAL; }
+static void ke_op_KEO_LAND(ke1_t *p, ke1_t *q, ke1_t *out) { out->i = (p->i && q->i); out->r = (double)out->i; out->vtype = KEV_INT; out->ttype = KET_VAL; }
+static void ke_op_KEO_LOR(ke1_t *p, ke1_t *q, ke1_t *out)  { out->i = (p->i || q->i); out->r = (double)out->i; out->vtype = KEV_INT; out->ttype = KET_VAL; }
+static void ke_op_KEO_POW(ke1_t *p, ke1_t *q, ke1_t *out)  { out->r = pow(p->r, q->r), out->i = (int64_t)(out->r + .5); out->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL? KEV_REAL : KEV_INT;  out->ttype = KET_VAL;}
+static void ke_op_KEO_BNOT(ke1_t *p, ke1_t *q, ke1_t *out) { out->i = ~p->i; out->r = (double)out->i; out->vtype = KEV_INT; out->ttype = KET_VAL; }
+static void ke_op_KEO_LNOT(ke1_t *p, ke1_t *q, ke1_t *out) { out->i = !p->i; out->r = (double)out->i; out->vtype = KEV_INT;  out->ttype = KET_VAL;}
+static void ke_op_KEO_POS(ke1_t *p, ke1_t *q, ke1_t *out)  { } // do nothing
+static void ke_op_KEO_NOP(ke1_t *p, ke1_t *q, ke1_t *out)  { } // do nothing
+static void ke_op_KEO_NEG(ke1_t *p, ke1_t *q, ke1_t *out)  { out->i = -p->i, out->r = -p->r; }
 
-static void ke_func1_abs(ke1_t *p, ke1_t *q) { if (p->vtype == KEV_INT) p->i = (int64_t)abs((int)p->i), p->r = (double)p->i; else p->r = fabs(p->r), p->i = (int64_t)(p->r + .5); }
+static void ke_func1_abs(ke1_t *p, ke1_t *q, ke1_t *out) { if (p->vtype == KEV_INT) out->i = (int64_t)abs((int)p->i), out->r = (double)p->i, out->vtype = KEV_INT, out->ttype = KET_VAL; else out->r = fabs(p->r), out->i = (int64_t)(out->r + .5), out->vtype = KEV_REAL, out->ttype = KET_VAL; }
 
 // VALIDATION
 
@@ -159,6 +162,7 @@ sml_t * ke_create_sml() {
 	sml->lastDef = -1;
 	sml->g_fortop = 0;
 	sml->dllke_hash_add = ke_hash_add;
+	sml->out = calloc(sizeof(ke1_t), 1);
 	return sml;
 }
 
@@ -1229,22 +1233,18 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 			else {
 				if (tokp->n_args == 2) {
 					q = stack[--top];
-					p = stack[top-1];
-					tokp->f.builtin(p, q);
-
+					p = stack[--top];
+					stack[top++] = sml->out;
+					tokp->f.builtin(p, q, sml->out);
 				}
 				else {
-					p = stack[top - 1];
-					tokp->f.builtin(stack[top - 1], 0);
+					p = stack[--top];
+					stack[top++] = sml->out;
+					tokp->f.builtin(p, 0, sml->out);
 				}
 			}
 			break;
 		case KET_FUNC:
-			if (tokp->n_args == 0) {
-				// always need something in the stack
-				stack[top++] = tokp;
-			}
-			stack[top++] = &out;
 			top = (tokp->f.deffunc)(sml, tokp, top);
 			break;
 		case KET_PROP:
@@ -1257,7 +1257,6 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 			}
 			break;
 		default:
-			//memcpy(stack[top++], tokp, sizeof(ke1_t));
 			stack[top++] = tokp;
 			break;
 		}

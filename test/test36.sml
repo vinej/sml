@@ -1,4 +1,4 @@
-buffer = newbuffer(0)
+buffer = newbuffer(10000)
 
 print("TEST 08")
 file = fopen("c:\sml\test\test15.sml", "r")
