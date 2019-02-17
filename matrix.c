@@ -103,7 +103,8 @@ static int ke_matrix_free(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
    	ke1_t *p;
     p = stack[--top];
-    ke_set_null_matrix(sml, p->ifield);
+	ke_matrix_freemem(sml, p);
+	p->obj.matrix = NULL, p->vtype = KEV_REAL, p->ttype = KET_VAL, p->assigned = 0;
     return top;
 }
 

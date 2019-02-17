@@ -33,7 +33,8 @@ static int ke_vector_free(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *p;
 	p = stack[--top];
-	ke_set_null_vector(sml,p->ifield);
+	ke_vector_freemem(sml, p);
+	p->obj.vector = NULL, p->vtype = KEV_REAL, p->ttype = KET_VAL, p->assigned = 0;
 	return top;
 }
 
@@ -41,7 +42,8 @@ static int ke_vector_int_free(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 	ke1_t *p;
 	p = stack[--top];
-	ke_set_null_vector_int(sml, p->ifield);
+	ke_vector_int_freemem(sml, p);
+	p->obj.vector_int = NULL, p->vtype = KEV_REAL, p->ttype = KET_VAL, p->assigned = 0;
 	return top;
 }
 

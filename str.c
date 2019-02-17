@@ -101,7 +101,7 @@ static int ke_strcpy(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->st
     p = stack[--top];
     char * tmp = (char*)ke_calloc_memory(sml,utf8size(q->obj.s)+1, 1);
     utf8cpy(tmp, q->obj.s);
-    ke_set_str_direct(sml, p->ifield, tmp);
+    ke_set_str_direct(sml, p, tmp);
     return top;
 }
 
@@ -118,7 +118,7 @@ static int ke_strcat(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->st
 	if (q->obj.s != NULL) {
 		utf8cat(tmp, q->obj.s);
 	}
-    ke_set_str_direct(sml, p->ifield, tmp);
+    ke_set_str_direct(sml, p, tmp);
     return top;
 }
 

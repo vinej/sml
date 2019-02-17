@@ -17,8 +17,7 @@ static int ke_date_dmy(sml_t* sml, ke1_t *tokp, int top) {
 
 static int ke_date_now(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
+	ke1_t *out;
 	stack[top] = ke_get_out(sml); out = stack[top++];
 	time_t now = time(NULL);
 	out->obj.date = g_date_new(sml);

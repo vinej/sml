@@ -926,19 +926,6 @@ void ke_set_real(sml_t* sml, ke1_t *tokp, double x)
     tokp->r = x, tokp->vtype = KEV_REAL;
 }
 
-void ke_set_null_vector(sml_t *sml, int ifield)
-{
-	ke1_t * ftokp = sml->fields[ifield];
-    ke_vector_freemem(sml, ftokp);
-    ftokp->obj.vector = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
-}
-
-void ke_set_null_vector_int(sml_t *sml, int ifield)
-{
-	ke1_t * ftokp = sml->fields[ifield];
-	ke_vector_int_freemem(sml,ftokp);
-	ftokp->obj.vector_int = NULL, ftokp->vtype = KEV_REAL, ftokp->ttype = KET_VAL, ftokp->assigned = 0;
-}
 
 void ke_set_vector(sml_t * sml, ke1_t *tokp, gsl_vector * vecp)
 {
@@ -961,14 +948,6 @@ void ke_set_date(sml_t * sml, ke1_t *tokp, GDate_t * datep)
 	tokp->vtype = KEV_DATE;
 	tokp->ttype = KET_VAL;
 	tokp->assigned = 1;
-}
-
-void ke_set_null_matrix(sml_t *sml, int ifield)
-{
-	ke1_t * f = sml->fields[ifield];
-
-    ke_matrix_freemem(sml, f);
-    f->obj.matrix = NULL, f->vtype = KEV_REAL, f->ttype = KET_VAL, f->assigned = 0;
 }
 
 void ke_set_matrix(sml_t *sml, ke1_t *tokp, gsl_matrix * matp)
@@ -998,9 +977,8 @@ void ke_set_str(sml_t* sml,ke1_t *tokp, char *x)
    ke_set_str_internal(sml, tokp,tmp);
 }
 
-void ke_set_str_direct(sml_t *sml, int ifield, char *x)
+void ke_set_str_direct(sml_t *sml, ke1_t * e, char *x)
 {
-	ke1_t * e = sml->fields[ifield];
 	ke_set_str_internal(sml, e,x);
 }
 
@@ -1290,6 +1268,9 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 			break;
 		case KET_PROP:
 			if (tokp->propget) {
+				// we need ifield, because for a propget, the tokp is not a pointer to a real fields
+				// it's only a normal token with ifield pointing to the real field to manager
+				// it's a false record to deal with propget. 
 				stack[top++] = fields[tokp->ifield];
 				top = ke_poperty_get(sml, stack, tokp, top);
 			}
