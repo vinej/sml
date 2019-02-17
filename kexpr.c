@@ -1198,7 +1198,7 @@ void ke_set_val_index(sml_t *sml, int i, ke1_t *tokp) {
 	ke_set_val(sml, sml->tokens[i], tokp);
 }
 
-void inline ke_set_val(sml_t* sml, ke1_t* e, ke1_t *q) {
+void ke_set_val(sml_t* sml, ke1_t* e, ke1_t *q) {
 	 e->vtype = q->vtype;
 	 if (q->vtype == KEV_INT)  e->i = q->i, e->r = (double)e->i; 
 	 else if (q->vtype == KEV_REAL)	e->r = q->r, e->i = (int64_t)e->r;
@@ -1223,8 +1223,8 @@ void inline ke_set_val(sml_t* sml, ke1_t* e, ke1_t *q) {
 }
 
 ke1_t * ke_get_out(sml_t *sml) {
-	sml->out_qte += sizeof(ke1_t);
-	if (sml->out_qte >= (98 * (sizeof(ke1_t)))) {
+	++sml->out_qte;
+	if (sml->out_qte == 100) {
 		sml->out_qte = 0;
 	}
 	return (ke1_t*)&sml->out[sml->out_qte];

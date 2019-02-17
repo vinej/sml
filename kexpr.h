@@ -129,7 +129,7 @@ KDQ_INIT(int)
 struct sml_s;
 typedef struct sml_s {
 	// GLOBAL VARIABLE USED BY ALL FUNCTIONS
-	struct ke1_s **out;
+	struct ke1_s *out;
 	int out_qte;
 	struct ke1_s ** fields; // array of all global fields of the program to exectue
 	int field_qte;      // number of global fields  
