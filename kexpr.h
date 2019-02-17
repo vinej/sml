@@ -104,9 +104,9 @@ struct kexpr_s;
 struct sml_s;
 
 typedef struct ke1_s* ke1_p;
-typedef int(*cmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s*, int, int *);
+typedef int(*cmdp)(struct sml_s * sml, struct ke1_s* tokp, int top, int *);
 typedef int(*fncp)(struct sml_s * sml, struct ke1_s* s, int);
-typedef int(*vcmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s* s, int);
+typedef int(*vcmdp)(struct sml_s * sml, struct ke1_s* tokp, int top, int);
 typedef int(__cdecl *dllke_hash_add_t)(struct sml_s *, fncp, char *);
 typedef struct ke1_s *(__cdecl *dllke_get_out_t)(struct sml_s *);
 
@@ -131,6 +131,7 @@ typedef struct sml_s {
 	// GLOBAL VARIABLE USED BY ALL FUNCTIONS
 	struct ke1_s *out;
 	int out_qte;
+	struct kexpr_s *kexpr;
 	struct ke1_s ** fields; // array of all global fields of the program to exectue
 	int field_qte;      // number of global fields  
 	int tok_idx;            // current program token index
@@ -175,18 +176,14 @@ struct ke1_s;
 typedef struct ke1_s {
 	int64_t i;
 	double r;
-	int32_t ijmp; // fast jmp  
-	uint32_t ttype:16, vtype:10, assigned:1, icmd:4, realToken:1, propget:1, propset:1, tofree:1, futur:1, islocal:1; // ttype: token type; vtype: value type  
-	int32_t op:8, n_args:8, ifield:16; // op: operator, n_args: number of arguments                               
-	int32_t sourceLine; // fast jmp  
 	union {    //                                                                                                 
-		void (*builtin)(struct ke1_s *a, struct ke1_s *b, struct ke1_s *out); // execution function
-		double (*real_func1)(double);
-		double (*real_func2)(double, double);
-		int (*defprop)(sml_t* sml, struct ke1_s* prop, int top);
-		int (*deffunc)(sml_t* sml, struct ke1_s* tokp, int top);
-		int(*defcmd)(sml_t* sml, struct kexpr_s*, struct ke1_s*, int, int *);
-		int (*defvcmd)(sml_t* sml, kexpr_t *ke, struct ke1_s*, int i);
+		void(*builtin)(struct ke1_s *a, struct ke1_s *b, struct ke1_s *out); // execution function
+		double(*real_func1)(double);
+		double(*real_func2)(double, double);
+		int(*defprop)(sml_t* sml, struct ke1_s* prop, int top);
+		int(*deffunc)(sml_t* sml, struct ke1_s* tokp, int top);
+		int(*defcmd)(sml_t* sml, struct ke1_s* tokp, int top, int *);
+		int(*defvcmd)(sml_t* sml, struct ke1_s* tokp, int top, int i);
 		struct ke1_s * recp;
 	} f;
 	union {  //               
@@ -200,7 +197,7 @@ typedef struct ke1_s {
 		gsl_vector_int * vector_int;
 		gsl_vector * vector;
 		gsl_matrix * matrix;
-	    gsl_complex tcomplex;
+		gsl_complex tcomplex;
 		reclistt reclist;
 		PLGraphicsIn * plgrin;
 		PLPointer * plptr;
@@ -211,7 +208,21 @@ typedef struct ke1_s {
 		PLFILL_callback plfillcb;
 	} obj;
 	char *name; // variable name or function name                                                                 
-	int padding;
+	int32_t ijmp;
+	int32_t sourceLine; // fast jmp  
+	uint16_t ttype;
+	uint16_t vtype;
+	int16_t ifield;
+	int8_t icmd;
+	int8_t assigned;
+	int8_t propget;
+	int8_t propset;
+	int8_t tofree;
+	int8_t islocal;
+	int8_t op;
+	int8_t n_args;
+	int8_t realToken;
+	int8_t futur;
 } ke1_t;
 
 struct kexpr_s {

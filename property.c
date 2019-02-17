@@ -3,7 +3,7 @@
 #include "matrix.h"
 #include "str.h"
 
-static int ke_poperty_str_get(sml_t* sml, struct ke1_s** stack, struct ke1_s* prop, int top) {
+static int ke_poperty_str_get(sml_t* sml, struct ke1_s* prop, int top) {
 	int narg = prop->n_args;
 	if (narg == 0) {
 		return ke_str_prop_get_0par(sml, prop, top);
@@ -19,7 +19,7 @@ static int ke_poperty_str_get(sml_t* sml, struct ke1_s** stack, struct ke1_s* pr
 	return top;
 }
 
-static int ke_poperty_matrix_get(sml_t* sml, struct ke1_s** stack, struct ke1_s* prop, int top) {
+static int ke_poperty_matrix_get(sml_t* sml, struct ke1_s* prop, int top) {
 	int narg = prop->n_args;
 	if (narg == 2) {
 		top = ke_matrix_prop_get(sml, prop, top);
@@ -30,7 +30,7 @@ static int ke_poperty_matrix_get(sml_t* sml, struct ke1_s** stack, struct ke1_s*
 	return top;
 }
 
-static int ke_poperty_vector_get(sml_t* sml,struct ke1_s** stack, struct ke1_s* prop, int top) {
+static int ke_poperty_vector_get(sml_t* sml, struct ke1_s* prop, int top) {
 	int narg = prop->n_args;
 	if (narg == 1) {
 		top = ke_vector_get(sml, prop, top);
@@ -41,7 +41,7 @@ static int ke_poperty_vector_get(sml_t* sml,struct ke1_s** stack, struct ke1_s* 
 	return top;
 }
 
-static int ke_poperty_matrix_set(sml_t* sml,struct ke1_s** stack, struct ke1_s* prop, int top) {
+static int ke_poperty_matrix_set(sml_t* sml, struct ke1_s* prop, int top) {
 	int narg = prop->n_args;
 	if (narg == 2) {
 		top = ke_matrix_prop_set(sml, prop, top);
@@ -52,7 +52,7 @@ static int ke_poperty_matrix_set(sml_t* sml,struct ke1_s** stack, struct ke1_s* 
 	return top;
 }
 
-static int ke_poperty_str_set(sml_t* sml,struct ke1_s** stack, struct ke1_s* prop, int top) {
+static int ke_poperty_str_set(sml_t* sml, struct ke1_s* prop, int top) {
 	int narg = prop->n_args;
 	if (narg == 1) {
 		return ke_str_prop_set_1par(sml, prop, top);
@@ -66,7 +66,7 @@ static int ke_poperty_str_set(sml_t* sml,struct ke1_s** stack, struct ke1_s* pro
 	return top;
 }
 
-static int ke_poperty_vector_set(sml_t* sml, struct ke1_s** stack, struct ke1_s* prop, int top) {
+static int ke_poperty_vector_set(sml_t* sml, struct ke1_s* prop, int top) {
 	int narg = prop->n_args;
 	if (narg == 1) {
 		top = ke_vector_prop_set(sml, prop, top);
@@ -77,7 +77,7 @@ static int ke_poperty_vector_set(sml_t* sml, struct ke1_s** stack, struct ke1_s*
 	return top;
 }
 
-static int ke_poperty_vector_int_get(sml_t* sml, struct ke1_s** stack, struct ke1_s* prop, int top) {
+static int ke_poperty_vector_int_get(sml_t* sml,  struct ke1_s* prop, int top) {
 	int narg = prop->n_args;
 	if (narg == 1) {
 		top = ke_vector_int_get(sml, prop, top);
@@ -88,7 +88,7 @@ static int ke_poperty_vector_int_get(sml_t* sml, struct ke1_s** stack, struct ke
 	return top;
 }
 
-static int ke_poperty_vector_int_set(sml_t* sml, struct ke1_s** stack, struct ke1_s* prop, int top) {
+static int ke_poperty_vector_int_set(sml_t* sml, struct ke1_s* prop, int top) {
 	int narg = prop->n_args;
 	if (narg == 1) {
 		top = ke_vector_prop_int_set(sml, prop, top);
@@ -99,21 +99,21 @@ static int ke_poperty_vector_int_set(sml_t* sml, struct ke1_s** stack, struct ke
 	return top;
 }
 
-int ke_poperty_get(sml_t* sml,struct ke1_s** stack, struct ke1_s* prop, int top) {
+int ke_poperty_get(sml_t* sml, struct ke1_s* prop, int top) {
 	// get the real name
-	ke1_t* tokp = stack[top - 1];  //  the real field to manage
+	ke1_t* tokp = sml->stack[top - 1];  //  the real field to manage
 	switch (tokp->vtype) {
 	case KEV_MAT:
-		return ke_poperty_matrix_get(sml, stack, prop, top);
+		return ke_poperty_matrix_get(sml, prop, top);
 		break;
 	case KEV_VEC:
-		return ke_poperty_vector_get(sml, stack, prop, top);
+		return ke_poperty_vector_get(sml, prop, top);
 		break;
 	case KEV_VEC_INT:
-		return ke_poperty_vector_int_get(sml, stack, prop, top);
+		return ke_poperty_vector_int_get(sml, prop, top);
 		break;
 	case KEV_STR:
-		return ke_poperty_str_get(sml, stack, prop, top);
+		return ke_poperty_str_get(sml, prop, top);
 		break;
 	default:
 		printf("ke_poperty_get :Property not implemented for %d\n", prop->vtype);
@@ -122,21 +122,21 @@ int ke_poperty_get(sml_t* sml,struct ke1_s** stack, struct ke1_s* prop, int top)
 	return top;
 }
 
-int ke_poperty_set(sml_t* sml,struct ke1_s** stack, struct ke1_s* prop, int top) {
+int ke_poperty_set(sml_t* sml, struct ke1_s* prop, int top) {
 	// get the real name
-	ke1_t* tokp = stack[top - 2];
+	ke1_t* tokp = sml->stack[top - 2];
 	switch (tokp->vtype) {
 	case KEV_MAT:
-		return ke_poperty_matrix_set(sml, stack, prop, top);
+		return ke_poperty_matrix_set(sml, prop, top);
 		break;
 	case KEV_VEC:
-		return ke_poperty_vector_set(sml, stack, prop, top);
+		return ke_poperty_vector_set(sml, prop, top);
 		break;
 	case KEV_VEC_INT:
-		return ke_poperty_vector_int_set(sml, stack, prop, top);
+		return ke_poperty_vector_int_set(sml, prop, top);
 		break;
 	case KEV_STR:
-		return ke_poperty_str_set(sml, stack, prop, top);
+		return ke_poperty_str_set(sml, prop, top);
 		break;
 	default:
 		printf("ke_poperty_set :Property not implemented for type %d\n", prop->vtype);

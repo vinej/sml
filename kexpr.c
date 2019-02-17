@@ -1213,19 +1213,24 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 	ke1_t *p, *q, *e;
 	int top = 0, err = 0;
 	*_i = 0, *_r = 0., *ret_type = 0;
-
+	sml->kexpr = kexpr;
 	sml->stack = (ke1_t**)ke_malloc_memory(sml, kexpr->n * sizeof(ke1_t *));
 	ke1_t **stack = sml->stack;
 	struct ke1_s ** fields = sml->fields;
 	struct ke1_s ** tokens = sml->tokens;
 
-	ke1_t *tokp = NULL;
+	register ke1_t *tokp = NULL;
 	int n = kexpr->n;
 	for (int itok = 0; itok < n; ++itok) {
 		sml->tok_idx = itok;
-		//ke1_t *e = &ke->e[i];
 		tokp = tokens[itok];
 		switch (tokp->ttype) {
+		case KET_CMD:
+			top = (tokp->f.defcmd)(sml, tokp, top, &itok);
+			break;
+		case KET_VCMD:
+			itok = (tokp->f.defvcmd)(sml, tokp, top, itok);
+			break;
 		case KET_OP:
 			if (tokp->op == KEO_NOP) continue;
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
@@ -1233,7 +1238,7 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 					e = stack[top - 2];
 					fields[e->ifield]->n_args = e->n_args;
 					stack[top-2] = fields[e->ifield];
-					top = ke_poperty_set(sml, stack, e, top);
+					top = ke_poperty_set(sml, e, top);
 				}
 				else {
 					q = stack[--top];
@@ -1257,12 +1262,6 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 				}
 			}
 			break;
-		case KET_CMD:
-			top = (tokp->f.defcmd)(sml, kexpr, tokp, top, &itok);
-			break;
-		case KET_VCMD:
-			itok = (tokp->f.defvcmd)(sml, kexpr, tokp, itok);
-			break;
 		case KET_FUNC:
 			top = (tokp->f.deffunc)(sml, tokp, top);
 			break;
@@ -1272,7 +1271,7 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 				// it's only a normal token with ifield pointing to the real field to manager
 				// it's a false record to deal with propget. 
 				stack[top++] = fields[tokp->ifield];
-				top = ke_poperty_get(sml, stack, tokp, top);
+				top = ke_poperty_get(sml, tokp, top);
 			}
 			else {
 				stack[top++] = tokp;
