@@ -1,6 +1,14 @@
+#ifndef KSTACK_H
+#define KSTACK_H
+
 #include <stdio.h>
 
-struct stack;
+struct stack {
+	int top;
+	void ** data;
+	size_t  size;
+};
+
 typedef struct stack kstack_t;
 
 kstack_t * stack_create(int size);
@@ -12,3 +20,4 @@ void * stack_peek(kstack_t *);
 void * stack_pop(kstack_t *);
 void stack_push(kstack_t *, void * data);
 
+#endif

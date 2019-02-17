@@ -4,12 +4,6 @@
 
 static const size_t stack_size_incr = 10;
 
-struct stack {
-	int top;
-	void ** data;
-	size_t  size;
-};
-
 kstack_t * stack_create(int size) {
 
 	kstack_t *stack;

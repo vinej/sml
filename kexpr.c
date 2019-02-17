@@ -185,7 +185,7 @@ sml_t * ke_create_sml() {
 	sml_t * sml = calloc(1,sizeof(sml_t));
 	sml->lastDef = -1;
 	sml->g_fortop = 0;
-	sml->dllke_hash_add = ke_hash_add;
+	sml->dllke_hash_add = (dllke_hash_add_t)ke_hash_add;
 	sml->dllke_get_out = (dllke_get_out_t)ke_get_out;
 	sml->out = calloc(100, sizeof(ke1_t));
 	return sml;
@@ -1248,12 +1248,6 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 		//ke1_t *e = &ke->e[i];
 		tokp = tokens[itok];
 		switch (tokp->ttype) {
-		case KET_CMD:
-			top = (tokp->f.defcmd)(sml, kexpr, tokp, top, &itok);
-			break;
-		case KET_VCMD:
-			itok = (tokp->f.defvcmd)(sml, kexpr, tokp, itok);
-			break;
 		case KET_OP:
 			if (tokp->op == KEO_NOP) continue;
 			if (tokp->op == KEO_LET && tokp->n_args == 2) {
@@ -1284,6 +1278,12 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 					++top;
 				}
 			}
+			break;
+		case KET_CMD:
+			top = (tokp->f.defcmd)(sml, kexpr, tokp, top, &itok);
+			break;
+		case KET_VCMD:
+			itok = (tokp->f.defvcmd)(sml, kexpr, tokp, itok);
 			break;
 		case KET_FUNC:
 			top = (tokp->f.deffunc)(sml, tokp, top);

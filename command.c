@@ -106,20 +106,16 @@ int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens) {
 	int lastNop = 0;
 	for (int itok = 0; itok < n; ++itok) {
 		tokp = tokens[itok];
-
 		if (tokp->ttype == KET_OP && tokp->op == KEO_NOP) {
 			lastNop = itok;
-		}
-
-		if (tokp->ttype == KET_CMD || tokp->ttype == KET_VCMD) {
-			switch (tokp->icmd) {
-			case CMD_IBRK:
+		} else 	if (tokp->ttype == KET_CMD || tokp->ttype == KET_VCMD) {
+			register int icmd = tokp->icmd;
+			if (icmd == CMD_IBRK) {
 				if (!tokp->ijmp) {
 					tokp->ijmp = ifind_forward_next(kexpr, itok, tokp);
 					if (tokp->ijmp == -1) return -1;
 				}
-				break;
-			case CMD_ICNT:
+			} else if (icmd == CMD_ICNT) {
 				if (!tokp->ijmp) {
 					if (sml->g_fortop < 0) {
 						printf("SML: ERROR: Command <for> not found for token <continue> at line <%d>\n", tokp->sourceLine);
@@ -127,8 +123,7 @@ int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens) {
 					}
 					tokp->ijmp = peekfor(sml);
 				}
-				break;
-			case CMD_IEXE:
+			} else if (icmd == CMD_IEXE) {
 				if (!tokp->ijmp) {
 					int idefname = ifind_backward_defname(tokens, itok, tokp);
 					if (idefname != -1) {
@@ -141,35 +136,29 @@ int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens) {
 						tokp->ijmp = (int)kh_val(sml->hidefcommand, iter);
 					}
 				}
-				break;
-			case CMD_IDEF:
+			} else if (icmd == CMD_IDEF) {
 				sml->lastDef = itok;
 				int absent;
 				ke1_t *def_name = tokens[itok - tokp->n_args];
 				def_name->vtype = KEV_DEF;
 				khint_t iter = kh_put(3, sml->hidefcommand, def_name->ifield, &absent);
-				kh_val(sml->hidefcommand, iter) = ((itok) - tokp->n_args - 1);
+				kh_val(sml->hidefcommand, iter) = ((itok)-tokp->n_args - 1);
 
 				if (!tokp->ijmp) {
 					tokp->ijmp = ifind_forward_rtn(kexpr, itok, tokp);
 					if (tokp->ijmp == -1) return -1;
 				}
-				break;
-			case CMD_IIF:
+			} else if (icmd == CMD_IIF) {
 				if (!tokp->ijmp) {
 					tokp->ijmp = ifind_else_or_end(kexpr, itok, tokp);
 					if (tokp->ijmp == -1) return -1;
 				}
-				break;
-			case CMD_IELSE:
+			} else if (icmd == CMD_IELSE) {
 				if (!tokp->ijmp) {
 					tokp->ijmp = ifind_forward_end(kexpr, itok, tokp);
 					if (tokp->ijmp == -1) return -1;
 				}
-				break;
-			case CMD_IEND:
-				break;
-			case CMD_IRTN:
+			} else if (icmd == CMD_IRTN) {
 				if (sml->lastDef == -1) {
 					printf("SML: ERROR: Command <def> not found for token <enddef> at line <%d>\n", tokp->sourceLine);
 					return -1;
@@ -177,21 +166,19 @@ int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens) {
 				if (!tokp->ijmp) {
 					tokp->ijmp = sml->lastDef;
 				}
-				break;
-			case CMD_IFOR:
+			} else if (icmd == CMD_IFOR) {
 				if (tokp->ttype == KET_CMD) {
 					pushfor(sml, lastNop);
 				}
 				else
 				{
-					pushfor(sml,itok - 1);
+					pushfor(sml, itok - 1);
 				}
 				if (!tokp->ijmp) {
 					tokp->ijmp = ifind_forward_next(kexpr, itok, tokp);
 					if (tokp->ijmp == -1) return -1;
 				}
-				break;
-			case CMD_INEXT:
+			} else if (icmd == CMD_INEXT) {
 				if (!tokp->ijmp) {
 					if (sml->g_fortop < 0) {
 						printf("SML: ERROR: Command <for> not found for token <next> at line <%d>\n", tokp->sourceLine);
@@ -199,10 +186,8 @@ int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens) {
 					}
 					tokp->ijmp = popfor(sml);
 				}
-				break;
-			default:
-				break;
 			}
+			// nothing to do for CMD_IEND
 		}
 	}
 	return 0;

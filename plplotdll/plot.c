@@ -14,7 +14,7 @@
 #include "..\stb\stb_image_resize.h"
 
 ke1_t * (__cdecl *dllke_get_out)(sml_t *sml) = 0;
-int(__cdecl *dllke_hash_add)(sml_t* sml, fncp key, char * name) = 0;
+int(__cdecl *dllke_hash_add)(sml_t *, fncp, char *) = 0;
 
 SML_EXPORT void SML_CALL dllke_plot_hash(sml_t* sml);
 

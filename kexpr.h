@@ -107,8 +107,8 @@ typedef struct ke1_s* ke1_p;
 typedef int(*cmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s*, int, int *);
 typedef int(*fncp)(struct sml_s * sml, struct ke1_s* s, int);
 typedef int(*vcmdp)(struct sml_s * sml, struct kexpr_s*, struct ke1_s* s, int);
-typedef void(__cdecl *dllke_hash_add_t)(struct sml_s *sml, fncp key, char * name);
-typedef void(__cdecl *dllke_get_out_t)(struct sml_s *sml);
+typedef int(__cdecl *dllke_hash_add_t)(struct sml_s *, fncp, char *);
+typedef struct ke1_s *(__cdecl *dllke_get_out_t)(struct sml_s *);
 
 KHASH_MAP_INIT_STR(0, cmdp)
 KHASH_MAP_INIT_STR(1, vcmdp)
@@ -210,8 +210,8 @@ typedef struct ke1_s {
 		PLLABEL_FUNC_callback pllblcb;
 		PLFILL_callback plfillcb;
 	} obj;
-	int line;
 	char *name; // variable name or function name                                                                 
+	int padding;
 } ke1_t;
 
 struct kexpr_s {
