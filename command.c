@@ -280,7 +280,7 @@ int ke_command_for(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
 			p->i += stack[top_m1 + 3]->i;
 		}
 	}
-	return top - n;
+	return top_m1;
 }
 
 int ke_command_print_nonl(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {

@@ -1222,64 +1222,70 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 	register ke1_t *tokp = NULL;
 	int n = kexpr->n;
 	for (int itok = 0; itok < n; ++itok) {
-		sml->tok_idx = itok;
 		tokp = tokens[itok];
-		switch (tokp->ttype) {
-		case KET_CMD:
-			top = (tokp->f.defcmd)(sml, tokp, top, &itok);
-			break;
-		case KET_VCMD:
-			itok = (tokp->f.defvcmd)(sml, tokp, top, itok);
-			break;
-		case KET_OP:
-			if (tokp->op == KEO_NOP) continue;
-			if (tokp->op == KEO_LET && tokp->n_args == 2) {
-				if (stack[top - 2]->propset) {
-					e = stack[top - 2];
-					fields[e->ifield]->n_args = e->n_args;
-					stack[top-2] = fields[e->ifield];
-					top = ke_poperty_set(sml, e, top);
-				}
-				else {
-					q = stack[--top];
-					p = stack[--top];
-					ke_set_val(sml, p, q);
-				}
-			}
-			else {
-				if (tokp->n_args == 2) {
-					q = stack[--top];
-					p = stack[--top];
-					stack[top] = ke_get_out(sml);
-					tokp->f.builtin(p, q, stack[top]);
-					++top;
-				}
-				else {
-					p = stack[--top];
-					stack[top] = ke_get_out(sml);
-					tokp->f.builtin(p, 0, stack[top]);
-					++top;
-				}
-			}
-			break;
-		case KET_FUNC:
-			top = (tokp->f.deffunc)(sml, tokp, top);
-			break;
-		case KET_PROP:
-			if (tokp->propget) {
-				// we need ifield, because for a propget, the tokp is not a pointer to a real fields
-				// it's only a normal token with ifield pointing to the real field to manager
-				// it's a false record to deal with propget. 
-				stack[top++] = fields[tokp->ifield];
-				top = ke_poperty_get(sml, tokp, top);
-			}
-			else {
-				stack[top++] = tokp;
-			}
-			break;
-		default:
+		if (tokp->ttype > 5) {
 			stack[top++] = tokp;
-			break;
+		} else {
+			sml->tok_idx = itok;
+			switch (tokp->ttype) {
+			case KET_CMD:
+				top = (tokp->f.defcmd)(sml, tokp, top, &itok);
+				break;
+			case KET_VCMD:
+				itok = (tokp->f.defvcmd)(sml, tokp, top, itok);
+				break;
+			case KET_OP:
+				if (!(tokp->op ^ KEO_NOP)) continue;
+				if (!(tokp->op ^ KEO_LET) && !(tokp->n_args ^ 2)) {
+					if (stack[top - 2]->propset) {
+						e = stack[top - 2];
+						fields[e->ifield]->n_args = e->n_args;
+						stack[top - 2] = fields[e->ifield];
+						top = ke_poperty_set(sml, e, top);
+					}
+					else {
+						q = stack[--top];
+						p = stack[--top];
+						if (!(q->vtype ^ KEV_INT))  p->i = q->i, p->r = (double)p->i;
+						else if (!(q->vtype ^ KEV_REAL)) p->r = q->r, p->i = (int64_t)p->r;
+						else { ke_set_val(sml, p, q); }
+					}
+				}
+				else {
+					if (tokp->n_args == 2) {
+						q = stack[--top];
+						p = stack[--top];
+						stack[top] = ke_get_out(sml);
+						tokp->f.builtin(p, q, stack[top]);
+						++top;
+					}
+					else {
+						p = stack[--top];
+						stack[top] = ke_get_out(sml);
+						tokp->f.builtin(p, 0, stack[top]);
+						++top;
+					}
+				}
+				break;
+			case KET_FUNC:
+				top = (tokp->f.deffunc)(sml, tokp, top);
+				break;
+			case KET_PROP:
+				if (tokp->propget) {
+					// we need ifield, because for a propget, the tokp is not a pointer to a real fields
+					// it's only a normal token with ifield pointing to the real field to manager
+					// it's a false record to deal with propget. 
+					stack[top++] = fields[tokp->ifield];
+					top = ke_poperty_get(sml, tokp, top);
+				}
+				else {
+					stack[top++] = tokp;
+				}
+				break;
+			default:
+				stack[top++] = tokp;
+				break;
+			}
 		}
 	}
 
