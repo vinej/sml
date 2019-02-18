@@ -4,6 +4,7 @@
 #include <time.h>
 #include "kexpr.h"
 #include "utf8.h"
+#include <setjmp.h>
 
 char * gets(char *str);
 utf8* read_utf8_file(utf8* filename);
@@ -17,6 +18,8 @@ void ht_timing(void (*f)(void))
 
 int main(int argc, char *argv[])
 {
+	jmp_buf env_buffer;
+
 #if defined(_M_X64) || defined(_WIN32)
 	SetConsoleOutputCP(CP_UTF8);
 	SetConsoleCP(CP_UTF8);
@@ -45,6 +48,9 @@ int main(int argc, char *argv[])
 	utf8 *str = NULL;
 	if (is_file) {
 		str = read_utf8_file(argv[1]);
+		if (!str) {
+			exit(1);
+		}
 	}
 	else if (is_one_expr) {
 		str = argv[1];

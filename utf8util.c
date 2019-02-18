@@ -60,8 +60,11 @@ utf8* read_utf8_file(utf8* filename) {
 			rewind(fp);
 			str = ReadUTF8(fp, 0);
 		}
+		fclose(fp);
 	}
-	fclose(fp);
+	else {
+		printf("Invalid file name : %s", (char*)filename);
+	}
 	return str;
 }
 
