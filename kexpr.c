@@ -145,44 +145,49 @@ static void ke_func1_abs(ke1_t *p, ke1_t *q, ke1_t *out) { if (p->vtype == KEV_I
 // VALIDATION
 
 #ifdef _DEBUG
-void ke_validate_parameter_qte(ke1_t *p, int nb_param, char * function_name) {
+void ke_validate_parameter_qte(sml_t* sml, ke1_t *p, int nb_param, char * function_name) {
 	if (p->n_args != nb_param) {
-		printf("SML: Invalid number of parameters at line %d (got %d expected %d) for function %s", p->sourceLine, p->n_args, nb_param, function_name);
-		exit(1);
+		printf("\nSML: Invalid number of parameters at line %d (got %d expected %d) for function %s", p->sourceLine, p->n_args, nb_param, function_name);
+		longjmp(sml->env_buffer, 1);
 	}
 }
 
-void ke_validate_parameter_vtype(ke1_t * p, int vtype, char * param_name, char * function_name) {
+void ke_validate_parameter_vtype(sml_t* sml, ke1_t * p, int vtype, char * param_name, char * function_name) {
 	if (p->vtype != vtype) {
-		printf("SML: Invalid type of parameter <%s> type at line <%d> (got %d expected %d) for function <%s>", param_name, p->sourceLine, p->vtype, vtype, function_name);
-		exit(1);
+		printf("\nSML: Invalid type of parameter <%s> type at line <%d> (got %d expected %d) for function <%s>", param_name, p->sourceLine, p->vtype, vtype, function_name);
+		longjmp(sml->env_buffer, 2);
 	}
 }
 
-void ke_validate_parameter_ttype(ke1_t * p, int ttype, char * function_name) {
+void ke_validate_parameter_ttype(sml_t* sml, ke1_t * p, int ttype, char * function_name) {
 	if (p->ttype != ttype) {
-		printf("SML: Invalid type of parameter at line <%d< (got %d expected %d) for function <%s>", p->sourceLine, p->ttype, ttype, function_name);
-		exit(1);
+		printf("\nSML: Invalid type of parameter at line <%d< (got %d expected %d) for function <%s>", p->sourceLine, p->ttype, ttype, function_name);
+		longjmp(sml->env_buffer, 3);
 	}
 }
 
-void ke_validate_parameter_not_null(ke1_t * p, void * ptr, char * param_name, char * function_name) {
+void ke_validate_parameter_not_null(sml_t* sml, ke1_t * p, void * ptr, char * param_name, char * function_name) {
 	if (ptr == NULL) {
-		printf("SML: Parameter <%s> is null at line <%d> for function <%s>", param_name, p->sourceLine, function_name);
-		exit(1);
+		printf("\nSML: Parameter <%s> is null at line <%d> for function <%s>", param_name, p->sourceLine, function_name);
+		longjmp(sml->env_buffer,4);
 	}
 }
 
-void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * function_name) {
+void ke_validate_parameter_int_gt_zero(sml_t* sml, ke1_t * p, char * param_name, char * function_name) {
 	if (p->i <= 0) {
-		printf("SML: Parameter <%s> must be greater than zero at line <%d> for function <%s>", param_name, p->sourceLine, function_name);
-		exit(1);
+		printf("\nSML: Parameter <%s> must be greater than zero at line <%d> for function <%s>", param_name, p->sourceLine, function_name);
+		longjmp(sml->env_buffer, 5);
 	}
 }
 #endif // _DEBUG
 
+void ke_set_jump(sml_t *sml, int info) {
+	longjmp(sml->env_buffer, info);
+}
+
 sml_t * ke_create_sml() {
 	sml_t * sml = calloc(1,sizeof(sml_t));
+	sml->sourceCodeLine = 1;
 	sml->lastDef = -1;
 	sml->g_fortop = 0;
 	sml->dllke_hash_add = (dllke_hash_add_t)ke_hash_add;
@@ -861,8 +866,10 @@ void ke_free_val(sml_t *sml) {
 			ke_vector_int_freemem(sml, fieldp);
 		} else if (fieldp->vtype == KEV_STR && fieldp->obj.s) {
             ke_free_memory(sml, fieldp->obj.s);
-		} else if (fieldp->vtype == KEV_DATE && fieldp->obj.s) {
+		} else if (fieldp->vtype == KEV_DATE && fieldp->obj.date) {
 			ke_free_memory(sml, fieldp->obj.date);
+		} else if (fieldp->vtype == KEV_BUFFER && fieldp->obj.buffer) {
+			ke_free_memory(sml, fieldp->obj.buffer);
 		}
         ke_free_memory(sml,fieldp);
     }
@@ -998,6 +1005,12 @@ void ke_set_file(sml_t *sml, ke1_t *source, ke1_t *dest) {
 	dest->ttype = source->ttype;
 	dest->vtype = source->vtype;
 	dest->obj.file = source->obj.file;
+}
+
+void ke_set_buffer(sml_t *sml, ke1_t *source, ke1_t *dest) {
+	dest->ttype = source->ttype;
+	dest->vtype = source->vtype;
+	dest->obj.buffer = source->obj.buffer;
 }
 
 kexpr_t *ke_parse(sml_t *sml, utf8 *_s, int *err)
@@ -1189,6 +1202,7 @@ void ke_set_val(sml_t* sml, ke1_t* e, ke1_t *q) {
 	 else if (q->vtype == KEV_IMAGE) ke_set_image(sml, q, e);
 	 else if (q->vtype == KEV_FILE) ke_set_file(sml, q, e);
 	 else if (q->vtype == KEV_DATE) ke_set_date(sml, e, q->obj.date);
+	 else if (q->vtype == KEV_BUFFER) ke_set_buffer(sml, e, q);
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
@@ -1235,8 +1249,8 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 				itok = (tokp->f.defvcmd)(sml, tokp, top, itok);
 				break;
 			case KET_OP:
-				if (!(tokp->op ^ KEO_NOP)) continue;
-				if (!(tokp->op ^ KEO_LET) && !(tokp->n_args ^ 2)) {
+				if (tokp->op == KEO_NOP) continue;
+				if ((tokp->op == KEO_LET) && !(tokp->n_args ^ 2)) {
 					if (stack[top - 2]->propset) {
 						e = stack[top - 2];
 						fields[e->ifield]->n_args = e->n_args;
@@ -1246,8 +1260,8 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 					else {
 						q = stack[--top];
 						p = stack[--top];
-						if (!(q->vtype ^ KEV_INT))  p->i = q->i, p->r = (double)p->i;
-						else if (!(q->vtype ^ KEV_REAL)) p->r = q->r, p->i = (int64_t)p->r;
+						if (q->vtype == KEV_INT)  p->i = q->i, p->r = (double)p->i;
+						else if (q->vtype == KEV_REAL) p->r = q->r, p->i = (int64_t)p->r;
 						else { ke_set_val(sml, p, q); }
 					}
 				}

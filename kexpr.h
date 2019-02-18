@@ -11,6 +11,7 @@
 #include "stack.h"
 #include "utf8.h"
 #include "gdate.h"
+#include <setjmp.h>
 
 #if defined(_MSC_VER) || defined(_WIN32)
 #include <Windows.h>
@@ -128,6 +129,8 @@ KDQ_INIT(int)
 
 struct sml_s;
 typedef struct sml_s {
+	int val;
+	jmp_buf env_buffer;
 	// GLOBAL VARIABLE USED BY ALL FUNCTIONS
 	struct ke1_s *out;
 	int out_qte;
@@ -235,11 +238,11 @@ struct kexpr_s {
 #define __GLOBAL_DSEP "__"
 
 #ifdef _DEBUG
-void ke_validate_parameter_qte(ke1_t *p, int nb_param, char * function_name);
-void ke_validate_parameter_vtype(ke1_t * p, int vtype, char * param_name, char * function_name);
-void ke_validate_parameter_ttype(ke1_t * p, int ttype, char * function_name);
-void ke_validate_parameter_not_null(ke1_t * p, void * ptr, char * param_name, char * function_name);
-void ke_validate_parameter_int_gt_zero(ke1_t * p, char * param_name, char * function_name);
+void ke_validate_parameter_qte(sml_t* sml, ke1_t *p, int nb_param, char * function_name);
+void ke_validate_parameter_vtype(sml_t* sml, ke1_t * p, int vtype, char * param_name, char * function_name);
+void ke_validate_parameter_ttype(sml_t* sml, ke1_t * p, int ttype, char * function_name);
+void ke_validate_parameter_not_null(sml_t* sml, ke1_t * p, void * ptr, char * param_name, char * function_name);
+void ke_validate_parameter_int_gt_zero(sml_t* sml, ke1_t * p, char * param_name, char * function_name);
 #endif // _DEBUG
 
 sml_t * ke_create_sml();
@@ -279,5 +282,6 @@ ke1_t * ke_get_tok(sml_t * sml);
 ke1_t * ke_get_tokidx(sml_t * sml, int idx);
 ke1_t* ke_get_val_index(sml_t * sml, int i);
 ke1_t * ke_get_out(sml_t *sml);
+void ke_set_jump(sml_t *sml, int info);
 #endif
 

@@ -16,14 +16,14 @@
 static int ke_file_alloc_buffer(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_NEWBUFFER);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_NEWBUFFER);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
 	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_INT, "buffer_size", FILE_NEWBUFFER);
-	ke_validate_parameter_int_gt_zero(p, "buffer_size", FILE_NEWBUFFER);
+	//ke_validate_parameter_vtype(sml, p, KEV_INT, "buffer_size", FILE_NEWBUFFER);
+	ke_validate_parameter_int_gt_zero(sml, p, "buffer_size", FILE_NEWBUFFER);
 #endif // SML_VALIDATION
 	out->obj.buffer = ke_calloc_memory(sml, (size_t)p->i, 1);
 	out->vtype = KEV_BUFFER;
@@ -35,13 +35,13 @@ static int ke_file_alloc_buffer(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_free_buffer(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FREBUFFER);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FREBUFFER);
 #endif // SML_VALIDATION
 	ke1_t *p;
 	p = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_BUFFER, "buffer_name", FILE_FREBUFFER);
-	ke_validate_parameter_not_null(p, p->obj.buffer, "buffer_name", FILE_FREBUFFER);
+	ke_validate_parameter_vtype(sml, p, KEV_BUFFER, "buffer_name", FILE_FREBUFFER);
+	ke_validate_parameter_not_null(sml, p, p->obj.buffer, "buffer_name", FILE_FREBUFFER);
 #endif // SML_VALIDATION
 	ke_free_memory(sml, p->obj.buffer);
 	return top;
@@ -52,12 +52,12 @@ static int ke_file_free_buffer(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fclose(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FCLOSE);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FCLOSE);
 #endif // SML_VALIDATION
 	ke1_t *p;
 	p = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FCLOSE);
+	ke_validate_parameter_vtype(sml, p, KEV_FILE, "file", FILE_FCLOSE);
 #endif // SML_VALIDATION
 	fclose(p->obj.file);
 	return top;
@@ -68,12 +68,12 @@ static int ke_file_fclose(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_clearerr(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_CLEARERR);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_CLEARERR);
 #endif // SML_VALIDATION
 	ke1_t *p;
 	p = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_FILE, "file",FILE_CLEARERR);
+	ke_validate_parameter_vtype(sml, p, KEV_FILE, "file",FILE_CLEARERR);
 #endif // SML_VALIDATION
 	clearerr(p->obj.file);
 	return top;
@@ -84,13 +84,13 @@ static int ke_file_clearerr(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_feof(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FEOF);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FEOF);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
 	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FEOF);
+	ke_validate_parameter_vtype(sml, p, KEV_FILE, "file", FILE_FEOF);
 #endif // SML_VALIDATION
 	out->vtype = KEV_INT;
 	out->ttype = KET_VAL;
@@ -104,13 +104,13 @@ static int ke_file_feof(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_ferror(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FERROR);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FERROR);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
 	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FERROR);
+	ke_validate_parameter_vtype(sml, p, KEV_FILE, "file", FILE_FERROR);
 #endif // SML_VALIDATION
 	int st = ferror(p->obj.file);
 	out->vtype = KEV_INT;
@@ -125,12 +125,12 @@ static int ke_file_ferror(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fflush(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FFLUSH);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FFLUSH);
 #endif // SML_VALIDATION
 	ke1_t *p;
 	p = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FFLUSH);
+	ke_validate_parameter_vtype(sml, p, KEV_FILE, "file", FILE_FFLUSH);
 #endif // SML_VALIDATION
 	fflush(p->obj.file);
 	return top;
@@ -141,7 +141,7 @@ static int ke_file_fflush(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fgetpos(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FGETPOS);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FGETPOS);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
@@ -157,15 +157,15 @@ static int ke_file_fgetpos(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fopen(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_FOPEN);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_FOPEN);
 #endif // SML_VALIDATION
 	ke1_t *out, *p, *mode;
 	mode = stack[--top];
 	p = stack[--top];
 	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_STR, "filename", FILE_FOPEN);
-	ke_validate_parameter_vtype(mode, KEV_STR, "mode", FILE_FOPEN);
+	ke_validate_parameter_vtype(sml, p, KEV_STR, "filename", FILE_FOPEN);
+	ke_validate_parameter_vtype(sml, mode, KEV_STR, "mode", FILE_FOPEN);
 #endif // SML_VALIDATION
 	out->obj.file = fopen(p->obj.s, mode->obj.s);
 	out->vtype = KEV_FILE;
@@ -178,7 +178,7 @@ static int ke_file_fopen(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fread(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 4, FILE_FREAD);
+	ke_validate_parameter_qte(sml, tokp, 4, FILE_FREAD);
 #endif // SML_VALIDATION
 	ke1_t *out, *ptr, *size, *nmemb, *stream;
 	stream = stack[--top];
@@ -187,10 +187,10 @@ static int ke_file_fread(sml_t* sml, ke1_t *tokp, int top) {
 	ptr = stack[--top ];
 	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(ptr, KEV_BUFFER, "buffer_name", FILE_FREAD);
-	ke_validate_parameter_vtype(size, KEV_INT, "size", FILE_FREAD);
-	ke_validate_parameter_vtype(nmemb, KEV_INT, "nmemb", FILE_FREAD);
-	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_FREAD);
+	ke_validate_parameter_vtype(sml, ptr, KEV_BUFFER, "buffer_name", FILE_FREAD);
+	ke_validate_parameter_vtype(sml, size, KEV_INT, "size", FILE_FREAD);
+	ke_validate_parameter_vtype(sml, nmemb, KEV_INT, "nmemb", FILE_FREAD);
+	ke_validate_parameter_vtype(sml, stream, KEV_FILE, "file", FILE_FREAD);
 #endif // SML_VALIDATION
 
 	out->i = fread(ptr->obj.buffer, (size_t)size->i, (size_t)nmemb->i, stream->obj.file);
@@ -205,7 +205,7 @@ static int ke_file_fread(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_freopen(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 3, FILE_FREOPEN);
+	ke_validate_parameter_qte(sml, tokp, 3, FILE_FREOPEN);
 #endif // SML_VALIDATION
 	ke1_t *out, *filename, *mode, *stream;
 	stream = stack[--top];
@@ -213,9 +213,9 @@ static int ke_file_freopen(sml_t* sml, ke1_t *tokp, int top) {
 	filename = stack[--top];
 	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(filename, KEV_STR, "filename", FILE_FREOPEN);
-	ke_validate_parameter_vtype(mode, KEV_STR, "mode", FILE_FREOPEN);
-	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_FREOPEN);
+	ke_validate_parameter_vtype(sml, filename, KEV_STR, "filename", FILE_FREOPEN);
+	ke_validate_parameter_vtype(sml, mode, KEV_STR, "mode", FILE_FREOPEN);
+	ke_validate_parameter_vtype(sml, stream, KEV_FILE, "file", FILE_FREOPEN);
 #endif // SML_VALIDATION
 	FILE * tmp = freopen(filename->obj.s, mode->obj.s, stream->obj.file);
 	out->obj.file = tmp;
@@ -229,16 +229,16 @@ static int ke_file_freopen(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fseek(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 3, FILE_FSEEK);
+	ke_validate_parameter_qte(sml, tokp, 3, FILE_FSEEK);
 #endif // SML_VALIDATION
 	ke1_t *stream, *offset, *whence;
 	whence = stack[--top];
 	offset = stack[--top];
 	stream = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(whence, KEV_INT, "whence", FILE_FSEEK);
-	ke_validate_parameter_vtype(offset, KEV_INT, "offset", FILE_FSEEK);
-	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_FSEEK);
+	ke_validate_parameter_vtype(sml, whence, KEV_INT, "whence", FILE_FSEEK);
+	ke_validate_parameter_vtype(sml, offset, KEV_INT, "offset", FILE_FSEEK);
+	ke_validate_parameter_vtype(sml, stream, KEV_FILE, "file", FILE_FSEEK);
 #endif // SML_VALIDATION
 
 	fseek(stream->obj.file, (unsigned long)offset->i, (int)whence->i);
@@ -250,14 +250,14 @@ static int ke_file_fseek(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fsetpos(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_FSETPOS);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_FSETPOS);
 #endif // SML_VALIDATION
 	ke1_t *p, *pos;
 	pos = stack[--top];
 	p = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(pos, KEV_INT, "file", FILE_FSETPOS);
-	ke_validate_parameter_vtype(p, KEV_FILE, "pos",  FILE_FSETPOS);
+	ke_validate_parameter_vtype(sml, pos, KEV_INT, "file", FILE_FSETPOS);
+	ke_validate_parameter_vtype(sml, p, KEV_FILE, "pos",  FILE_FSETPOS);
 #endif // SML_VALIDATION
 
 	//fsetpos(p->obj.file, pos->i);
@@ -269,13 +269,13 @@ static int ke_file_fsetpos(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_ftell(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FTELL);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FTELL);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
 	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(p, KEV_FILE, "file", FILE_FSETPOS);
+	ke_validate_parameter_vtype(sml, p, KEV_FILE, "file", FILE_FSETPOS);
 #endif // SML_VALIDATION
 	out->i = ftell(p->obj.file);
 	out->vtype = KEV_INT;
@@ -289,7 +289,7 @@ static int ke_file_ftell(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fwrite(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 4, FILE_FWRITE);
+	ke_validate_parameter_qte(sml, tokp, 4, FILE_FWRITE);
 #endif // SML_VALIDATION
 	ke1_t *out, *ptr, *size, *nmemb, *stream;
 	stream = stack[--top];
@@ -298,10 +298,10 @@ static int ke_file_fwrite(sml_t* sml, ke1_t *tokp, int top) {
 	ptr = stack[--top];
 	stack[top] = ke_get_out(sml); out = stack[top++];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(ptr, KEV_BUFFER, "buffer_name", FILE_FWRITE);
-	ke_validate_parameter_vtype(nmemb, KEV_INT, "nmemb", FILE_FWRITE);
-	ke_validate_parameter_vtype(size, KEV_INT, "size", FILE_FWRITE);
-	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_FWRITE);
+	ke_validate_parameter_vtype(sml, ptr, KEV_BUFFER, "buffer_name", FILE_FWRITE);
+	ke_validate_parameter_vtype(sml, nmemb, KEV_INT, "nmemb", FILE_FWRITE);
+	ke_validate_parameter_vtype(sml, size, KEV_INT, "size", FILE_FWRITE);
+	ke_validate_parameter_vtype(sml, stream, KEV_FILE, "file", FILE_FWRITE);
 #endif // SML_VALIDATION
 	out->i = fwrite(ptr->obj.buffer, (size_t)size->i, (size_t)nmemb->i, stream->obj.file);
 	out->vtype = KEV_INT;
@@ -315,12 +315,12 @@ static int ke_file_fwrite(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_remove(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_REMOVE);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_REMOVE);
 #endif // SML_VALIDATION
 	ke1_t *filename;
 	filename = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(filename, KEV_STR, "filename", FILE_REMOVE);
+	ke_validate_parameter_vtype(sml, filename, KEV_STR, "filename", FILE_REMOVE);
 #endif // SML_VALIDATION
 	remove(filename->obj.s);
 	return top;
@@ -332,14 +332,14 @@ static int ke_file_remove(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_rename(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_RENAME);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_RENAME);
 #endif // SML_VALIDATION
 	ke1_t *old_filename, *new_filename;
 	new_filename = stack[--top];
 	old_filename = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(new_filename, KEV_STR, "new_filename", FILE_RENAME);
-	ke_validate_parameter_vtype(old_filename, KEV_STR, "old_filename", FILE_RENAME);
+	ke_validate_parameter_vtype(sml, new_filename, KEV_STR, "new_filename", FILE_RENAME);
+	ke_validate_parameter_vtype(sml, old_filename, KEV_STR, "old_filename", FILE_RENAME);
 #endif // SML_VALIDATION
 	rename(old_filename->obj.s, new_filename->obj.s);
 	return top;
@@ -350,12 +350,12 @@ static int ke_file_rename(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_rewind(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_REWIND);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_REWIND);
 #endif // SML_VALIDATION
 	ke1_t *stream = stack[--top];
 	--top;  // don't need out
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(stream, KEV_STR, "file", FILE_REWIND);
+	ke_validate_parameter_vtype(sml, stream, KEV_STR, "file", FILE_REWIND);
 #endif // SML_VALIDATION
 	rewind(stream->obj.file);
 	return top;
@@ -366,14 +366,14 @@ static int ke_file_rewind(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_setbuf(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_SETBUF);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_SETBUF);
 #endif // SML_VALIDATION
 	ke1_t *stream, *buffer;
 	buffer = stack[--top];
 	stream = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_SETBUF);
-	ke_validate_parameter_vtype(buffer, KEV_BUFFER, "buffer_name", FILE_SETBUF);
+	ke_validate_parameter_vtype(sml, stream, KEV_FILE, "file", FILE_SETBUF);
+	ke_validate_parameter_vtype(sml, buffer, KEV_BUFFER, "buffer_name", FILE_SETBUF);
 #endif // SML_VALIDATION
 
 	setbuf(stream->obj.file, buffer->obj.buffer);
@@ -385,7 +385,7 @@ static int ke_file_setbuf(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_setvbuf(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 4, FILE_SETVBUF);
+	ke_validate_parameter_qte(sml, tokp, 4, FILE_SETVBUF);
 #endif // SML_VALIDATION
 	ke1_t *stream, *buffer, *mode, *size;
 	size = stack[--top];
@@ -393,10 +393,10 @@ static int ke_file_setvbuf(sml_t* sml, ke1_t *tokp, int top) {
 	buffer = stack[--top];
 	stream = stack[--top];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(size, KEV_INT, "size", FILE_SETVBUF);
-	ke_validate_parameter_vtype(mode, KEV_STR, "mode", FILE_SETVBUF);
-	ke_validate_parameter_vtype(buffer, KEV_BUFFER, "buffer_name", FILE_SETVBUF);
-	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_SETVBUF);
+	ke_validate_parameter_vtype(sml, size, KEV_INT, "size", FILE_SETVBUF);
+	ke_validate_parameter_vtype(sml, mode, KEV_STR, "mode", FILE_SETVBUF);
+	ke_validate_parameter_vtype(sml, buffer, KEV_BUFFER, "buffer_name", FILE_SETVBUF);
+	ke_validate_parameter_vtype(sml, stream, KEV_FILE, "file", FILE_SETVBUF);
 #endif // SML_VALIDATION
 
 	setvbuf(stream->obj.file, buffer->obj.buffer, (int)mode->i, (size_t)size->i);
@@ -409,7 +409,7 @@ static int ke_file_setvbuf(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_tmpfile(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 0, FILE_TMPFILE);
+	ke_validate_parameter_qte(sml, tokp, 0, FILE_TMPFILE);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
@@ -425,7 +425,7 @@ static int ke_file_tmpfile(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_tmpnam(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_TMPNAME);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_TMPNAME);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
@@ -491,8 +491,8 @@ static int ke_file_vfprintf(sml_t* sml, ke1_t *tokp, int top) {
 	format = stack[top - tokp->n_args + 1];
 	stream = stack[top - tokp->n_args];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(format, KEV_STR, "format", FILE_TMPNAME);
-	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_TMPNAME);
+	ke_validate_parameter_vtype(sml, format, KEV_STR, "format", FILE_TMPNAME);
+	ke_validate_parameter_vtype(sml, stream, KEV_FILE, "file", FILE_TMPNAME);
 #endif // SML_VALIDATION
 
 	if (tokp->n_args > 2) {
@@ -519,9 +519,9 @@ static int ke_file_xvfprintf(sml_t* sml, ke1_t *tokp, int top) {
 	stream = stack[top - tokp->n_args + 1];
 	buf = stack[top - tokp->n_args];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(format, KEV_STR, "format", FILE_FPRINTF);
-	ke_validate_parameter_vtype(stream, KEV_FILE, "file", FILE_FPRINTF);
-	ke_validate_parameter_vtype(buf, KEV_STR, "str_buffer", FILE_FPRINTF);
+	ke_validate_parameter_vtype(sml, format, KEV_STR, "format", FILE_FPRINTF);
+	ke_validate_parameter_vtype(sml, stream, KEV_FILE, "file", FILE_FPRINTF);
+	ke_validate_parameter_vtype(sml, buf, KEV_STR, "str_buffer", FILE_FPRINTF);
 #endif // SML_VALIDATION
 	if (tokp->n_args > 3) {
 		char * va = gen_valist(sml, (size_t)tokp->n_args - 2, top);
@@ -545,7 +545,7 @@ static int ke_file_vprintf(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t  *format;
 	format = stack[top - tokp->n_args];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(format, KEV_STR, "format", FILE_PRINTF);
+	ke_validate_parameter_vtype(sml, format, KEV_STR, "format", FILE_PRINTF);
 #endif // SML_VALIDATION
 	if (tokp->n_args > 1) {
 		char * va = gen_valist(sml,(size_t)tokp->n_args, top);
@@ -571,8 +571,8 @@ static int ke_file_xvprintf(sml_t* sml, ke1_t *tokp, int top) {
 	format = stack[top - tokp->n_args + 1];
 	buf = stack[top - tokp->n_args];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(format, KEV_STR, "format", FILE_XPRINTF);
-	ke_validate_parameter_vtype(buf, KEV_STR, "str_buffer", FILE_XPRINTF);
+	ke_validate_parameter_vtype(sml, format, KEV_STR, "format", FILE_XPRINTF);
+	ke_validate_parameter_vtype(sml, buf, KEV_STR, "str_buffer", FILE_XPRINTF);
 #endif // SML_VALIDATION
 
 	if (tokp->n_args > 2) {
@@ -599,7 +599,7 @@ static int ke_file_vsprintf(sml_t* sml, ke1_t *tokp, int top) {
 	format = stack[top - tokp->n_args + 1];
 	str = stack[top - tokp->n_args];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(format, KEV_STR, "format", FILE_SPRINTF);
+	ke_validate_parameter_vtype(sml, format, KEV_STR, "format", FILE_SPRINTF);
 #endif // SML_VALIDATION
 	char * buf = ke_calloc_memory(sml,MAX_BUF+1, 1);
 	if (tokp->n_args > 2) {
@@ -626,8 +626,8 @@ static int ke_file_xvsprintf(sml_t* sml, ke1_t *tokp, int top) {
 	format = stack[top - tokp->n_args + 1];
 	buf = stack[top - tokp->n_args];
 #ifdef _DEBUG
-	ke_validate_parameter_vtype(format, KEV_STR, "format", FILE_SPRINTF);
-	ke_validate_parameter_vtype(buf, KEV_STR, "str_buffer", FILE_SPRINTF);
+	ke_validate_parameter_vtype(sml, format, KEV_STR, "format", FILE_SPRINTF);
+	ke_validate_parameter_vtype(sml, buf, KEV_STR, "str_buffer", FILE_SPRINTF);
 #endif // SML_VALIDATION
 	if (tokp->n_args > 2) {
 		char * va = gen_valist(sml,(size_t)tokp->n_args - 1, top);
@@ -871,7 +871,7 @@ static int ke_file_xvsscanf(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = 
 // int fgetc(FILE *stream)
 static int ke_file_fgetc(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FGETC);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FGETC);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
@@ -889,7 +889,7 @@ static int ke_file_fgetc(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 static int ke_file_fgets(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_FGETS);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_FGETS);
 #endif // SML_VALIDATION
 	ke1_t *str, *stream;
 	stream = stack[--top];
@@ -915,7 +915,7 @@ static int ke_file_fgets(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_xfgets(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 3, FILE_XFGETS);
+	ke_validate_parameter_qte(sml, tokp, 3, FILE_XFGETS);
 #endif // SML_VALIDATION
 	ke1_t *buf, *size, *file;
 	file = stack[--top];
@@ -933,7 +933,7 @@ static int ke_file_xfgets(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fputc(sml_t* sml, ke1_t *tokp, int top) {
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_FPUTS);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_FPUTS);
 #endif // SML_VALIDATION
 	ke1_t *c, *stream;
 	stream = stack[--top];
@@ -947,7 +947,7 @@ static int ke_file_fputc(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_fputs(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_FPUTS);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_FPUTS);
 #endif // SML_VALIDATION
 	ke1_t *str, *stream;
 	stream = stack[--top];
@@ -961,7 +961,7 @@ static int ke_file_fputs(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_getc(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_FGETC);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_FGETC);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top ];
@@ -978,7 +978,7 @@ static int ke_file_getc(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_getchar(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_GETCHAR);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_GETCHAR);
 #endif // SML_VALIDATION
 	ke1_t *out, *p;
 	p = stack[--top];
@@ -995,7 +995,7 @@ static int ke_file_getchar(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_gets(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_GETS);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_GETS);
 #endif // SML_VALIDATION
 	ke1_t *str;
 	str = stack[--top];
@@ -1019,7 +1019,7 @@ static int ke_file_gets(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_xgets(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_XGETS);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_XGETS);
 #endif // SML_VALIDATION
 	ke1_t *buf, *size;
 	size = stack[--top];
@@ -1035,7 +1035,7 @@ static int ke_file_xgets(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_putc(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_FPUTC);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_FPUTC);
 #endif // SML_VALIDATION
 	ke1_t *c, *stream;
 	c = stack[--top];
@@ -1049,7 +1049,7 @@ static int ke_file_putc(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_putchar(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_PUTCHAR);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_PUTCHAR);
 #endif // SML_VALIDATION
 	ke1_t *c;
 	c = stack[--top];
@@ -1062,7 +1062,7 @@ static int ke_file_putchar(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_puts(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_PUTS);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_PUTS);
 #endif // SML_VALIDATION
 	ke1_t *str;
 	str = stack[--top];
@@ -1075,7 +1075,7 @@ static int ke_file_puts(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_ungetc(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 2, FILE_UNGETC);
+	ke_validate_parameter_qte(sml, tokp, 2, FILE_UNGETC);
 #endif // SML_VALIDATION
 	ke1_t *c, *stream;
 	stream = stack[--top];
@@ -1090,7 +1090,7 @@ static int ke_file_ungetc(sml_t* sml, ke1_t *tokp, int top) {
 static int ke_file_perror(sml_t* sml, ke1_t *tokp, int top) { 
 	ke1_t **stack = sml->stack;
 #ifdef _DEBUG
-	ke_validate_parameter_qte(tokp, 1, FILE_PERROR);
+	ke_validate_parameter_qte(sml, tokp, 1, FILE_PERROR);
 #endif // SML_VALIDATION
 	ke1_t *str;
 	str = stack[--top];

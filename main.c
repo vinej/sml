@@ -18,7 +18,6 @@ void ht_timing(void (*f)(void))
 
 int main(int argc, char *argv[])
 {
-	jmp_buf env_buffer;
 
 #if defined(_M_X64) || defined(_WIN32)
 	SetConsoleOutputCP(CP_UTF8);
@@ -72,18 +71,25 @@ int main(int argc, char *argv[])
 			return 1;
 		}
 
-		if (!to_print) {
-			int64_t vi;
-			double vr;
-			char *vs;
-			int ret_type;
-			clock_t start_t = clock();
-			err |= ke_eval(sml, ke, &vi, &vr, &vs, &ret_type);
-			clock_t end_t = clock();
-			double total_t = (double)((double)end_t - start_t) / CLOCKS_PER_SEC;
-			printf("Total time taken by CPU: %.6lf second\n", total_t);
+		sml->val = setjmp(sml->env_buffer);
+		if (sml->val != 0) {
+			printf("\nSML: Error found in code: %d\n", sml->val);
 		}
-		else ke_print(sml, ke);
+		else {
+			if (!to_print) {
+				int64_t vi;
+				double vr;
+				char *vs;
+				int ret_type;
+				clock_t start_t = clock();
+				err |= ke_eval(sml, ke, &vi, &vr, &vs, &ret_type);
+				clock_t end_t = clock();
+				double total_t = (double)((double)end_t - start_t) / CLOCKS_PER_SEC;
+				printf("Total time taken by CPU: %.6lf second\n", total_t);
+			}
+			else ke_print(sml, ke);
+		}
+
 		if (is_file) {
 			free(str);
 		}
