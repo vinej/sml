@@ -1,8 +1,9 @@
 #include <math.h>
-#include "khash.h"
+#include <time.h>
+
 #include "kexpr.h"
 #include "function.h"
-#include "time.h"
+#include "api.c"
 
 #define RADIAN 1
 #define DEGREE 2
@@ -24,536 +25,269 @@ static double convert_anglem(double value) {
 	}
 }
 
-static int ke_function_anglem(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p;
-	p = stack[--top];
-	anglem = (int)p->i;
-	return top;
+static void ke_function_anglem(sml_t* sml) { 
+	anglem = sml_pop_int(sml);
 }
 
-static int ke_function_exp(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = exp(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_exp(sml_t* sml) {
+	double r = exp(sml_pop_real(sml));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_pow(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = pow(p->r, q->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-    return top;
+static void ke_function_pow(sml_t* sml) {
+	double q = sml_pop_real(sml);
+	double p = sml_pop_real(sml);
+	double r = pow(p, q);
+	sml_push_real(sml, r);
 }
 
-static int ke_function_log(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out,*p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = log(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_log(sml_t* sml) { 
+	double r = log(sml_pop_real(sml));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_log10(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out,*p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = log10(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_log10(sml_t* sml) { 
+	double r = log10(sml_pop_real(sml));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_sqrt(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out,*p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = sqrt(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_sqrt(sml_t* sml) {
+	double r = sqrt(sml_pop_real(sml));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_sin(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(sin(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_sin(sml_t* sml) { 
+	double r = convert_anglem(sin(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_cos(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(cos(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_cos(sml_t* sml) { 
+	double r = convert_anglem(cos(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_tan(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(tan(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_tan(sml_t* sml) {
+	double r = convert_anglem(tan(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_floor(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = floor(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_floor(sml_t* sml) {
+	double r = floor(sml_pop_real(sml));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_ceil(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = ceil(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_ceil(sml_t* sml) {
+	double r = ceil(sml_pop_real(sml));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_acos(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(acos(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_acos(sml_t* sml) { 
+	double r = convert_anglem(acos(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_asin(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(asin(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_asin(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(asin(r));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_atan(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(atan(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_atan(sml_t* sml) { 
+	double r = convert_anglem(atan(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_cosh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(cosh(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_cosh(sml_t* sml) { 
+	double r = convert_anglem(cosh(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_sinh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(sinh(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-    return top;
+static void ke_function_sinh(sml_t* sml) { 
+	double r = convert_anglem(sinh(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_tanh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(tanh(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_tanh(sml_t* sml) { 
+	double r = convert_anglem(tanh(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_atan2(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(atan2(p->r, q->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_atan2(sml_t* sml) {
+	double q = sml_pop_real(sml);
+	double p = sml_pop_real(sml);
+	double r = convert_anglem(atan2(p, q));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_fmod(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = fmod(p->r, q->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_fmod(sml_t* sml) { 
+	double q = sml_pop_real(sml);
+	double p = sml_pop_real(sml);
+	double r = fmod(p, q);
+	sml_push_real(sml, r);
 }
 
-static int ke_function_csc(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(1/sin(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_csc(sml_t* sml) { 
+	double r = convert_anglem(1/sin(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_sec(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(1/cos(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_sec(sml_t* sml) {
+	double r = convert_anglem(1 / cos(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_cot(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(1/tan(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_cot(sml_t* sml) { 
+	double r = convert_anglem(1 / tan(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_csch(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(1/sinh(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_csch(sml_t* sml) { 
+	double r = convert_anglem(1 / sinh(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_sech(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(1/cosh(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_sech(sml_t* sml) {
+	double r = convert_anglem(1 / cosh(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_coth(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(1/tanh(p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_coth(sml_t* sml) { 
+	double r = convert_anglem(1 / tanh(sml_pop_real(sml)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_acosh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(log(p->r+sqrt(p->r*p->r-1)));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_acosh(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(log(r + sqrt(r*r-1)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_asinh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(log(p->r + sqrt(p->r*p->r+1)));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_asinh(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(log(r + sqrt(r*r + 1)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_atanh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(0.5*log((1+p->r)/(1-p->r)));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_atanh(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(0.5*log((1 + r) / (1 - r)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_acsc(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(asin(1/p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_acsc(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(asin(1/r));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_asec(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(acos(1/p->r));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_asec(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(acos(1/r));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_acot(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(-((2*atan(p->r)-M_PI)/2));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_acot(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(-((2 * atan(r) - M_PI) / 2));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_acsch(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(log(1/p->r + sqrt(1/p->r*1/p->r + 1)));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_acsch(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(log(1 / r + sqrt(1 / r * 1 / r + 1)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_asech(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(log(1/p->r + sqrt(1/p->r*1/p->r - 1)));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_asech(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(log(1 / r + sqrt(1 / r * 1 / r - 1)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_acoth(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = convert_anglem(0.5*log((1 + 1/p->r) / (1 - 1/p->r)));
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->assigned = 1;
-	return top;
+static void ke_function_acoth(sml_t* sml) { 
+	double r = sml_pop_real(sml);
+	r = convert_anglem(0.5*log((1 + 1 /r) / (1 - 1 / r)));
+	sml_push_real(sml, r);
 }
 
-static int ke_function_timeyear(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out;
-	stack[top] = ke_get_out(sml); out = stack[top++];
+static void ke_function_timeyear(sml_t* sml) { 
 	time_t my_time;
 	time(&my_time);
-	out->i = (int)localtime(&my_time)->tm_year + (int)1900;
-	out->vtype = KEV_INT;
-	out->ttype = KET_VAL;
-	return top;
+	int i = (int)localtime(&my_time)->tm_year + (int)1900;
+	sml_push_int(sml, i);
 }
 
-static int ke_function_timemonth(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out;
-	stack[top] = ke_get_out(sml); out = stack[top++];
+static void ke_function_timemonth(sml_t* sml) {
 	time_t my_time;
 	time(&my_time);
-	out->i = (int)localtime(&my_time)->tm_mon + (int)1;
-	out->vtype = KEV_INT;
-	out->ttype = KET_VAL;
-	return top;
+	int i = (int)localtime(&my_time)->tm_mon + (int)1;
+	sml_push_int(sml, i);
 }
 
-static int ke_function_timeday(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out;
-	stack[top] = ke_get_out(sml); out = stack[top++];
+static void ke_function_timeday(sml_t* sml) { 
 	time_t my_time;
 	time(&my_time);
-	out->i = localtime(&my_time)->tm_mday;
-	out->vtype = KEV_INT;
-	out->ttype = KET_VAL;
-	return top;
+	int i = localtime(&my_time)->tm_mday;
+	sml_push_int(sml, i);
 }
 
-static int ke_function_timehour(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out;
-	stack[top] = ke_get_out(sml); out = stack[top++];
+static void ke_function_timehour(sml_t* sml) { 
 	time_t my_time;
 	time(&my_time);
-	out->i = localtime(&my_time)->tm_hour;
-	out->vtype = KEV_INT;
-	out->ttype = KET_VAL;
-	return top;
+	int i = localtime(&my_time)->tm_hour;
+	sml_push_int(sml, i);
 }
 
-static int ke_function_timemin(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out;
-	stack[top] = ke_get_out(sml); out = stack[top++];
+static void ke_function_timemin(sml_t* sml) {
 	time_t my_time;
 	time(&my_time);
-	out->i = localtime(&my_time)->tm_min;
-	out->vtype = KEV_INT;
-	out->ttype = KET_VAL;
-	return top;
+	int i = localtime(&my_time)->tm_min;
+	sml_push_int(sml, i);
 }
 
-static int ke_function_timesec(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out;
-	stack[top] = ke_get_out(sml); out = stack[top++];
+static void ke_function_timesec(sml_t* sml) { 
 	time_t my_time;
 	time(&my_time);
-	out->i = localtime(&my_time)->tm_sec;
-	out->vtype = KEV_INT;
-	out->ttype = KET_VAL;
-	return top;
+	int i = localtime(&my_time)->tm_sec;
+	sml_push_int(sml, i);
 }
 
-static int ke_function_gcd(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	int64_t gcd = 0;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	int64_t p_i = (p->i > 0) ? p->i : -p->i;
-	int64_t q_i = (q->i > 0) ? q->i : -q->i;
+static void ke_function_gcd(sml_t* sml) {
+	int64_t i = 0;
+	int64_t q = sml_pop_int(sml);
+	int64_t p = sml_pop_int(sml);
+	int64_t p_i = (p > 0) ? p : -p;
+	int64_t q_i = (q > 0) ? q : -q;
 
-	for (int64_t i = 1; i <= p_i && i <= q_i; ++i)
+	for (int64_t j = 1; j <= p_i && i <= q_i; ++j)
 	{
 		// Checks if i is factor of both integers
-		if (p_i%i == 0 && q_i%i == 0) {
-			gcd = i;
+		if (p_i%j == 0 && q_i%j == 0) {
+			i = j;
 		}
 	}
-	out->i = gcd;
-	out->r = (double)out->i;
-	out->vtype = KEV_INT;
-	out->ttype = KET_VAL;
-	return top;
+	sml_push_int(sml, i);
 }
 
-static int ke_function_lcm(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	int64_t lcm = 0;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	int64_t p_i = (p->i > 0) ? p->i : -p->i;
-	int64_t q_i = (q->i > 0) ? q->i : -q->i;
+static void ke_function_lcm(sml_t* sml) { 
+	int64_t i = 0;
+	int64_t q = sml_pop_int(sml);
+	int64_t p = sml_pop_int(sml);
+	int64_t p_i = (p > 0) ? p : -p;
+	int64_t q_i = (q > 0) ? q : -q;
 
-	lcm = (p_i > q_i) ? p_i : q_i;
+	i = (p_i > q_i) ? p_i : q_i;
 
 	// Always true
 	while (1)
 	{
-		if (lcm%p->i == 0 && lcm%q->i == 0)
+		if (i%p == 0 && i%q == 0)
 		{
 			break;
 		}
-		++lcm;
+		++i;
 	}
-
-	out->i = lcm;
-	out->r = (double)out->i;
-	out->vtype = KEV_INT;
-	out->ttype = KET_VAL;
-	return top;
+	sml_push_int(sml, i);
 }
 
 void ke_function_hash(sml_t* sml) {

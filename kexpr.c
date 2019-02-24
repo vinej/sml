@@ -1239,6 +1239,7 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 
 	int n = kexpr->n;
 	for (int itok = 0; itok < n; ++itok) {
+		sml->top = top;
 		// put into the stack all values type
 		tokpp = &tokens[itok];
 		while ((*tokpp)->ttype > 5) {
@@ -1249,14 +1250,14 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 		sml->tok_idx = itok;
 		switch (tokp->ttype) {
 		case KET_CMD:
-			top = (tokp->f.defcmd)(sml, tokp, top, &itok);
+			top = (tokp->f.defcmd)(sml, tokp, top, &itok); 
 			break;
 		case KET_VCMD:
 			itok = (tokp->f.defvcmd)(sml, tokp, top, itok);
 			break;
 		case KET_OP:
 			if (tokp->op == KEO_NOP) continue;
-			if ((tokp->op == KEO_LET) && (tokp->n_args == 2)) {
+			if (tokp->op == KEO_LET) {
 				if (!stack[top - 2]->propset) {
 					q = stack[--top];
 					p = stack[--top];
@@ -1288,7 +1289,9 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 			}
 			break;
 		case KET_FUNC:
-			top = (tokp->f.deffunc)(sml, tokp, top);
+			sml->top = top;	sml->tokp = tokp;
+			(tokp->f.deffunc)(sml);
+			top = sml->top;
 			break;
 		case KET_PROP:
 			if (tokp->propget) {

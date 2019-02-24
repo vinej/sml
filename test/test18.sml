@@ -1,5 +1,4 @@
-# test all function
-
+﻿# test all function
 if (pow(2,3) == 8)
 	print('success : pow')
 else

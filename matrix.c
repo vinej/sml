@@ -1,385 +1,254 @@
-#include <string.h>
+#include <gsl/gsl_matrix.h>
 #include "kexpr.h"
 #include "matrix.h"
-#include "khash.h"
-#include <gsl/gsl_matrix.h>
+#include "api.c"
 
-static int ke_matrix_alloc(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-    out->obj.matrix = gsl_matrix_alloc((size_t)p->i, (size_t)q->i); 
-	ke_inc_memory(sml);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_MAT;
-    return top;
+static void ke_matrix_alloc(sml_t* sml) { 
+	int n1 = sml_pop_int(sml);
+	int n2 = sml_pop_int(sml);
+	gsl_matrix * m = gsl_matrix_alloc(n1,n2);
+	sml_mem_inc(sml);
+	sml_push_matrix(sml, m)
 }
 
-int ke_matrix_prop_get(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q, *v;
-	p = stack[--top];
-	v = stack[--top];
-	q = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_matrix_get(p->obj.matrix, (size_t)q->i, (size_t)v->i);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->obj.matrix = NULL;
-	return top;
+void ke_matrix_prop_get(sml_t* sml) { 
+	gsl_matrix * m = sml_pop_matrix(sml);
+	int j = sml_pop_int(sml);
+	int i = sml_pop_int(sml);
+	double r = gsl_matrix_get(m, i, j);
+	sml_push_real(sml, r);
 }
 
-int ke_matrix_get(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q, *v;
-    v = stack[--top],
-    q = stack[--top],
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_matrix_get(p->obj.matrix, (size_t)q->i, (size_t)v->i);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->obj.matrix = NULL;
-    return top;
+void ke_matrix_get(sml_t* sml) { 
+	int j = sml_pop_int(sml);
+	int i = sml_pop_int(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	double r = gsl_matrix_get(m,i,j);
+	sml_push_real(sml, r);
 }
 
-int ke_matrix_prop_set(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q, *v, *x;
-	x = stack[--top];
-	p = stack[--top];
-	v = stack[--top];
-	q = stack[--top];
-	gsl_matrix_set(p->obj.matrix, (size_t)q->i, (size_t)v->i, x->r);
-	return top;
+void ke_matrix_prop_set(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	int j = sml_pop_int(sml);
+	int i = sml_pop_int(sml);
+	gsl_matrix_set(m, i, j, x);
 }
 
-int ke_matrix_set(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q, *v, *x;
-    x = stack[--top],
-    v = stack[--top],
-    q = stack[--top],
-    p = stack[--top];
-	gsl_matrix_set(p->obj.matrix, (size_t)q->i, (size_t)v->i, x->r);
-    return top;
+static void ke_matrix_set(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	int j = sml_pop_int(sml);
+	int i = sml_pop_int(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	gsl_matrix_set(m,i, j, x);
 }
 
-static int ke_matrix_put_row(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	ke1_t *e = ke_get_tok(sml);
-	int n = e->n_args;
-	p = (ke1_t *)stack[top - e->n_args];
-	ke1_t * row = (ke1_t *)stack[top - e->n_args + 1];
-	// set parameter value from the stack
-	for (int j = 0; j < n - 2; ++j) {
-		if (j == p->obj.matrix->size2) break;
-		q = stack[top - n + j + 2];
-		gsl_matrix_set(p->obj.matrix, (size_t)row->i, (size_t)j, q->r);
+static void ke_matrix_put_row(sml_t* sml) { 
+	int top = sml_get_top(sml);
+	int n = sml_get_args(sml);
+	gsl_matrix * m = sml_peek_matrix(sml,(top-n));
+	int i = sml_peek_int(sml,(top-n+1));
+	for (size_t j = 0; j < n - 2; ++j) {
+		if (j == m->size2) break;
+		double x = sml_peek_real(sml, (top - n + j + 2));
+		gsl_matrix_set(m, i, j, x);
 	}
-	return top - e->n_args;
+
+	top = top - n;
+	sml_set_top(sml, top);
 }
 
-static int ke_matrix_put_col(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	ke1_t *e = ke_get_tok(sml);
-	int n = e->n_args;
-	p = (ke1_t *)stack[top - e->n_args];
-	ke1_t * col = (ke1_t *)stack[top - e->n_args + 1];
-	// set parameter value from the stack
-	for (int j = 0; j < n - 2; ++j) {
-		if (j == p->obj.matrix->size1) break;
-		q = stack[top - n + j + 2];
-		gsl_matrix_set(p->obj.matrix, (size_t)j, (size_t)col->i, q->r);
+static void ke_matrix_put_col(sml_t* sml) { 
+	int top = sml_get_top(sml);
+	int n = sml_get_args(sml);
+	gsl_matrix * m = sml_peek_matrix(sml, (top - n));
+	int j = sml_peek_int(sml, (top - n + 1));
+	for (size_t i = 0; i < n - 2; ++i) {
+		if (i == m->size2) break;
+		double x = sml_peek_real(sml, (top - n + i + 2));
+		gsl_matrix_set(m, i, j, x);
 	}
-	return top - e->n_args;
+	top = top - n;
+	sml_set_top(sml, top);
 }
 
-static int ke_matrix_free(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p;
-    p = stack[--top];
-	ke_matrix_freemem(sml, p);
-	p->obj.matrix = NULL, p->vtype = KEV_REAL, p->ttype = KET_VAL, p->assigned = 0;
-    return top;
+static void ke_matrix_free(sml_t* sml) { 
+	token_t * tokp = sml_pop_token(sml);
+	void * m = sml_get_ptr(tokp);
+	sml_free_ptr(sml, m);
+	sml_set_ptr_null(tokp);
 }
 
-static int ke_matrix_set_all(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_set_all(p->obj.matrix, q->r);
-	return top;
+static void ke_matrix_set_all(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+    gsl_matrix_set_all(m,x);
 }
 
-static int ke_matrix_set_zero(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p;
-    p = stack[--top];
-    gsl_matrix_set_zero(p->obj.matrix);
-	return top;
+static void ke_matrix_set_zero(sml_t* sml) { 
+	gsl_matrix * m = sml_pop_matrix(sml);
+	gsl_matrix_set_zero(m);
 }
 
-static int ke_matrix_set_identity(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p;
-    p = stack[--top];
-    gsl_matrix_set_identity(p->obj.matrix);
-	return top;
+static void ke_matrix_set_identity(sml_t* sml) { 
+	gsl_matrix * m = sml_pop_matrix(sml);
+    gsl_matrix_set_identity(m);
 }
 
-static int ke_matrix_swap_rows(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q, *v;
-    v = stack[--top],
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_swap_rows(p->obj.matrix, (size_t)q->i, (size_t)v->i);
-	return top;
+static void ke_matrix_swap_rows(sml_t* sml) { 
+	int j = sml_pop_int(sml); 
+	int i = sml_pop_int(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	gsl_matrix_swap_rows(m, i, j);
 }
 
-static int ke_matrix_swap_columns(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q, *v;
-    v = stack[--top],
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_swap_columns(p->obj.matrix, (size_t)q->i, (size_t)v->i);
-	return top;
+static void ke_matrix_swap_columns(sml_t* sml) { 
+	int j = sml_pop_int(sml);
+	int i = sml_pop_int(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	gsl_matrix_swap_columns(m,i,j);
 }
 
-static int ke_matrix_rowcol(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q, *v;
-    v = stack[--top],
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_swap_rowcol(p->obj.matrix, (size_t)q->i, (size_t)v->i);
-	return top;
+static void ke_matrix_rowcol(sml_t* sml) { 
+	int j = sml_pop_int(sml);
+	int i = sml_pop_int(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	gsl_matrix_swap_rowcol(m,i,j);
 }
 
-static int ke_matrix_transpose_memcpy(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_transpose_memcpy(p->obj.matrix, q->obj.matrix);
-	return top;
+static void ke_matrix_transpose_memcpy(sml_t* sml) { 
+	gsl_matrix * src = sml_pop_matrix(sml);
+	gsl_matrix * dest = sml_pop_matrix(sml);
+    gsl_matrix_transpose_memcpy(dest, src);
 }
 
-static int ke_matrix_transpose(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p;
-    p = stack[--top];
-    gsl_matrix_transpose(p->obj.matrix);
-	return top;
+static void ke_matrix_transpose(sml_t* sml) { 
+	gsl_matrix * m = sml_pop_matrix(sml);
+	gsl_matrix_transpose(m);
 }
 
-static int ke_matrix_add(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_add(p->obj.matrix, q->obj.matrix);
-	return top;
+static void ke_matrix_add(sml_t* sml) { 
+	gsl_matrix * b = sml_pop_matrix(sml);
+	gsl_matrix * a = sml_pop_matrix(sml);
+    gsl_matrix_add(a,b);
 }
 
-static int ke_matrix_sub(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_sub(p->obj.matrix, q->obj.matrix);
-	return top;
+static void ke_matrix_sub(sml_t* sml) { 
+	gsl_matrix * b = sml_pop_matrix(sml);
+	gsl_matrix * a = sml_pop_matrix(sml);
+    gsl_matrix_sub(a,b);
 }
 
-static int ke_matrix_mul_elements(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_mul_elements(p->obj.matrix, q->obj.matrix);
-	return top;
+static void ke_matrix_mul_elements(sml_t* sml) { 
+	gsl_matrix * b = sml_pop_matrix(sml);
+	gsl_matrix * a = sml_pop_matrix(sml);
+	gsl_matrix_mul_elements(a,b);
 }
 
-static int ke_matrix_div_elements(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_div_elements(p->obj.matrix, q->obj.matrix);
-	return top;
+static void ke_matrix_div_elements(sml_t* sml) { 
+	gsl_matrix * b = sml_pop_matrix(sml);
+	gsl_matrix * a = sml_pop_matrix(sml);
+	gsl_matrix_div_elements(a,b);
 }
 
-static int ke_matrix_scale(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-    gsl_matrix_scale(p->obj.matrix, q->r);
-	return top;
+static void ke_matrix_scale(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+    gsl_matrix_scale(m,x);
 }
 
-static int ke_matrix_add_constant(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-    p = stack[--top];
-    gsl_matrix_add_constant(p->obj.matrix, q->r);
-	return top;
+static void ke_matrix_add_constant(sml_t* sml) {
+	double x = sml_pop_real(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	gsl_matrix_add_constant(m, x);
 }
 
-static int ke_matrix_memcpy(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_memcpy(p->obj.matrix, q->obj.matrix);
-	return top;
+static void ke_matrix_memcpy(sml_t* sml) { 
+	gsl_matrix * src = sml_pop_matrix(sml);
+	gsl_matrix * dest = sml_pop_matrix(sml);
+    gsl_matrix_memcpy(dest,src);
 }
 
-static int ke_matrix_swap(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-    gsl_matrix_swap(p->obj.matrix, q->obj.matrix);
-	return top;
+static void ke_matrix_swap(sml_t* sml) { 
+	gsl_matrix * m2 = sml_pop_matrix(sml);
+	gsl_matrix * m1 = sml_pop_matrix(sml);
+    gsl_matrix_swap(m1,m2);
 }
 
-static int ke_matrix_min(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_matrix_min(p->obj.matrix);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->i = (int64_t)out->r;
-    return top;
+static void ke_matrix_min(sml_t* sml) {
+	gsl_matrix * m = sml_pop_matrix(sml);
+	double r = gsl_matrix_min(m);
+	sml_push_real(sml, r);
 }
 
-static int ke_matrix_max(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_matrix_max(p->obj.matrix);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->i = (int64_t)out->r;
-	return top;
+static void ke_matrix_max(sml_t* sml) {
+	gsl_matrix * m = sml_pop_matrix(sml);
+	double r = gsl_matrix_max(m);
+	sml_push_real(sml, r);
 }
 
-static int ke_matrix_isnull(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_matrix_isnull(p->obj.matrix);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->r = (double)out->i;
-	return top;
+static void ke_matrix_isnull(sml_t* sml) {
+	gsl_matrix * m = sml_pop_matrix(sml);
+	int i = gsl_matrix_isnull(m);
+	sml_push_int(sml, i);
 }
 
-static int ke_matrix_ispos(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_matrix_ispos(p->obj.matrix);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->r = (double)out->i;
-	return top;
+static void ke_matrix_ispos(sml_t* sml) {
+	gsl_matrix * m = sml_pop_matrix(sml);
+	int i = gsl_matrix_ispos(m);
+	sml_push_int(sml, i);
 }
 
-static int ke_matrix_isneg(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_matrix_isneg(p->obj.matrix);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->r = (double)out->i;
-	return top;
+static void ke_matrix_isneg(sml_t* sml) {
+	gsl_matrix * m = sml_pop_matrix(sml);
+	int i = gsl_matrix_isneg(m);
+	sml_push_int(sml, i);
 }
 
-static int ke_matrix_isnonneg(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_matrix_isnonneg(p->obj.matrix);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->r = (double)out->i;
-	return top;
+static void ke_matrix_isnonneg(sml_t* sml) { 
+	gsl_matrix * m = sml_pop_matrix(sml);
+	int i = gsl_matrix_isnonneg(m);
+	sml_push_int(sml, i);
 }
 
-static int ke_matrix_equal(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_matrix_equal(p->obj.matrix, q->obj.matrix);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->r = (double)out->i;
-	return top;
+static void ke_matrix_equal(sml_t* sml) {
+	gsl_matrix * b = sml_pop_matrix(sml);
+	gsl_matrix * a = sml_pop_matrix(sml);
+	int i = gsl_matrix_equal(a,b);
+	sml_push_int(sml, i);
 }
 
-static int ke_matrix_fscanf(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top],
-	p = stack[--top];
-	FILE * f = fopen(q->obj.s, "r");
-    gsl_matrix_fscanf(f, p->obj.matrix);
+static void ke_matrix_fscanf(sml_t* sml) {
+	char * filename = sml_pop_str(sml);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	FILE * f = fopen(filename, "r");
+    gsl_matrix_fscanf(f, m);
     fclose(f);
-    return top;
 }
 
-static int ke_matrix_fprintf(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    p = stack[--top],
-    q = stack[--top];
-	FILE * f = fopen(q->obj.s, "w");
-    gsl_matrix_fprintf(f, p->obj.matrix,"%5g");
+static void ke_matrix_fprintf(sml_t* sml) { 
+	gsl_matrix * m = sml_pop_matrix(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "w");
+    gsl_matrix_fprintf(f, m,"%5g");
     fclose(f);
-    return top;
 }
 
-static int ke_matrix_fread(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    p = stack[--top],
-    q = stack[--top];
-	FILE * f = fopen(q->obj.s, "r");
-    gsl_matrix_fread(f, p->obj.matrix);
+static void ke_matrix_fread(sml_t* sml) { 
+	gsl_matrix * m = sml_pop_matrix(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "r");
+    gsl_matrix_fread(f, m);
     fclose(f);
-    return top;
 }
 
-static int ke_matrix_fwrite(sml_t* sml, ke1_t *tokp, int top) { 
+static void ke_matrix_fwrite(sml_t* sml) { 
 ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    p = stack[--top],
-    q = stack[--top];
-	FILE * f = fopen(q->obj.s, "w");
-    gsl_matrix_fwrite(f, p->obj.matrix);
+	gsl_matrix * m = sml_pop_matrix(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "w");
+    gsl_matrix_fwrite(f, m);
     fclose(f);
-    --top;
-    return top;
 }
 
 void ke_matrix_hash(sml_t * sml) {

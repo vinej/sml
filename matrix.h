@@ -4,9 +4,9 @@
 void ke_matrix_print(sml_t* sml, ke1_t *e);
 void ke_matrix_hash(sml_t* sml);
 void ke_matrix_freemem(sml_t* sml, ke1_t*e);
-int ke_matrix_get(sml_t* sml, ke1_t *tokp, int top);
-int ke_matrix_prop_set(sml_t* sml, ke1_t *tokp, int top);
-int ke_matrix_prop_get(sml_t* sml, ke1_t *tokp, int top);
+void ke_matrix_get(sml_t* sml);
+void ke_matrix_prop_set(sml_t* sml);
+void ke_matrix_prop_get(sml_t* sml);
 
 
 #define MATRIX "matrix"

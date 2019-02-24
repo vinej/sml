@@ -8,13 +8,13 @@ void ke_vector_freemem(sml_t* sml, ke1_t *e);
 void ke_vector_int_print(sml_t* sml, ke1_t *k);
 void ke_vector_int_freemem(sml_t* sml, ke1_t *e);
 
-int ke_vector_get(sml_t* sml, ke1_t *tokp, int top);
-int ke_vector_int_get(sml_t* sml, ke1_t *tokp, int top);
-int ke_vector_set(sml_t* sml, ke1_t *tokp, int top);
-int ke_vector_int_set(sml_t* sml, ke1_t *tokp, int top);
-int ke_vector_put(sml_t* sml, ke1_t *tokp, int top);
-int ke_vector_prop_set(sml_t* sml, ke1_t *tokp, int top);
-int ke_vector_prop_int_set(sml_t* sml, ke1_t *tokp, int top);
+void ke_vector_get(sml_t* sml);
+void ke_vector_int_get(sml_t* sml);
+void ke_vector_set(sml_t* sml);
+void ke_vector_int_set(sml_t* sml);
+void ke_vector_put(sml_t* sml);
+void ke_vector_prop_set(sml_t* sml);
+void ke_vector_prop_int_set(sml_t* sml);
 
 
 #define VECTOR "vector"

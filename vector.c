@@ -1,649 +1,408 @@
-#include <string.h>
+#include <gsl/gsl_vector.h>
 #include <stdio.h>
 #include "kexpr.h"
 #include "vector.h"
-#include "khash.h"
-#include <gsl/gsl_vector.h>
+#include "api.c"
 
-static int ke_vector_alloc(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.vector = gsl_vector_alloc((size_t)p->i); 
-	ke_inc_memory(sml);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_VEC;
-    return top;
+
+ static void ke_vector_alloc(sml_t* sml) {
+	int n = sml_pop_int(sml);
+	gsl_vector * v = gsl_vector_alloc(n);
+	sml_mem_inc(sml);
+	sml_push_vector(sml, v)
 }
 
-static int ke_vector_int_alloc(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.vector_int = gsl_vector_int_alloc((size_t)p->i);
-	ke_inc_memory(sml);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_VEC_INT;
-	return top;
+ static void ke_vector_int_alloc(sml_t* sml) { 
+	int n = sml_pop_int(sml);
+	gsl_vector_int * v = gsl_vector_int_alloc(n);
+	sml_mem_inc(sml);
+	sml_push_vector_int(sml, v);
 }
 
-static int ke_vector_free(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p;
-	p = stack[--top];
-	ke_vector_freemem(sml, p);
-	p->obj.vector = NULL, p->vtype = KEV_REAL, p->ttype = KET_VAL, p->assigned = 0;
-	return top;
+ static void ke_vector_free(sml_t* sml) { 
+	token_t * tokp = sml_pop_token(sml);
+	void * v = sml_get_ptr(tokp);
+	sml_free_ptr(sml, v);
+	sml_set_ptr_null(tokp);
 }
 
-static int ke_vector_int_free(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p;
-	p = stack[--top];
-	ke_vector_int_freemem(sml, p);
-	p->obj.vector_int = NULL, p->vtype = KEV_REAL, p->ttype = KET_VAL, p->assigned = 0;
-	return top;
+ static void ke_vector_int_free(sml_t* sml) { 
+	 token_t * tokp = sml_pop_token(sml);
+	 void * v = sml_get_ptr(tokp);
+	 sml_free_ptr(sml, v);
+	 sml_set_ptr_null(tokp);
 }
 
-int ke_vector_get(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-	p = stack[--top];
-	q = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_vector_get(p->obj.vector, (size_t)q->i);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->obj.vector = NULL;
-    return top;
+void ke_vector_get(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	int i = sml_pop_int(sml);
+	double r = gsl_vector_get(v, i);
+	sml_push_real(sml, r);
 }
 
-int ke_vector_int_get(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	p = stack[--top];
-	q = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_int_get(p->obj.vector_int, (size_t)q->i);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector_int = NULL;
-	return top;
+void ke_vector_int_get(sml_t* sml) { 
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	int idx = sml_pop_int(sml);
+	int i = gsl_vector_int_get(v, idx);
+	sml_push_int(sml, i);
 }
 
-int ke_vector_prop_set(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q, *v;
-	v = stack[--top];
-	p = stack[--top];
-	q = stack[--top];
-	gsl_vector_set(p->obj.vector, (size_t)q->i, v->r);
-	return top;
+void ke_vector_prop_set(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_vector * v = sml_pop_vector(sml);
+	int i = sml_pop_int(sml);
+	gsl_vector_set(v, i, x);
 }
 
-int ke_vector_int_set(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q, *v;
-	v = stack[--top];
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_set(p->obj.vector_int, (int)q->i, (int)v->i);
-	return top;
+void ke_vector_int_set(sml_t* sml) {
+	int x = sml_pop_int(sml);
+	int i = sml_pop_int(sml);
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	gsl_vector_int_set(v, i, x);
 }
 
-int ke_vector_prop_int_set(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q, *v;
-	v = stack[--top];
-	p = stack[--top];
-	q = stack[--top];
-	gsl_vector_int_set(p->obj.vector_int, (size_t)q->i, (int)v->i);
-	return top;
+void ke_vector_prop_int_set(sml_t* sml) { 
+	int x = sml_pop_int(sml);
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	int i = sml_pop_int(sml);
+	gsl_vector_int_set(v,i,x);
 }
 
-int ke_vector_set(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q, *v;
-    v = stack[--top],
-    q = stack[--top],
-    p = stack[--top];
-	gsl_vector_set(p->obj.vector, (size_t)q->i, v->r);
-    return top;
+void ke_vector_set(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	int i = sml_pop_int(sml);
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector_set(v,i,x);
 }
 
-int ke_vector_put(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	ke1_t *e = ke_get_tok(sml);
-	int n = e->n_args;
-	p = (ke1_t *)stack[top - e->n_args];
-	// set parameter value from the stack
-	for (int j = 0; j < n - 1; ++j) {
-		if (j == p->obj.vector->size) break;
-		q = stack[top - n + j + 1];
-		gsl_vector_set(p->obj.vector, (size_t)j, q->r);
+void ke_vector_put(sml_t* sml) { 
+	int top = sml_get_top(sml);
+	int n = sml_get_args(sml);
+	gsl_vector * v = sml_peek_vector(sml, (top - n));
+	for (size_t i = 0; i < n - 1; ++i) {
+		if (i == v->size) break;
+		double x = sml_peek_real(sml, (top - n + i + 1));
+		gsl_vector_set(v, i, x);
 	}
-	return top - e->n_args ;
+	top = top - n;
+	sml_set_top(sml, top);
 }
 
-int ke_vector_int_put(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	ke1_t *e = ke_get_tok(sml);
-	int n = e->n_args;
-	p = (ke1_t *)stack[top - e->n_args];
-	// set parameter value from the stack
-	for (int j = 0; j < n - 1; ++j) {
-		if (j == p->obj.vector_int->size) break;
-		q = stack[top - n + j + 1];
-		gsl_vector_int_set(p->obj.vector_int, (size_t)j, (int)q->i);
+static void ke_vector_int_put(sml_t* sml) { 
+	int top = sml_get_top(sml);
+	int n = sml_get_args(sml);
+	gsl_vector_int * v = sml_peek_vector_int(sml, (top - n));
+	for (size_t i = 0; i < n - 1; ++i) {
+		if (i == v->size) break;
+		int x = sml_peek_int(sml, (top - n + i + 1));
+		gsl_vector_int_set(v, i, x);
 	}
-	return top - e->n_args;
+	top = top - n;
+	sml_set_top(sml, top);
 }
 
-static int ke_vector_set_all(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-	gsl_vector_set_all(p->obj.vector, q->r);
-    return top;
+ static void ke_vector_set_all(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector_set_all(v,x);
 }
 
-static int ke_vector_int_set_all(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_set_all(p->obj.vector_int, (int)q->i);
-	return top;
+ static void ke_vector_int_set_all(sml_t* sml) { 
+	 int x = sml_pop_int(sml);
+	 gsl_vector_int * v = sml_pop_vector_int(sml);
+	 gsl_vector_int_set_all(v, x);
 }
 
-static int ke_vector_set_zero(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p;
-    p = stack[--top];
-	gsl_vector_set_zero(p->obj.vector);
-    return top;
+ static void ke_vector_set_zero(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector_set_zero(v);
 }
 
-static int ke_vector_int_set_zero(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *p;
-	p = stack[--top];
-	gsl_vector_int_set_zero(p->obj.vector_int);
-	return top;
+ static void ke_vector_int_set_zero(sml_t* sml) {
+	 gsl_vector_int * v = sml_pop_vector_int(sml);
+	 gsl_vector_int_set_zero(v);
 }
 
-static int ke_vector_set_basis(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_set_basis(p->obj.vector, (size_t)q->i);
-    return top;
+ static void ke_vector_set_basis(sml_t* sml) {
+	int i = sml_pop_int(sml);
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector_set_basis(v, i);
 }
 
-static int ke_vector_int_set_basis(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_set_basis(p->obj.vector_int, (size_t)q->i);
-	return top;
+ static void ke_vector_int_set_basis(sml_t* sml) {
+	 int i = sml_pop_int(sml);
+	 gsl_vector_int * v = sml_pop_vector_int(sml);
+	 gsl_vector_int_set_basis(v, i);
 }
 
-static int ke_vector_add(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-    p = stack[--top];
-	gsl_vector_add(p->obj.vector, q->obj.vector);
-    return top;
+ static void ke_vector_add(sml_t* sml) { 
+	gsl_vector * b = sml_pop_vector(sml);
+	gsl_vector * a = sml_pop_vector(sml);
+	gsl_vector_add(a,b);
 }
 
-static int ke_vector_int_add(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_add(p->obj.vector_int, q->obj.vector_int);
-	return top;
+ static void ke_vector_int_add(sml_t* sml) {
+	gsl_vector_int * b = sml_pop_vector_int(sml);
+	gsl_vector_int * a = sml_pop_vector_int(sml);
+	gsl_vector_int_add(a, b);
 }
 
-static int ke_vector_sub(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-    p = stack[--top];
-	gsl_vector_sub(p->obj.vector, q->obj.vector);
-    return top;
+ static void ke_vector_sub(sml_t* sml) { 
+	gsl_vector * b = sml_pop_vector(sml);
+	gsl_vector * a = sml_pop_vector(sml);
+	gsl_vector_sub(a, b);
 }
 
-static int ke_vector_int_sub(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top]; 
-	p = stack[--top];
-	gsl_vector_int_sub(p->obj.vector_int, q->obj.vector_int);
-	return top;
+ static void ke_vector_int_sub(sml_t* sml) { 
+	gsl_vector_int * b = sml_pop_vector_int(sml);
+	gsl_vector_int * a = sml_pop_vector_int(sml);
+	gsl_vector_int_sub(a, b);
 }
 
-static int ke_vector_mul(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-    p = stack[--top];
-	gsl_vector_mul(p->obj.vector, q->obj.vector);
-    return top;
+ static void ke_vector_mul(sml_t* sml) { 
+	gsl_vector * b = sml_pop_vector(sml);
+	gsl_vector * a = sml_pop_vector(sml);
+	gsl_vector_mul(a, b);
 }
 
-static int ke_vector_int_mul(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_mul(p->obj.vector_int, q->obj.vector_int);
-	return top;
+ static void ke_vector_int_mul(sml_t* sml) { 
+	gsl_vector_int * b = sml_pop_vector_int(sml);
+	gsl_vector_int * a = sml_pop_vector_int(sml);
+	gsl_vector_int_mul(a, b);
+ }
+
+ static void ke_vector_div(sml_t* sml) { 
+	gsl_vector * b = sml_pop_vector(sml);
+	gsl_vector * a = sml_pop_vector(sml);
+	gsl_vector_div(a, b);
 }
 
-static int ke_vector_div(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-    p = stack[--top];
-	gsl_vector_div(p->obj.vector, q->obj.vector);
-    return top;
+ static void ke_vector_int_div(sml_t* sml) { 
+	gsl_vector_int * b = sml_pop_vector_int(sml);
+	gsl_vector_int * a = sml_pop_vector_int(sml);
+	gsl_vector_int_div(a, b);
 }
 
-static int ke_vector_int_div(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_div(p->obj.vector_int, q->obj.vector_int);
-	return top;
+ static void ke_vector_scale(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector_scale(v,x);
 }
 
-static int ke_vector_scale(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-    p = stack[--top];
-	gsl_vector_scale(p->obj.vector, q->r);
-    return top;
+ static void ke_vector_int_scale(sml_t* sml) { 
+	 double x = sml_pop_real(sml);
+	 gsl_vector_int * v = sml_pop_vector_int(sml);
+	 gsl_vector_int_scale(v, x);
 }
 
-static int ke_vector_int_scale(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_scale(p->obj.vector_int, (int)q->r);
-	return top;
+ static void ke_vector_add_constant(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_vector * a = sml_pop_vector(sml);
+	gsl_vector_add_constant(a,x);
 }
 
-static int ke_vector_add_constant(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-    p = stack[--top];
-	gsl_vector_add_constant(p->obj.vector, q->r);
-    return top;
+ static void ke_vector_int_add_constant(sml_t* sml) { 
+	 double x = sml_pop_real(sml);
+	 gsl_vector_int * a = sml_pop_vector_int(sml);
+	 gsl_vector_int_add_constant(a, x);
 }
 
-static int ke_vector_int_add_constant(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_add_constant(p->obj.vector_int, (int)q->i);
-	return top;
+ static void ke_vector_reverse(sml_t* sml) {
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector_reverse(v);
 }
 
-static int ke_vector_reverse(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *p;
-    p = stack[--top];
-	gsl_vector_reverse(p->obj.vector);
-    return top;
+ static void ke_vector_int_reverse(sml_t* sml) { 
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	gsl_vector_int_reverse(v);
 }
 
-static int ke_vector_int_reverse(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p;
-	p = stack[--top];
-	gsl_vector_int_reverse(p->obj.vector_int);
-	return top;
+ static void ke_vector_swap_elements(sml_t* sml) { 
+	int j = sml_pop_int(sml);
+	int i = sml_pop_int(sml);
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector_swap_elements(v,i,j);
 }
 
-static int ke_vector_swap_elements(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q, *v;
-	v = stack[--top];
-	q = stack[--top];
-    p = stack[--top];
-	gsl_vector_swap_elements(p->obj.vector, (size_t)q->i, (size_t)v->i);
-    return top;
+ static void ke_vector_int_swap_elements(sml_t* sml) {
+	 int j = sml_pop_int(sml);
+	 int i = sml_pop_int(sml);
+	 gsl_vector_int * v = sml_pop_vector_int(sml);
+	 gsl_vector_int_swap_elements(v, i, j);
 }
 
-static int ke_vector_int_swap_elements(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q, *v;
-	v = stack[--top]; 
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_swap_elements(p->obj.vector_int, (size_t)q->i, (size_t)v->i);
-	return top;
+ static void ke_vector_memcpy(sml_t* sml) { 
+	gsl_vector * src = sml_pop_vector(sml);
+	gsl_vector * dest = sml_pop_vector(sml);
+	gsl_vector_memcpy(dest, src);
 }
 
-static int ke_vector_memcpy(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	q = stack[--top];
-    p = stack[--top];
-	gsl_vector_memcpy(p->obj.vector, q->obj.vector);
-    return top;
+ static void ke_vector_int_memcpy(sml_t* sml) { 
+	gsl_vector_int * src = sml_pop_vector_int(sml);
+	gsl_vector_int * dest = sml_pop_vector_int(sml);
+	gsl_vector_int_memcpy(dest, src);
 }
 
-static int ke_vector_int_memcpy(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_memcpy(p->obj.vector_int, q->obj.vector_int);
-	return top;
+ static void ke_vector_swap(sml_t* sml) { 
+	gsl_vector * w = sml_pop_vector(sml);
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector_swap(v,w);
 }
 
-static int ke_vector_swap(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_swap(p->obj.vector, q->obj.vector);
-    return top;
+ static void ke_vector_int_swap(sml_t* sml) { 
+	gsl_vector_int * w = sml_pop_vector_int(sml);
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	gsl_vector_int_swap(v, w);
 }
 
-static int ke_vector_int_swap(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	gsl_vector_int_swap(p->obj.vector_int, q->obj.vector_int);
-	return top;
+ static void ke_vector_min(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	double r = gsl_vector_min(v);
+	sml_push_real(sml,r);
 }
 
-static int ke_vector_min(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_vector_min(p->obj.vector);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->obj.vector = NULL;
-    return top;
+ static void ke_vector_int_min(sml_t* sml) { 
+	 gsl_vector_int * v = sml_pop_vector_int(sml);
+	 int i = gsl_vector_int_min(v);
+	 sml_push_int(sml, i);
 }
 
-static int ke_vector_int_min(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i= gsl_vector_int_min(p->obj.vector_int);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector_int = NULL;
-	return top;
+ static void ke_vector_max(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	double r = gsl_vector_max(v);
+	sml_push_real(sml, r);
 }
 
-static int ke_vector_max(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_vector_max(p->obj.vector);
-	out->i = (int64_t)out->r;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-	out->obj.vector = NULL;
-    return top;
+ static void ke_vector_int_max(sml_t* sml) {
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	int i = gsl_vector_int_max(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_int_max(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_int_max(p->obj.vector_int);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-	return top;
+ static void ke_vector_isnull(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	int i = gsl_vector_isnull(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_isnull(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_isnull(p->obj.vector);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-    return top;
+ static void ke_vector_int_isnull(sml_t* sml) { 
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	int i = gsl_vector_int_isnull(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_int_isnull(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_int_isnull(p->obj.vector_int);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-	return top;
+ static void ke_vector_ispos(sml_t* sml) {
+	gsl_vector * v = sml_pop_vector(sml);
+	int i = gsl_vector_ispos(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_ispos(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_ispos(p->obj.vector);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-    return top;
+ static void ke_vector_int_ispos(sml_t* sml) { 
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	int i = gsl_vector_int_ispos(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_int_ispos(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_int_ispos(p->obj.vector_int);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-	return top;
+ static void ke_vector_isneg(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	int i = gsl_vector_isneg(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_isneg(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_isneg(p->obj.vector);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-    return top;
+ static void ke_vector_int_isneg(sml_t* sml) {
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	int i = gsl_vector_int_isneg(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_int_isneg(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_int_isneg(p->obj.vector_int);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-	return top;
+ static void ke_vector_isnonneg(sml_t* sml) {
+	gsl_vector * v = sml_pop_vector(sml);
+	int i = gsl_vector_isnonneg(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_isnonneg(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_isnonneg(p->obj.vector);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-    return top;
+ static void ke_vector_int_isnonneg(sml_t* sml) {
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	int i = gsl_vector_int_isnonneg(v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_int_isnonneg(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_int_isnonneg(p->obj.vector_int);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-	return top;
+ static void ke_vector_equal(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	gsl_vector * u = sml_pop_vector(sml);
+	int i  = gsl_vector_equal(u,v);
+	sml_push_int(sml, i);
+ }
+
+ static void ke_vector_int_equal(sml_t* sml) { 
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	gsl_vector_int * u = sml_pop_vector_int(sml);
+	int i = gsl_vector_int_equal(u, v);
+	sml_push_int(sml, i);
 }
 
-static int ke_vector_equal(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top],
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_equal(p->obj.vector, q->obj.vector);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-    return top;
-}
-
-static int ke_vector_int_equal(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top ];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = gsl_vector_int_equal(p->obj.vector_int, q->obj.vector_int);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.vector = NULL;
-	return top;
-}
-
-static int ke_vector_fscanf(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	p = stack[--top];
-    q = stack[--top];
-    FILE * f = fopen(q->obj.s, "r");
-    gsl_vector_fscanf(f, p->obj.vector);
+ static void ke_vector_fscanf(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	char * filename = sml_pop_str(sml);
+    FILE * f = fopen(filename, "r");
+    gsl_vector_fscanf(f, v);
     fclose(f);
-    return top;
 }
 
-static int ke_vector_int_fscanf(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	p = stack[--top];
-	q = stack[--top];
-	FILE * f = fopen(q->obj.s, "r");
-	gsl_vector_int_fscanf(f, p->obj.vector_int);
+ static void ke_vector_int_fscanf(sml_t* sml) {
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "r");
+	gsl_vector_int_fscanf(f, v);
 	fclose(f);
-	return top;
 }
 
-static int ke_vector_fprintf(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	p = stack[--top];
-    q = stack[--top];
-	FILE * f = fopen(q->obj.s, "w");
-    gsl_vector_fprintf(f, p->obj.vector,"%5g");
+ static void ke_vector_fprintf(sml_t* sml) {
+	gsl_vector * v = sml_pop_vector(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "w");
+    gsl_vector_fprintf(f, v,"%5g");
     fclose(f);
-    return top;
 }
 
-static int ke_vector_int_fprintf(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	p = stack[--top];
-	q = stack[--top];
-	FILE * f = fopen(q->obj.s, "w");
-	gsl_vector_int_fprintf(f, p->obj.vector_int, "%d");
+ static void ke_vector_int_fprintf(sml_t* sml) { 
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "w");
+	gsl_vector_int_fprintf(f, v, "%5g");
 	fclose(f);
-	return top;
 }
 
-static int ke_vector_fread(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	p = stack[--top];
-    q = stack[--top];
-    FILE * f = fopen(q->obj.s, "r");
-    gsl_vector_fread(f, p->obj.vector);
+ static void ke_vector_fread(sml_t* sml) {
+	gsl_vector * v = sml_pop_vector(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "r");
+	gsl_vector_fread(f, v);
+	fclose(f);
+}
+
+ static void ke_vector_int_fread(sml_t* sml) { 
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "r");
+	gsl_vector_int_fread(f, v);
+	fclose(f);
+}
+
+ static void ke_vector_fwrite(sml_t* sml) { 
+	gsl_vector * v = sml_pop_vector(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "w");
+    gsl_vector_fwrite(f, v);
     fclose(f);
-	return top;
 }
 
-static int ke_vector_int_fread(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	p = stack[--top];
-	q = stack[--top];
-	FILE * f = fopen(q->obj.s, "r");
-	gsl_vector_int_fread(f, p->obj.vector_int);
+ static void ke_vector_int_fwrite(sml_t* sml) { 
+	gsl_vector_int * v = sml_pop_vector_int(sml);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "w");
+	gsl_vector_int_fwrite(f, v);
 	fclose(f);
-	return top;
-}
-
-static int ke_vector_fwrite(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *p, *q;
-	p = stack[--top];
-    q = stack[--top];
-	FILE * f = fopen(q->obj.s, "w");
-    gsl_vector_fwrite(f, p->obj.vector);
-    fclose(f);
-    return top;
-}
-
-static int ke_vector_int_fwrite(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *p, *q;
-	p = stack[--top];
-	q = stack[--top];
-	FILE * f = fopen(q->obj.s, "w");
-	gsl_vector_int_fwrite(f, p->obj.vector_int);
-	fclose(f);
-	return top;
 }
 
 void ke_vector_hash(sml_t* sml) {

@@ -24,10 +24,10 @@ vset(v1,0,4)
 vset(v1,1,5)
 vset(v1,2,6)
 
-#print(v1)
+print(v1)
 vwrite('v1.dat',v1)
 vread('v1.dat',v1)
-#print(v1)
+print(v1)
 
 vfree(v1)
 vfree(v2)

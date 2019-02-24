@@ -8,7 +8,6 @@ kstack_t * stack_create(int size) {
 
 	kstack_t *stack;
 
-	// alloc the struct
 	stack = calloc(1, sizeof(*stack));
 	if (stack == NULL) {
 		printf("out of memory at stack_create");
@@ -16,7 +15,6 @@ kstack_t * stack_create(int size) {
 		abort();
 	}
 
-	// alloc data
 	stack->size = size;
 	stack->data = malloc(stack->size * sizeof(void *));
 	stack->top = -1;
@@ -29,7 +27,6 @@ static void stack_ensure_space(kstack_t * stack, size_t add_len)
 	if (stack == NULL || add_len == 0 || (size_t)stack->top + 1 < stack->size)
 		return;
 
-	// add a minimum is the incr
 	if (add_len < stack_size_incr) {
 		add_len = (int)stack_size_incr;
 	}

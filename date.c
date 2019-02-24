@@ -1,84 +1,57 @@
 #include "kexpr.h"
 #include "gdate.h"
 #include "date.h"
+#include "api.c"
 
-static int ke_date_dmy(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *d, *m, *y;
-	y = stack[--top],
-	m = stack[--top];
-	d = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.date = g_date_new_dmy(sml, (GDateDay)d->i, (GDateMonth)m->i, (GDateYear)y->i);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_DATE;
-	return top;
+static void ke_date_dmy(sml_t* sml) {
+	GDateYear y = sml_pop_year(sml);
+	GDateMonth m = sml_pop_month(sml);
+	GDateDay d = sml_pop_day(sml);
+	GDate_t * date = g_date_new_dmy(sml, d, m, y);
+	sml_push_date(sml, date);
 }
 
-static int ke_date_now(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out;
-	stack[top] = ke_get_out(sml); out = stack[top++];
+static void ke_date_now(sml_t* sml) {
+	GDate_t * date = g_date_new(sml);
+	sml_push_date(sml, date);
 	time_t now = time(NULL);
-	out->obj.date = g_date_new(sml);
-	g_date_set_time_t(out->obj.date, now);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_DATE;
-	return top;
+	g_date_set_time_t(sml_out_date, now);
 }
 
-static int ke_date_add_years(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *date, *year;
-	year = stack[--top];
-	date = stack[--top];
-	g_date_add_years(date->obj.date, (guint)year->i);
-	return top;
+static void ke_date_add_years(sml_t* sml) {
+	guint years = sml_pop_int(sml);
+	GDate_t * date = sml_pop_date(sml);
+	g_date_add_years(date, years);
 }
 
-static int ke_date_add_months(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *date, *months;
-	months = stack[--top];
-	date = stack[--top];
-	g_date_add_months(date->obj.date, (guint)months->i);
-	return top;
+static void ke_date_add_months(sml_t* sml) {
+	guint months = sml_pop_int(sml);
+	GDate_t * date = sml_pop_date(sml);
+	g_date_add_months(date, months);
 }
 
-static int ke_date_add_days(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *date, *days;
-	days = stack[--top];
-	date = stack[--top];
-	g_date_add_days(date->obj.date, (guint)days->i);
-	return top;
+static void ke_date_add_days(sml_t* sml) {
+	guint days = sml_pop_int(sml);
+	GDate_t * date = sml_pop_date(sml);
+	g_date_add_days(date, days);
 }
 
-static int ke_date_sub_years(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *date, *year;
-	year = stack[--top];
-	date = stack[--top];
-	g_date_subtract_years(date->obj.date, (guint)year->i);
-	return top;
+static void ke_date_sub_years(sml_t* sml) {
+	guint years = sml_pop_int(sml);
+	GDate_t * date = sml_pop_date(sml);
+	g_date_subtract_years(date, years);
 }
 
-static int ke_date_sub_months(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *date, *months;
-	months = stack[--top];
-	date = stack[--top];
-	g_date_subtract_months(date->obj.date, (guint)months->i);
-	return top;
+static void ke_date_sub_months(sml_t* sml) {
+	guint months = sml_pop_int(sml);
+	GDate_t * date = sml_pop_date(sml);
+	g_date_subtract_months(date, months);
 }
 
-static int ke_date_sub_days(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *date, *days;
-	days = stack[--top];
-	date = stack[--top];
-	g_date_subtract_days(date->obj.date, (guint)days->i);
-	return top;
+static void ke_date_sub_days(sml_t* sml) {
+	guint days = sml_pop_int(sml);
+	GDate_t * date = sml_pop_date(sml);
+	g_date_subtract_days(date, days);
 }
 
 void ke_date_hash(sml_t* sml) {

@@ -49,6 +49,8 @@
 #define KEV_FILE 12
 #define KEV_BUFFER 13
 #define KEV_DATE 14
+#define KEV_PTR   15
+
 
 #define KEO_NULL  0
 #define KEO_POS   1
@@ -106,7 +108,7 @@ struct sml_s;
 
 typedef struct ke1_s* ke1_p;
 typedef int(*cmdp)(struct sml_s * sml, struct ke1_s* tokp, int top, int *);
-typedef int(*fncp)(struct sml_s * sml, struct ke1_s* s, int);
+typedef void (*fncp)(struct sml_s *);
 typedef int(*vcmdp)(struct sml_s * sml, struct ke1_s* tokp, int top, int);
 typedef int(__cdecl *dllke_hash_add_t)(struct sml_s *, fncp, char *);
 typedef struct ke1_s *(__cdecl *dllke_get_out_t)(struct sml_s *);
@@ -134,6 +136,8 @@ typedef struct sml_s {
 	struct kexpr_s *kexpr;
 	struct ke1_s ** fields;		// array of all global fields of the program to exectue
 	struct ke1_s ** tokens;     // array of pointers of all program tokens
+	int top;
+	struct ke1_s * tokp;
 	int out_qte;
 	int tok_idx;
 	int val;
@@ -175,6 +179,9 @@ struct kexpr_s;
 typedef struct kexpr_s kexpr_t;
 typedef int * reclistt;
 
+
+
+
 struct ke1_s;
 typedef struct ke1_s {
 	int64_t i;
@@ -184,12 +191,13 @@ typedef struct ke1_s {
 		double(*real_func1)(double);
 		double(*real_func2)(double, double);
 		int(*defprop)(sml_t* sml, struct ke1_s* prop, int top);
-		int(*deffunc)(sml_t* sml, struct ke1_s* tokp, int top);
+		void (*deffunc)(sml_t* sml);
 		int(*defcmd)(sml_t* sml, struct ke1_s* tokp, int top, int *);
 		int(*defvcmd)(sml_t* sml, struct ke1_s* tokp, int top, int i);
 		struct ke1_s * recp;
 	} f;
-	union {  //               
+	union {  //     
+		void * ptr;
 		struct ke1_s * tokp;
 		char *s;
 		char* image;

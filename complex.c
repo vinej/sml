@@ -3,660 +3,371 @@
 #include <string.h>
 #include "kexpr.h"
 #include "complex.h"
-#include "khash.h"
+#include "api.c"
 
-static int ke_complex_alloc(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out,*p, *q;
-    q = stack[--top];
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	GSL_SET_COMPLEX(&out->obj.tcomplex, (double)p->i, (double)q->i);
-    out->ttype = KET_VAL;
-    out->vtype = KEV_COMPLEX;
-    return top;
+static void ke_complex_alloc(sml_t* sml) { 
+	int y = sml_pop_int(sml);
+	int x = sml_pop_int(sml);
+	sml_push_new_complex(sml);
+	GSL_SET_COMPLEX(sml_get_complex_adr, (double)x, (double)y);
 }
 
-static int ke_complex_set_real(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top];
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	GSL_SET_REAL(&out->obj.tcomplex, (double)q->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_set_real(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_complex *z = sml_pop_complex_adr(sml);
+	GSL_SET_REAL(z, x);
 }
 
-static int ke_complex_set_imag(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top];
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	GSL_SET_IMAG(&out->obj.tcomplex, q->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_set_imag(sml_t* sml) { 
+	double y = sml_pop_real(sml);
+	gsl_complex *z = sml_pop_complex_adr(sml);
+	GSL_SET_IMAG(z, y);
 }
 
-static int ke_complex_arg(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out,*p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_complex_arg(p->obj.tcomplex);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-    return top;
+static void ke_complex_arg(sml_t* sml) { 
+	gsl_complex z = sml_pop_complex(sml);
+	double r = gsl_complex_arg(z);
+	sml_push_real(sml,r);
 }
 
-static int ke_complex_abs(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_complex_abs(p->obj.tcomplex);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-    return top;
+static void ke_complex_abs(sml_t* sml) { 
+	gsl_complex z = sml_pop_complex(sml);
+	double r = gsl_complex_abs(z);
+	sml_push_real(sml, r);
 }
 
-static int ke_complex_abs2(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_complex_abs2(p->obj.tcomplex);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_REAL;
-    return top;
+static void ke_complex_abs2(sml_t* sml) { 
+	gsl_complex z = sml_pop_complex(sml);
+	double r = gsl_complex_abs2(z);
+	sml_push_real(sml, r);
 }
 
-static int ke_complex_logabs(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->r = gsl_complex_logabs(p->obj.tcomplex);
-	out->ttype = KET_VAL;
-    out->vtype = KEV_REAL;
-    return top;
+static void ke_complex_logabs(sml_t* sml) { 
+	gsl_complex z = sml_pop_complex(sml);
+	double r = gsl_complex_logabs(z);
+	sml_push_real(sml, r);
 }
 
-static int ke_complex_add(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p, *q;
-    q = stack[--top];
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_add(p->obj.tcomplex, q->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-    return top;
+static void ke_complex_add(sml_t* sml) { 
+	gsl_complex b = sml_pop_complex(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_add(a, b);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sub(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sub(p->obj.tcomplex, q->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_sub(sml_t* sml) { 
+	gsl_complex b = sml_pop_complex(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_sub(a, b);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_mul(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_mul(p->obj.tcomplex, q->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_mul(sml_t* sml) { 
+	gsl_complex b = sml_pop_complex(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_mul(a, b);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_div(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_div(p->obj.tcomplex, q->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_div(sml_t* sml) { 
+	gsl_complex b = sml_pop_complex(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_div(a, b);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_add_real(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_add_real(p->obj.tcomplex, q->r);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_add_real(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_add_real(a, x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sub_real(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sub_real(p->obj.tcomplex, q->r);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+
+static void ke_complex_sub_real(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_sub_real(a, x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_mul_real(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_mul_real(p->obj.tcomplex, q->r);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_mul_real(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_mul_real(a, x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_div_real(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_div_real(p->obj.tcomplex, q->r);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_div_real(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_div_real(a, x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_add_imag(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_add_imag(p->obj.tcomplex, q->r);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_add_imag(sml_t* sml) {
+	double y = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_add_imag(a, y);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sub_imag(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sub_imag(p->obj.tcomplex, q->r);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_sub_imag(sml_t* sml) { 
+	double y = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_sub_imag(a, y);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_mul_imag(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_mul_imag(p->obj.tcomplex, q->r);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_mul_imag(sml_t* sml) { 
+	double y = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_mul_imag(a, y);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_div_imag(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_div_imag(p->obj.tcomplex, q->r);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_div_imag(sml_t* sml) { 
+	double y = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_div_imag(a, y);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_conjugate(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-   	ke1_t *out, *p;
-    p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_conjugate(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_conjugate(sml_t* sml) {
+	gsl_complex z = sml_pop_complex(sml);
+	z = gsl_complex_conjugate(z);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_inverse(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_inverse(p->obj.tcomplex);
-    return top;
+static void ke_complex_inverse(sml_t* sml) { 
+	gsl_complex z = sml_pop_complex(sml);
+	z = gsl_complex_inverse(z);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_negative(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_negative(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_negative(sml_t* sml) { 
+	gsl_complex z = sml_pop_complex(sml);
+	z = gsl_complex_negative(z);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sqrt(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sqrt(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_sqrt(sml_t* sml) { 
+	gsl_complex z = sml_pop_complex(sml);
+	z = gsl_complex_sqrt(z);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sqrt_real(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sqrt_real(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-    return top;
+static void ke_complex_sqrt_real(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_complex z = gsl_complex_sqrt_real(x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_pow(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_pow(p->obj.tcomplex, q->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_pow(sml_t* sml) {
+	gsl_complex b = sml_pop_complex(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_pow(a, b);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_pow_real(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_pow_real(p->obj.tcomplex, q->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-    return top;
+static void ke_complex_pow_real(sml_t* sml) {
+	double b = sml_pop_real(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_pow_real(a, b);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_exp(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_exp(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_exp(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_exp(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_log(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_log(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_log(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_log(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_log10(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_log10(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_log10(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_log10(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_log_b(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p, *q;
-	q = stack[--top];
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_log_b(p->obj.tcomplex, q->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_log_b(sml_t* sml) {
+	gsl_complex b = sml_pop_complex(sml);
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_log_b(a, b);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sin(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sin(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_sin(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_sin(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_cos(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_cos(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_cos(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_cos(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_tan(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_tan(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_tan(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_tan(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sec(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sec(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_sec(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_sec(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_csc(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_csc(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_csc(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_csc(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_cot(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_cot(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_cot(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_cot(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arcsin(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arcsin(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arcsin(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arcsin(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arcsin_real(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arcsin_real(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-    return top;
+static void ke_complex_arcsin_real(sml_t* sml) {
+	double x = sml_pop_real(sml);
+	gsl_complex z = gsl_complex_arcsin_real(x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arccos(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arccos(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arccos(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arccos(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arccos_real(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arccos_real(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-    return top;
+static void ke_complex_arccos_real(sml_t* sml) {
+	double x = sml_pop_real(sml);
+	gsl_complex z = gsl_complex_arccos_real(x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arctan(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arctan(p->obj.tcomplex);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arctan(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arctan(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arcsec(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arcsec(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arcsec(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arcsec(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arcsec_real(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arcsec_real(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-    return top;
+static void ke_complex_arcsec_real(sml_t* sml) {
+	double x = sml_pop_real(sml);
+	gsl_complex z = gsl_complex_arcsec_real(x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arccsc(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arccsc(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arccsc(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arccsc(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arccsc_real(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arccsc_real(p->r);
-	out->ttype = KET_VAL;
-	out->vtype = KEV_COMPLEX;
-    return top;
+static void ke_complex_arccsc_real(sml_t* sml) { 
+	double x = sml_pop_real(sml);
+	gsl_complex z = gsl_complex_arccsc_real(x);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arccot(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arccot(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arccot(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arccot(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sinh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sinh(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_sinh(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_sinh(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_cosh(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_cosh(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_cosh(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_cosh(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_tanh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_tanh(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_tanh(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_tanh(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_sech(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_sech(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_sech(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_sech(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_csch(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_csch(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_csch(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_csch(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_coth(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_coth(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_coth(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_coth(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arcsinh(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arcsinh(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arcsinh(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arcsinh(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arccosh(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arccosh(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arccosh(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arccosh(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arctanh(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arctanh(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arctanh(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arctanh(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arcsech(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arcsech(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arcsech(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arcsech(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arccsch(sml_t* sml, ke1_t *tokp, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arccsch(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arccsch(sml_t* sml) {
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arccsch(a);
+	sml_push_complex(sml, z);
 }
 
-static int ke_complex_arccoth(sml_t* sml, ke1_t *tokp, int top) { 
-	ke1_t **stack = sml->stack;
-	ke1_t *out, *p;
-	p = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->obj.tcomplex = gsl_complex_arccoth(p->obj.tcomplex);
-	out->ttype = p->ttype;
-	out->vtype = KEV_COMPLEX;
-	return top;
+static void ke_complex_arccoth(sml_t* sml) { 
+	gsl_complex a = sml_pop_complex(sml);
+	gsl_complex z = gsl_complex_arccoth(a);
+	sml_push_complex(sml, z);
 }
 
 void ke_complex_hash(sml_t* sml) {

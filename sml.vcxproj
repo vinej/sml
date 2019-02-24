@@ -153,14 +153,16 @@
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
       <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
       <CallingConvention>Cdecl</CallingConvention>
-      <FloatingPointModel>Precise</FloatingPointModel>
+      <FloatingPointModel>Fast</FloatingPointModel>
       <StructMemberAlignment>Default</StructMemberAlignment>
       <ControlFlowGuard>false</ControlFlowGuard>
       <EnableParallelCodeGeneration>false</EnableParallelCodeGeneration>
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <WholeProgramOptimization>true</WholeProgramOptimization>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
-      <Optimization>MaxSpeed</Optimization>
+      <Optimization>MaxSpeedHighLevel</Optimization>
+      <DisableFunctionSplitting>true</DisableFunctionSplitting>
+      <CheckUndimensionedArrays>true</CheckUndimensionedArrays>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -210,8 +212,10 @@
       <EnableMatrixMultiplyLibraryCall>Yes</EnableMatrixMultiplyLibraryCall>
       <StringPooling>true</StringPooling>
       <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
-      <StructMemberAlignment>16Bytes</StructMemberAlignment>
+      <StructMemberAlignment>Default</StructMemberAlignment>
       <Optimization>MaxSpeedHighLevel</Optimization>
+      <UseProcessorExtensions>None</UseProcessorExtensions>
+      <Mtune>No</Mtune>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -247,6 +251,7 @@
     <ClInclude Include="vector.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="api.c" />
     <ClCompile Include="command.c" />
     <ClCompile Include="complex.c" />
     <ClCompile Include="constants.c" />
