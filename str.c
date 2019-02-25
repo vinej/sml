@@ -4,39 +4,25 @@
 #include "utf8.h"
 #include "api.c"
 
-int ke_str_prop_get_0par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
+int ke_str_prop_get_0par(sml_t* sml) { 
 	// b = a[1]  =>  1 a(1) =
-	ke1_t *out, *prop;
-	prop = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	out->i = utf8len(prop->obj.s);
-	out->r = (double)out->i;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_INT;
-	out->obj.s = NULL;
-	return top;
+	token_t * prop = sml_pop_token(sml);
+	int i = utf8len(sml_get_str(prop));
+	sml_push_int(sml, i);
 }
 
-int ke_str_prop_get_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
+int ke_str_prop_get_1par(sml_t* sml) { 
 	// b = a[1]  =>  1 a(1) =
-	ke1_t *out, *prop, *indice;
-	prop = stack[--top];
-	indice = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-
+	token_t * prop = sml_pop_token(sml);
+	token_t * indice = sml_pop_token(sml);
 	if (indice->vtype == KEV_STR) {
-		out->i = utf8strstr(prop->obj.s, indice->obj.s);
-		out->ttype = KET_VAL;
-		out->vtype = KEV_INT;
-		out->r = (double)out->i;
+		int i = utf8strstr(sml_get_str(prop), sml_get_str(indice));
+		sml_push_int(sml,i)
 	}
 	else {
-		out->obj.s = utf8pos(prop->obj.s, (size_t)indice->i);
-		out->tofree = 1;
-		out->ttype = KET_VAL;
-		out->vtype = KEV_STR;
+		char * s = utf8pos(sml_get_str(prop), sml_get_int(indice));
+		sml_push_str(sml, s);
 	}
-	return top;
 }
 
 int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
@@ -47,15 +33,14 @@ int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 	// 3,-1  , 3 to end
 	// -1,-3     8+-3 = 5   8+-1 = 7
 	// 
-	ke1_t *out, *prop, *from, *to;
-	prop = stack[--top];
-	to = stack[--top];
-	from = stack[--top];
-	stack[top] = ke_get_out(sml); out = stack[top++];
-	int64_t to_i = to->i;
-	int64_t from_i = from->i;
+	char * str = sml_pop_str(sml);
+	int to = sml_pop_int(sml);
+	int from = sml_pop_int(sml);
 
-	int len = (int)utf8len(prop->obj.s);
+	int64_t to_i = to;
+	int64_t from_i = from;
+
+	int len = (int)utf8len(str);
 	if (from_i < 0 && to_i < 0) {
 		int64_t t = from_i;
 		from_i = to_i;
@@ -68,32 +53,27 @@ int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 		to_i = len + to_i;
 	}
 
-	out->obj.s = utf8mid(prop->obj.s, (size_t)from_i, (size_t)to_i);
-	out->tofree = 1;
-	out->ttype = KET_VAL;
-	out->vtype = KEV_STR;
-	return top;
+	char * s = utf8mid(str, (size_t)from_i, (size_t)to_i);
+	sml_push_str(sml, s);
 }
 
-int ke_str_prop_set_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
+void ke_str_prop_set_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
 	// a[2] = 'z' =>  2 a(1) 'z' =
+	// TODO NOT UTF8
 	ke1_t *p, *q, *v;
-	v = stack[--top];
-	p = stack[--top];
-	q = stack[--top];
-	p->obj.s[q->i] = v->obj.s[0];
-	return top;
+	char * dest = sml_pop_str(sml);
+	char * src = sml_pop_str(sml);
+	int i = sml_pop_int(sml);
+	src[i] = dest[0];
 }
 
-int ke_str_prop_set_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
+void ke_str_prop_set_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
 	// a{1,2} = 'as'    1 2 a(2) 'sd' =
-	ke1_t *prop, *from, *to, *v;
-	v = stack[--top];
-	prop = stack[--top];
-	to = stack[--top];
-	from = stack[--top];
-	memcpy(&(prop->obj.s[from->i]), v->obj.s, (size_t)(to->i - from->i + 1));
-	return top;
+	char * src = sml_pop_str(sml);
+	char * dest = sml_pop_str(sml);
+	int to = sml_pop_int(sml);
+	int from = sml_pop_int(sml);
+	memcpy(&(dest[from]), src, to - from + 1);
 }
 
 static void ke_strcpy(sml_t* sml) {

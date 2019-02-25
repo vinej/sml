@@ -7,6 +7,8 @@
 #define sml_get_stack(sml) sml->stack
 #define sml_get_tokp(sml) sml->tokp
 #define sml_get_args(sml) sml->tokp->n_args
+#define sml_get_ttype(sml) sml->tokp->ttype
+#define sml_get_vtype(sml) sml->tokp->vtype
 
 #define sml_pop_token(sml) sml->stack[--sml->top]
 #define sml_pop_int(sml) sml->stack[--sml->top]->i
@@ -42,16 +44,16 @@
 
 #define sml_get_complex_adr  &out->obj.tcomplex
 
+#define sml_get_type(t) t->vtype
 #define sml_get_str(t) t->obj.s
 #define sml_get_real(t) t->r
 #define sml_get_int(t) t->i
 #define sml_get_ptr(t) t->obj.ptr
 #define sml_set_ptr_null(t) t->obj.ptr = NULL
 
+
 #define sml_adr_str(t) &t->obj.s
 #define sml_adr_ptr(t) &t->obj
-
-
 
 #define sml_push_buffer(sml, b) ke1_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \

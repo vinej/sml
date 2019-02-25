@@ -1269,7 +1269,9 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 					e = stack[top - 2];
 					fields[e->ifield]->n_args = e->n_args;
 					stack[top - 2] = fields[e->ifield];
-					top = ke_poperty_set(sml, e, top);
+					sml->top = top;	sml->tokp = e;
+					ke_poperty_set(sml);
+					top = sml->top;
 				}
 			}
 			else {
@@ -1299,7 +1301,9 @@ int ke_eval(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int 
 				// it's only a normal token with ifield pointing to the real field to manager
 				// it's a false record to deal with propget. 
 				stack[top++] = fields[tokp->ifield];
-				top = ke_poperty_get(sml, tokp, top);
+				sml->top = top;	sml->tokp = tokp;
+				ke_poperty_get(sml);
+				top = sml->top;
 			}
 			else {
 				stack[top++] = tokp;
