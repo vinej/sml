@@ -3,17 +3,17 @@
 
 int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *ret_type)
 {
-	ke1_t *p, *q, *e;
+	token_t *p, *q, *e;
 	int err = 0;
 	*_i = 0, *_r = 0., *ret_type = 0;
 	sml->kexpr = kexpr;
-	sml->stack = (ke1_t**)ke_malloc_memory(sml, kexpr->n * sizeof(ke1_t *));
-	ke1_t **stack = sml->stack;
-	struct ke1_s ** fields = sml->fields;
-	struct ke1_s ** tokens = sml->tokens;
+	sml->stack = (token_t**)ke_malloc_memory(sml, kexpr->n * sizeof(token_t *));
+	token_t **stack = sml->stack;
+	struct token_s ** fields = sml->fields;
+	struct token_s ** tokens = sml->tokens;
 
-	ke1_t **tokpp = NULL;
-	ke1_t *tokp = NULL;
+	token_t **tokpp = NULL;
+	token_t *tokp = NULL;
 	register int top = 0;
 
 	int n = kexpr->n;

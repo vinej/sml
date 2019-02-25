@@ -13,7 +13,7 @@
 **********************/
 
 #define KE_GEN_CMP(_type, _op) \
-	static void ke_op_##_type(ke1_t *p, ke1_t *q, ke1_t *out) { \
+	static void ke_op_##_type(token_t *p, token_t *q, token_t *out) { \
 		if (p->vtype == KEV_STR && q->vtype == KEV_STR) out->i = (strcmp(p->obj.s, q->obj.s) _op 0); \
 		else out->i = p->vtype == KEV_REAL || q->vtype == KEV_REAL? (p->r _op q->r) : (p->i _op q->i); \
 		out->r = (double)out->i; \
@@ -29,7 +29,7 @@ KE_GEN_CMP(KEO_LT, <)
 	KE_GEN_CMP(KEO_NE, != )
 
 #define KE_GEN_BIN_INT(_type, _op) \
-	static void ke_op_##_type(ke1_t *p, ke1_t *q, ke1_t *out) { \
+	static void ke_op_##_type(token_t *p, token_t *q, token_t *out) { \
 		out->i = p->i; \
 		out->i _op q->i; out->r = (double)out->i; \
 		out->vtype = KEV_INT; \
@@ -44,28 +44,28 @@ KE_GEN_CMP(KEO_LT, <)
 	KE_GEN_BIN_INT(KEO_MOD, %=)
 	KE_GEN_BIN_INT(KEO_IDIV, /=)
 
-	static void ke_op_add_eq(ke1_t *p, ke1_t *q, ke1_t *out) {
+	static void ke_op_add_eq(token_t *p, token_t *q, token_t *out) {
 	out->i = p->i; out->r = p->r;
 	out->i += q->i; out->r += q->r;
 	out->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL ? KEV_REAL : KEV_INT;
 	out->ttype = KET_VAL;
 }
 
-static void ke_op_sub_eq(ke1_t *p, ke1_t *q, ke1_t *out) {
+static void ke_op_sub_eq(token_t *p, token_t *q, token_t *out) {
 	out->i = p->i; out->r = p->r;
 	out->i -= q->i; out->r -= q->r;
 	out->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL ? KEV_REAL : KEV_INT;
 	out->ttype = KET_VAL;
 }
 
-static void ke_op_mul_eq(ke1_t *p, ke1_t *q, ke1_t *out) {
+static void ke_op_mul_eq(token_t *p, token_t *q, token_t *out) {
 	out->i = p->i; out->r = p->r;
 	out->i *= q->i; out->r *= q->r;
 	out->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL ? KEV_REAL : KEV_INT;
 	out->ttype = KET_VAL;
 }
 
-static void ke_op_KEO_DIV(ke1_t *p, ke1_t *q, ke1_t *out)
+static void ke_op_KEO_DIV(token_t *p, token_t *q, token_t *out)
 {
 	out->r = p->r;
 	out->r /= q->r;
@@ -75,16 +75,16 @@ static void ke_op_KEO_DIV(ke1_t *p, ke1_t *q, ke1_t *out)
 }
 
 
-static void ke_op_KEO_LAND(ke1_t *p, ke1_t *q, ke1_t *out) { out->i = (p->i && q->i); out->r = (double)out->i; out->vtype = KEV_INT, out->ttype = KET_VAL; }
-static void ke_op_KEO_LOR(ke1_t *p, ke1_t *q, ke1_t *out) { out->i = (p->i || q->i); out->r = (double)out->i; out->vtype = KEV_INT, out->ttype = KET_VAL; }
-static void ke_op_KEO_POW(ke1_t *p, ke1_t *q, ke1_t *out) { out->r = pow(p->r, q->r), out->i = (int64_t)(out->r + .5); out->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL ? KEV_REAL : KEV_INT, out->ttype = KET_VAL; }
-static void ke_op_KEO_BNOT(ke1_t *p, ke1_t *q, ke1_t *out) { out->i = ~p->i; out->r = (double)out->i; out->vtype = KEV_INT, out->ttype = KET_VAL; }
-static void ke_op_KEO_LNOT(ke1_t *p, ke1_t *q, ke1_t *out) { out->i = !p->i; out->r = (double)out->i; out->vtype = KEV_INT, out->ttype = KET_VAL; }
-static void ke_op_KEO_POS(ke1_t *p, ke1_t *q, ke1_t *out) { } // do nothing
-static void ke_op_KEO_NOP(ke1_t *p, ke1_t *q, ke1_t *out) { } // do nothing
-static void ke_op_KEO_NEG(ke1_t *p, ke1_t *q, ke1_t *out) { out->i = -p->i, out->r = -p->r; out->vtype = KEV_REAL, out->ttype = KET_VAL; }
+static void ke_op_KEO_LAND(token_t *p, token_t *q, token_t *out) { out->i = (p->i && q->i); out->r = (double)out->i; out->vtype = KEV_INT, out->ttype = KET_VAL; }
+static void ke_op_KEO_LOR(token_t *p, token_t *q, token_t *out) { out->i = (p->i || q->i); out->r = (double)out->i; out->vtype = KEV_INT, out->ttype = KET_VAL; }
+static void ke_op_KEO_POW(token_t *p, token_t *q, token_t *out) { out->r = pow(p->r, q->r), out->i = (int64_t)(out->r + .5); out->vtype = p->vtype == KEV_REAL || q->vtype == KEV_REAL ? KEV_REAL : KEV_INT, out->ttype = KET_VAL; }
+static void ke_op_KEO_BNOT(token_t *p, token_t *q, token_t *out) { out->i = ~p->i; out->r = (double)out->i; out->vtype = KEV_INT, out->ttype = KET_VAL; }
+static void ke_op_KEO_LNOT(token_t *p, token_t *q, token_t *out) { out->i = !p->i; out->r = (double)out->i; out->vtype = KEV_INT, out->ttype = KET_VAL; }
+static void ke_op_KEO_POS(token_t *p, token_t *q, token_t *out) { } // do nothing
+static void ke_op_KEO_NOP(token_t *p, token_t *q, token_t *out) { } // do nothing
+static void ke_op_KEO_NEG(token_t *p, token_t *q, token_t *out) { out->i = -p->i, out->r = -p->r; out->vtype = KEV_REAL, out->ttype = KET_VAL; }
 
-static void ke_func1_abs(ke1_t *p, ke1_t *q, ke1_t *out) { if (p->vtype == KEV_INT) out->i = (int64_t)abs((int)p->i), out->r = (double)p->i, out->vtype = KEV_INT, out->ttype = KET_VAL; else out->r = fabs(p->r), out->i = (int64_t)(out->r + .5), out->vtype = KEV_REAL, out->ttype = KET_VAL; }
+static void ke_func1_abs(token_t *p, token_t *q, token_t *out) { if (p->vtype == KEV_INT) out->i = (int64_t)abs((int)p->i), out->r = (double)p->i, out->vtype = KEV_INT, out->ttype = KET_VAL; else out->r = fabs(p->r), out->i = (int64_t)(out->r + .5), out->vtype = KEV_REAL, out->ttype = KET_VAL; }
 
 
 int ke_command_icmd(sml_t* sml, char * name) {
@@ -124,9 +124,9 @@ int ke_command_icmd(sml_t* sml, char * name) {
 	}
 }
 
-int ifind_backward_defname(ke1_t ** tokens, int starti, ke1_t * tokp) {
+int ifind_backward_defname(token_t ** tokens, int starti, token_t * tokp) {
 	for (int i = starti + 1; i > -1; --i) {
-		ke1_t *f = tokens[i];
+		token_t *f = tokens[i];
 		if (f->vtype == KEV_DEF) {
 			return i;
 		}
@@ -135,10 +135,10 @@ int ifind_backward_defname(ke1_t ** tokens, int starti, ke1_t * tokp) {
 	return -1;
 }
 
-int ifind_forward_rtn(kexpr_t *kexpr, int starti, ke1_t * tokp) {
+int ifind_forward_rtn(kexpr_t *kexpr, int starti, token_t * tokp) {
 	int i = -1;
 	for (int i = starti + 1; i < kexpr->n; i++) {
-		ke1_t *f = &kexpr->e[i];
+		token_t *f = &kexpr->e[i];
 		if (f->icmd == CMD_IRTN) {
 			return i;
 		}
@@ -147,10 +147,10 @@ int ifind_forward_rtn(kexpr_t *kexpr, int starti, ke1_t * tokp) {
 	return -1;
 }
 
-int ifind_forward_next(kexpr_t *kexpr, int starti, ke1_t *tokp) {
+int ifind_forward_next(kexpr_t *kexpr, int starti, token_t *tokp) {
 	int qte_for = 0;
 	for (int i = starti + 1; i < kexpr->n; i++) {
-		ke1_t *f = &kexpr->e[i];
+		token_t *f = &kexpr->e[i];
 		if (f->icmd == CMD_IFOR) {
 			++qte_for;
 		}
@@ -165,10 +165,10 @@ int ifind_forward_next(kexpr_t *kexpr, int starti, ke1_t *tokp) {
 	return -1;
 }
 
-int ifind_forward_end(kexpr_t *kexpr, int starti, ke1_t *tokp) {
+int ifind_forward_end(kexpr_t *kexpr, int starti, token_t *tokp) {
 	int qte_if = 0;
 	for (int i = starti + 1; i < kexpr->n; i++) {
-		ke1_t *f = &kexpr->e[i];
+		token_t *f = &kexpr->e[i];
 		if (f->icmd == CMD_IIF) {
 			++qte_if;
 		}
@@ -183,11 +183,11 @@ int ifind_forward_end(kexpr_t *kexpr, int starti, ke1_t *tokp) {
 	return -1;
 }
 
-int ifind_else_or_end(kexpr_t *kexpr, int starti, ke1_t *tokp) {
+int ifind_else_or_end(kexpr_t *kexpr, int starti, token_t *tokp) {
 	int i = -1;
 	int qte_if = 0;
 	for (int i = starti + 1; i < kexpr->n; i++) {
-		ke1_t *f = &kexpr->e[i];
+		token_t *f = &kexpr->e[i];
 		if (f->icmd == CMD_IIF) {
 			++qte_if;
 		}
@@ -202,8 +202,8 @@ int ifind_else_or_end(kexpr_t *kexpr, int starti, ke1_t *tokp) {
 	return -1;
 }
 
-int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, ke1_t ** tokens) {
-	ke1_t *tokp = NULL;
+int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, token_t ** tokens) {
+	token_t *tokp = NULL;
 	int n = kexpr->n;
 	int lastForCmd = 0;
 	int lastNop = 0;
@@ -233,7 +233,7 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, ke1_t ** tokens) {
 				if (!tokp->ijmp) {
 					int idefname = ifind_backward_defname(tokens, itok, tokp);
 					if (idefname != -1) {
-						ke1_t *def_name = tokens[idefname];
+						token_t *def_name = tokens[idefname];
 						khint_t iter = kh_get(3, sml->hidefcommand, def_name->ifield);
 						if (kh_end(sml->hidefcommand) == iter) {
 							printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_name->name, tokp->sourceLine);
@@ -246,7 +246,7 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, ke1_t ** tokens) {
 			else if (icmd == CMD_IDEF) {
 				sml->lastDef = itok;
 				int absent;
-				ke1_t *def_name = tokens[itok - tokp->n_args];
+				token_t *def_name = tokens[itok - tokp->n_args];
 				def_name->vtype = KEV_DEF;
 				khint_t iter = kh_put(3, sml->hidefcommand, def_name->ifield, &absent);
 				kh_val(sml->hidefcommand, iter) = ((itok)-tokp->n_args - 1);
@@ -304,7 +304,7 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, ke1_t ** tokens) {
 	}
 	return 0;
 }
-int ke_manage_function(sml_t *sml, ke1_t * tok, int err) {
+int ke_manage_function(sml_t *sml, token_t * tok, int err) {
 	tok->n_args = 1;
 	tok->sourceLine = sml->sourceCodeLine;
 	tok->f.defcmd = (cmdp)ke_command(sml, tok->name);
@@ -329,7 +329,7 @@ int ke_manage_function(sml_t *sml, ke1_t * tok, int err) {
 	return err;
 }
 
-int ke_manage_property(sml_t *sml, ke1_t *tok, int err) {
+int ke_manage_property(sml_t *sml, token_t *tok, int err) {
 	// it's a propery
 	tok->n_args = 1;
 	tok->sourceLine = sml->sourceCodeLine;
@@ -354,7 +354,7 @@ int ke_manage_property(sml_t *sml, ke1_t *tok, int err) {
 	return err;
 }
 
-int ke_manage_variable(sml_t *sml, ke1_t *tok, int err) {
+int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 	tok->ttype = KET_VNAME;
 	if (sml->isNextDefName) {
 		strcpy(sml->currentDefName, tok->name);
@@ -379,7 +379,7 @@ int ke_manage_variable(sml_t *sml, ke1_t *tok, int err) {
 		}
 	}
 
-	ke1_t * recp = NULL;
+	token_t * recp = NULL;
 	khint_t iter = kh_get(6, sml->hname, tok->name);
 	if (kh_end(sml->hname) != iter) {
 		tok->ifield = kh_val(sml->hname, iter);
@@ -404,7 +404,7 @@ int ke_manage_variable(sml_t *sml, ke1_t *tok, int err) {
 				strcpy(recName, tok->name);
 				khint_t iter = kh_put(6, sml->hname, recName, &absent);
 				kh_val(sml->hname, iter) = sml->rec_qte;
-				recp = (ke1_t *)ke_calloc_memory(sml, sizeof(ke1_t), 1);
+				recp = (token_t *)ke_calloc_memory(sml, sizeof(token_t), 1);
 				recp->ifield = sml->rec_qte;
 				recp->name = recName;
 				recp->ttype = KET_REC;
@@ -436,7 +436,7 @@ int ke_manage_variable(sml_t *sml, ke1_t *tok, int err) {
 	return err;
 }
 
-int ke_manage_command(sml_t *sml, ke1_t *tok, int err) {
+int ke_manage_command(sml_t *sml, token_t *tok, int err) {
 	if (strcmp(tok->name, CMD_RTN) == 0) {
 		*sml->currentDefName = 0;
 	}
@@ -445,7 +445,7 @@ int ke_manage_command(sml_t *sml, ke1_t *tok, int err) {
 	return err;
 }
 
-int ke_manage_digit(sml_t* sml, ke1_t *tok, char **r, char **p, char **q, int err) {
+int ke_manage_digit(sml_t* sml, token_t *tok, char **r, char **p, char **q, int err) {
 	long x;
 	double y;
 	char *pp;
@@ -468,7 +468,7 @@ int ke_manage_digit(sml_t* sml, ke1_t *tok, char **r, char **p, char **q, int er
 	return err;
 }
 
-int ke_manage_string(sml_t *sml, ke1_t *tok, char **r, char **p, char **q, int err) {
+int ke_manage_string(sml_t *sml, token_t *tok, char **r, char **p, char **q, int err) {
 	int c = **p;
 	for (++(*p); **p && **p != c; ++(*p))
 		if (**p == '\\') {
@@ -488,7 +488,7 @@ int ke_manage_string(sml_t *sml, ke1_t *tok, char **r, char **p, char **q, int e
 	return err;
 }
 
-int ke_manager_operator(sml_t *sml, ke1_t *tok, char **r, char **p, char **q, int last_is_val, int err) {
+int ke_manager_operator(sml_t *sml, token_t *tok, char **r, char **p, char **q, int last_is_val, int err) {
 	tok->ttype = KET_OP;
 	if (**p == '*' && (*p)[1] == '*') tok->op = KEO_POW, tok->f.builtin = ke_op_KEO_POW, tok->n_args = 2, *r = *q + 2;
 	else if (**p == '*') tok->op = KEO_MUL, tok->f.builtin = ke_op_mul_eq, tok->n_args = 2, *r = *q + 1; // FIXME: NOT working for unary operators
@@ -534,7 +534,7 @@ int ke_manager_operator(sml_t *sml, ke1_t *tok, char **r, char **p, char **q, in
 }
 
 // comments are not kept into the token list
-int ke_manage_comment(sml_t *sml, ke1_t * tok, char **p) {
+int ke_manage_comment(sml_t *sml, token_t * tok, char **p) {
 	++(*p);
 	while (**p != 0) {
 		if (**p == '\n') {
@@ -553,7 +553,7 @@ int ke_manage_comment(sml_t *sml, ke1_t * tok, char **p) {
 	}
 }
 
-int ke_manage_line_continuation(sml_t *sml, ke1_t * tok, char**p) {
+int ke_manage_line_continuation(sml_t *sml, token_t * tok, char**p) {
 	++(*p);
 	while (**p != 0) {
 		if (**p == '\n') {
@@ -574,10 +574,10 @@ int ke_manage_line_continuation(sml_t *sml, ke1_t * tok, char**p) {
 }
 
 // parse a token except "(", ")" and ","
-ke1_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) // it doesn't parse parentheses
+token_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) // it doesn't parse parentheses
 {
-	ke1_t tok;
-	memset(&tok, 0, sizeof(ke1_t));
+	token_t tok;
+	memset(&tok, 0, sizeof(token_t));
 	tok.realToken = 1;
 
 	// loop until we find the start of a real token
@@ -674,34 +674,34 @@ ke1_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) //
 	return tok;
 }
 
-static inline ke1_t *push_back(sml_t *sml, ke1_t **a, int *n, int *m)
+static inline token_t *push_back(sml_t *sml, token_t **a, int *n, int *m)
 {
 	if (*n == *m) {
 		int old_m = *m;
 		*m = *m ? *m << 1 : 8;
 		// first timae allocation
 		if (*a == 0) ke_inc_memory(sml);
-		*a = (ke1_t*)realloc(*a, *m * sizeof(ke1_t));
+		*a = (token_t*)realloc(*a, *m * sizeof(token_t));
 		if (*a == NULL) {
 			printf("out of memory at push_back");
 			printf("TODO clean up the memory");
 			abort();
 		}
 
-		memset(*a + old_m, 0, (*m - old_m) * sizeof(ke1_t));
+		memset(*a + old_m, 0, (*m - old_m) * sizeof(token_t));
 	}
 	return &(*a)[(*n)++];
 }
 
-ke1_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
+token_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
 {
 	char * p;
 	int n_out, m_out, n_op, m_op, last_is_val = 0;
-	ke1_t *out, *op, *t, *u;
+	token_t *out, *op, *t, *u;
 
 	t = NULL;
 
-	ke1_t * last = NULL;
+	token_t * last = NULL;
 
 	// remove remark, and normalize line seperator
 	utf8 *s;
@@ -767,7 +767,7 @@ ke1_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
 		}
 		else { // output-able token
 			isPreviousLeftParenthese = 0;
-			ke1_t v = ke_read_token(sml, p, &p, err, last_is_val);
+			token_t v = ke_read_token(sml, p, &p, err, last_is_val);
 
 			// SET PROPERTY FOR EQUAL
 			if (v.ttype == KET_OP && v.op == KEO_LET && isLastLeftBraket) {
@@ -826,7 +826,7 @@ ke1_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
 	if (*err == 0) { // then check if the number of args is correct
 	int i, n;
 	for (i = n = 0; i < n_out; ++i) {
-	ke1_t *e = &out[i];
+	token_t *e = &out[i];
 	if (e->ttype == KET_VAL || e->ttype == KET_VCMD || e->ttype == KET_VNAME) ++n;
 	else n -= e->n_args - 1;
 	}
@@ -846,10 +846,10 @@ ke1_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
 kexpr_t *ke_parse(sml_t *sml, utf8 *_s, int *err)
 {
 	int n;
-	ke1_t *e;
+	token_t *e;
 	kexpr_t *ke;
 	if (sml->fields == NULL) {
-		sml->fields = ke_calloc_memory(sml, sizeof(ke1_t *) * 1000, 1);
+		sml->fields = ke_calloc_memory(sml, sizeof(token_t *) * 1000, 1);
 	}
 	e = ke_parse_core(sml, _s, &n, err);
 	if (*err == 0) {
@@ -859,8 +859,8 @@ kexpr_t *ke_parse(sml_t *sml, utf8 *_s, int *err)
 		ke_print(sml, ke);
 		//#endif // DEBUG
 		//else {} {
-		//	g_gbl_fields = realloc(g_gbl_fields, sizeof(ke1_t *) * g_gbl_field_qte);
-		//	memset(g_gbl_fields + old_m, 0, (*m - old_m) * sizeof(ke1_t));
+		//	g_gbl_fields = realloc(g_gbl_fields, sizeof(token_t *) * g_gbl_field_qte);
+		//	memset(g_gbl_fields + old_m, 0, (*m - old_m) * sizeof(token_t));
 		//
 		//}
 		return ke;

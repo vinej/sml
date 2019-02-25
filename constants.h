@@ -1,9 +1,9 @@
 #ifndef CONSTANTS_H_INCLUDED
 #define CONSTANTS_H_INCLUDED
 
-//int ke_constants(const char * name, ke1_t *stack, int top);
+//int ke_constants(const char * name, token_t *stack, int top);
 double ke_constants(const char * name);
-//void ke_constants_print(ke1_t *k);
+//void ke_constants_print(token_t *k);
 //void ke_constants_hash();
 //void ke_constants_destroy();
 /*

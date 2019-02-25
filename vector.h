@@ -1,12 +1,14 @@
 #ifndef VECTOR_H_INCLUDED
 #define VECTOR_H_INCLUDED
 
-void ke_vector_print(sml_t* sml, ke1_t *k);
-void ke_vector_hash(sml_t* sml);
-void ke_vector_freemem(sml_t* sml, ke1_t *e);
+#include "api.h"
 
-void ke_vector_int_print(sml_t* sml, ke1_t *k);
-void ke_vector_int_freemem(sml_t* sml, ke1_t *e);
+void ke_vector_print(sml_t* sml, token_t *k);
+void ke_vector_hash(sml_t* sml);
+void ke_vector_freemem(sml_t* sml, token_t *e);
+
+void ke_vector_int_print(sml_t* sml, token_t *k);
+void ke_vector_int_freemem(sml_t* sml, token_t *e);
 
 void ke_vector_get(sml_t* sml);
 void ke_vector_int_get(sml_t* sml);

@@ -1,6 +1,8 @@
 #ifndef FILE_H_INCLUDED
 #define FILE_H_INCLUDED
 
+#include "api.h"
+
 void ke_file_hash(sml_t* sml);
 
 #define FILE_NEWBUFFER "newbuffer"

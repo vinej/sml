@@ -1,7 +1,7 @@
 #include <gsl/gsl_matrix.h>
 #include "kexpr.h"
 #include "matrix.h"
-#include "api.c"
+#include "api.h"
 
 static void ke_matrix_alloc(sml_t* sml) { 
 	int n1 = sml_pop_int(sml);
@@ -243,7 +243,7 @@ static void ke_matrix_fread(sml_t* sml) {
 }
 
 static void ke_matrix_fwrite(sml_t* sml) { 
-ke1_t **stack = sml->stack;
+token_t **stack = sml->stack;
 	gsl_matrix * m = sml_pop_matrix(sml);
 	char * filename = sml_pop_str(sml);
 	FILE * f = fopen(filename, "w");
@@ -294,14 +294,14 @@ void ke_matrix_hash(sml_t * sml) {
     ke_hash_add(sml, (fncp)&ke_matrix_fwrite,MATRIX_WRITE);
 }
 
-void ke_matrix_print(sml_t* sml, ke1_t *k) {
+void ke_matrix_print(sml_t* sml, token_t *k) {
     printf("Matrix: %s\n", k->name);
     for(size_t i = 0; i < k->obj.matrix->size1; i++)
         for(size_t j = 0; j < k->obj.matrix->size2; j++)
             printf("%d,%d : v:%g\n", (int)i, (int)j, gsl_matrix_get(k->obj.matrix, i,j));
 }
 
-void ke_matrix_freemem(sml_t* sml, ke1_t *e) {
+void ke_matrix_freemem(sml_t* sml, token_t *e) {
     if (e->obj.matrix && e->vtype == KEV_MAT) {
         gsl_matrix_free(e->obj.matrix); ke_dec_memory(sml);
         e->obj.matrix = NULL;

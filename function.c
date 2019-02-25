@@ -1,9 +1,8 @@
 #include <math.h>
 #include <time.h>
 
-#include "kexpr.h"
+#include "api.h"
 #include "function.h"
-#include "api.c"
 
 #define RADIAN 1
 #define DEGREE 2
@@ -336,7 +335,7 @@ void ke_function_hash(sml_t* sml) {
 	ke_hash_add(sml, (fncp)&ke_function_lcm, FUNCTION_LCM);
 }
 
-void ke_function_print(sml_t* sml,ke1_t *k) {
+void ke_function_print(sml_t* sml,token_t *k) {
     printf("Function: %d\n", k->icmd);
     printf("%g\n", k->r);
 }

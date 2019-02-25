@@ -4,7 +4,7 @@
 #include <plplot/plplotP.h>
 #include <stdio.h>
 #include <Windows.h>
-#include "../api.c"
+#include "../api.h"
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_WRITE_IMPLEMENTATION
@@ -16,7 +16,7 @@
 
 #define ke_get_out dllke_get_out
 
-ke1_t * (__cdecl *dllke_get_out)(sml_t *sml) = 0;
+token_t * (__cdecl *dllke_get_out)(sml_t *sml) = 0;
 int(__cdecl *dllke_hash_add)(sml_t *, fncp, char *) = 0;
 
 SML_EXPORT void SML_CALL dllke_plot_hash(sml_t* sml);
@@ -28,7 +28,7 @@ SML_EXPORT void SML_CALL ke_dll_hash_add(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plimload(sml_t* sml) { 
-	ke1_t *filename, *x, *y, *n, *zero;
+	token_t *filename, *x, *y, *n, *zero;
 	zero = sml_pop_token(sml);
 	n = sml_pop_token(sml);
 	y = sml_pop_token(sml);
@@ -58,7 +58,7 @@ SML_EXPORT void SML_CALL ke_plimfree(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plimwrite(sml_t* sml) {
-	ke1_t *filename, *w, *h, *comp, *data, *quality, *type;
+	token_t *filename, *w, *h, *comp, *data, *quality, *type;
 	type = sml_pop_token(sml);
 	quality = sml_pop_token(sml);
 	data = sml_pop_token(sml);
@@ -86,7 +86,7 @@ SML_EXPORT void SML_CALL ke_plimwrite(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plimresize(sml_t* sml) {
-	ke1_t *in, *in_w, *in_h, *in_stride, *out_w, *out_h, *out_stride, *nb_channel;
+	token_t *in, *in_w, *in_h, *in_stride, *out_w, *out_h, *out_stride, *nb_channel;
 
 	nb_channel = sml_pop_token(sml);
 	out_stride = sml_pop_token(sml);
@@ -104,20 +104,20 @@ SML_EXPORT void SML_CALL ke_plimresize(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsdev(sml_t* sml) {
-	ke1_t *p;
+	token_t *p;
 	p = sml_pop_token(sml);
 	plsdev(p->obj.s);
 }
 
 SML_EXPORT void SML_CALL ke_plinit(sml_t* sml) {
-	ke1_t *p;
+	token_t *p;
 	p = sml_pop_token(sml);
 	plsdev(p->obj.s);
 	plinit();
 }
 
 SML_EXPORT void SML_CALL ke_plenv(sml_t* sml) {
-	ke1_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
+	token_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
 	axis = sml_pop_token(sml);
 	just = sml_pop_token(sml);
 	ymax = sml_pop_token(sml);
@@ -128,7 +128,7 @@ SML_EXPORT void SML_CALL ke_plenv(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plline(sml_t* sml) {
-	ke1_t *n, *x, *y;
+	token_t *n, *x, *y;
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml); 
 	n = sml_pop_token(sml);
@@ -137,7 +137,7 @@ SML_EXPORT void SML_CALL ke_plline(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plpause(sml_t* sml) {
-	ke1_t *p;
+	token_t *p;
 	p = sml_pop_token(sml);
 	plspause((PLBOOL)p->i);
 }
@@ -178,7 +178,7 @@ SML_EXPORT void SML_CALL ke_plarc(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plaxes(sml_t* sml) { 
-	ke1_t *x0, *y0, *xopt, *xtick, *nxsub, *yopt, *ytick, *nysub;
+	token_t *x0, *y0, *xopt, *xtick, *nxsub, *yopt, *ytick, *nysub;
 	nysub= sml_pop_token(sml);
 	ytick = sml_pop_token(sml);
 	yopt = sml_pop_token(sml);
@@ -192,7 +192,7 @@ SML_EXPORT void SML_CALL ke_plaxes(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plbin(sml_t* sml) { 
-	ke1_t *nbin, *x, *y, *opt;
+	token_t *nbin, *x, *y, *opt;
 	opt = sml_pop_token(sml);
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
@@ -206,7 +206,7 @@ SML_EXPORT void SML_CALL ke_plbop(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plbox(sml_t* sml) { 
-	ke1_t *xopt, *xtick, *nxsub, *yopt, *ytick, *nysub;
+	token_t *xopt, *xtick, *nxsub, *yopt, *ytick, *nysub;
 	nysub = sml_pop_token(sml);
 	ytick = sml_pop_token(sml);
 	yopt = sml_pop_token(sml);
@@ -217,7 +217,7 @@ SML_EXPORT void SML_CALL ke_plbox(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plbox3(sml_t* sml) { 
-	ke1_t *xopt, *xlabel, *xtick, *nxsub, *yopt, *ylabel, *ytick, *nysub, *zopt, *zlabel, *ztick, *nzsub;
+	token_t *xopt, *xlabel, *xtick, *nxsub, *yopt, *ylabel, *ytick, *nysub, *zopt, *zlabel, *ztick, *nzsub;
 	nzsub = sml_pop_token(sml);
 	ztick = sml_pop_token(sml);
 	zlabel = sml_pop_token(sml);
@@ -237,7 +237,7 @@ SML_EXPORT void SML_CALL ke_plbox3(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plbtime(sml_t* sml) { 
-	ke1_t *year, *month, *day, *hour, *min, *sec, *ctime;
+	token_t *year, *month, *day, *hour, *min, *sec, *ctime;
 	ctime = sml_pop_token(sml);
 	sec = sml_pop_token(sml);
 	min = sml_pop_token(sml);
@@ -264,7 +264,7 @@ SML_EXPORT void SML_CALL ke_plbtime(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plctime(sml_t* sml) { 
-	ke1_t *year, *month, *day, *hour, *min, *sec, *ctime;
+	token_t *year, *month, *day, *hour, *min, *sec, *ctime;
 	ctime = sml_pop_token(sml);
 	sec = sml_pop_token(sml);
 	min = sml_pop_token(sml);
@@ -278,7 +278,7 @@ SML_EXPORT void SML_CALL ke_plctime(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plcalc_world(sml_t* sml) { 
-	ke1_t *rx, *ry, *wx, *wy, *window;
+	token_t *rx, *ry, *wx, *wy, *window;
 	window = sml_pop_token(sml);
 	wy = sml_pop_token(sml);
 	wx = sml_pop_token(sml);
@@ -301,22 +301,22 @@ SML_EXPORT void SML_CALL ke_plclear(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plcol0(sml_t* sml) { 
-	ke1_t *col0;
+	token_t *col0;
 	col0 = sml_pop_token(sml);
 	plcol0((PLINT)col0->i);
 }
 
 SML_EXPORT void SML_CALL ke_plcol1(sml_t* sml) { 
-	ke1_t *col1;
+	token_t *col1;
 	col1 = sml_pop_token(sml);
 	plcol1((PLFLT)col1->r);
 }
 
 
 SML_EXPORT void SML_CALL ke_plcolorbar(sml_t* sml) { 
-	ke1_t *p_colorbar_width, *p_colorbar_height, *opt, *position, *x, *y, *x_length, *y_length;
-	ke1_t *bg_color, *bb_color, *bb_style, *low_cap_color, *high_cap_color, *cont_color, *cont_width;
-	ke1_t *n_labels, *label_opts, *labels, *naxes, *axis_opts, *ticks, *sub_ticks, *n_values, *values;
+	token_t *p_colorbar_width, *p_colorbar_height, *opt, *position, *x, *y, *x_length, *y_length;
+	token_t *bg_color, *bb_color, *bb_style, *low_cap_color, *high_cap_color, *cont_color, *cont_width;
+	token_t *n_labels, *label_opts, *labels, *naxes, *axis_opts, *ticks, *sub_ticks, *n_values, *values;
 
 	values = sml_pop_token(sml);
 	n_values = sml_pop_token(sml);
@@ -375,7 +375,7 @@ SML_EXPORT void SML_CALL ke_plcolorbar(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plcont(sml_t* sml) { 
-	ke1_t *f, *nx, *ny, *kx, *lx, *ky, *ly, *clevel, *nlevel, *pltr, *pltr_data;
+	token_t *f, *nx, *ny, *kx, *lx, *ky, *ly, *clevel, *nlevel, *pltr, *pltr_data;
 	pltr_data = sml_pop_token(sml);
 	pltr = sml_pop_token(sml);
 	nlevel = sml_pop_token(sml);
@@ -394,7 +394,7 @@ SML_EXPORT void SML_CALL ke_plcont(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plcpstrm(sml_t* sml) { 
-	ke1_t *iplsr, *flags;
+	token_t *iplsr, *flags;
 	flags = sml_pop_token(sml);
 	iplsr = sml_pop_token(sml);
 	plcpstrm((PLINT)iplsr->i, (PLBOOL)flags->i);
@@ -405,7 +405,7 @@ SML_EXPORT void SML_CALL ke_plend1(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plenv0(sml_t* sml) { 
-	ke1_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
+	token_t *xmin, *xmax, *ymin, *ymax, *just, *axis;
 	axis = sml_pop_token(sml);
 	just = sml_pop_token(sml);
 	ymax = sml_pop_token(sml);
@@ -420,7 +420,7 @@ SML_EXPORT void SML_CALL ke_pleop(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plerrx(sml_t* sml) { 
-	ke1_t *n, *xmin, *xmax, *y;
+	token_t *n, *xmin, *xmax, *y;
 	y = sml_pop_token(sml);
 	xmax = sml_pop_token(sml);
 	xmin = sml_pop_token(sml);
@@ -431,7 +431,7 @@ SML_EXPORT void SML_CALL ke_plerrx(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plerry(sml_t* sml) { 
-	ke1_t *n, *ymin, *ymax, *y;
+	token_t *n, *ymin, *ymax, *y;
 	y = sml_pop_token(sml);
 	ymax = sml_pop_token(sml);
 	ymin = sml_pop_token(sml);
@@ -446,7 +446,7 @@ SML_EXPORT void SML_CALL ke_plfamadv(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plfill(sml_t* sml) { 
-	ke1_t *n, *x, *y;
+	token_t *n, *x, *y;
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
 	n = sml_pop_token(sml);
@@ -454,7 +454,7 @@ SML_EXPORT void SML_CALL ke_plfill(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plfill3(sml_t* sml) { 
-	ke1_t *n, *x, *y, *z;
+	token_t *n, *x, *y, *z;
 	z = sml_pop_token(sml);
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
@@ -470,19 +470,19 @@ SML_EXPORT void SML_CALL ke_plflush(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plfont(sml_t* sml) { 
-	ke1_t *ifont;
+	token_t *ifont;
 	ifont = sml_pop_token(sml);
 	plfont((PLINT)ifont->i);
 }
 
 SML_EXPORT void SML_CALL ke_plfontld(sml_t* sml) { 
-	ke1_t *fnt;
+	token_t *fnt;
 	fnt = sml_pop_token(sml);
 	plfontld((PLINT)fnt->i);
 }
 
 SML_EXPORT void SML_CALL ke_plGetCursor(sml_t* sml) { 
-	ke1_t *gin;
+	token_t *gin;
 	gin = sml_pop_token(sml);
 	gin->i = plGetCursor((PLGraphicsIn *)gin->obj.plgrin);
 	gin->vtype = KEV_INT;
@@ -490,7 +490,7 @@ SML_EXPORT void SML_CALL ke_plGetCursor(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgchr(sml_t* sml) { 
-	ke1_t *p_def, *p_ht;
+	token_t *p_def, *p_ht;
 	p_ht = sml_pop_token(sml);
 	p_def = sml_pop_token(sml);
 
@@ -500,7 +500,7 @@ SML_EXPORT void SML_CALL ke_plgchr(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgcmap1_range(sml_t* sml) { 
-	ke1_t *min_color, *max_color;
+	token_t *min_color, *max_color;
 	max_color = sml_pop_token(sml);
 	min_color = sml_pop_token(sml);
 
@@ -512,7 +512,7 @@ SML_EXPORT void SML_CALL ke_plgcmap1_range(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgcol0(sml_t* sml) { 
-	ke1_t *icol0, *r, *g, *b;
+	token_t *icol0, *r, *g, *b;
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
 	r = sml_pop_token(sml);
@@ -531,7 +531,7 @@ SML_EXPORT void SML_CALL ke_plgcol0(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgcol0a(sml_t* sml) { 
-	ke1_t *icol0, *r, *g, *b, *alpha;
+	token_t *icol0, *r, *g, *b, *alpha;
 	alpha = sml_pop_token(sml);
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
@@ -554,7 +554,7 @@ SML_EXPORT void SML_CALL ke_plgcol0a(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgcolbg(sml_t* sml) {
-	ke1_t *r, *g, *b;
+	token_t *r, *g, *b;
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
 	r = sml_pop_token(sml);
@@ -572,7 +572,7 @@ SML_EXPORT void SML_CALL ke_plgcolbg(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgcolbga(sml_t* sml) { 
-	ke1_t *r, *g, *b, *alpha;
+	token_t *r, *g, *b, *alpha;
 	alpha = sml_pop_token(sml);
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
@@ -595,7 +595,7 @@ SML_EXPORT void SML_CALL ke_plgcolbga(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgcompression(sml_t* sml) { 
-	ke1_t *compression;
+	token_t *compression;
 	compression = sml_pop_token(sml);
 
 	compression->vtype = KEV_INT;
@@ -604,7 +604,7 @@ SML_EXPORT void SML_CALL ke_plgcompression(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgdidev(sml_t* sml) { 
-	ke1_t *p_mar, *p_aspect, *p_jx, *p_jy;
+	token_t *p_mar, *p_aspect, *p_jx, *p_jy;
 	p_jy = sml_pop_token(sml);
 	p_jx = sml_pop_token(sml);
 	p_aspect = sml_pop_token(sml);
@@ -627,7 +627,7 @@ SML_EXPORT void SML_CALL ke_plgdidev(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgdiori(sml_t* sml) { 
-	ke1_t *p_rot;
+	token_t *p_rot;
 	p_rot = sml_pop_token(sml);
 
 	p_rot->vtype = KEV_REAL;
@@ -637,7 +637,7 @@ SML_EXPORT void SML_CALL ke_plgdiori(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgdiplt(sml_t* sml) { 
-	ke1_t *p_xmin, *p_ymin, *p_xmax, *p_ymax;
+	token_t *p_xmin, *p_ymin, *p_xmax, *p_ymax;
 	p_ymax = sml_pop_token(sml);
 	p_xmax = sml_pop_token(sml);
 	p_ymin = sml_pop_token(sml);
@@ -660,14 +660,14 @@ SML_EXPORT void SML_CALL ke_plgdiplt(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_function_plgdrawmode(sml_t* sml) { 
-	ke1_t *p;
+	token_t *p;
 	p = sml_pop_token(sml);
 	int i = (PLINT)plgdrawmode();
 	sml_push_int(sml,i);
 }
 
 SML_EXPORT void SML_CALL ke_plgfam(sml_t* sml) { 
-	ke1_t *p_fam, *p_num, *p_bmax;
+	token_t *p_fam, *p_num, *p_bmax;
 	p_bmax = sml_pop_token(sml);
 	p_num = sml_pop_token(sml);
 	p_fam = sml_pop_token(sml);
@@ -686,7 +686,7 @@ SML_EXPORT void SML_CALL ke_plgfam(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgfci(sml_t* sml) { 
-	ke1_t *p_fci;
+	token_t *p_fci;
 	p_fci = sml_pop_token(sml);
 
 	p_fci->vtype = KEV_INT;
@@ -696,7 +696,7 @@ SML_EXPORT void SML_CALL ke_plgfci(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgfnam(sml_t* sml) { 
-	ke1_t *fnam;
+	token_t *fnam;
 	fnam = sml_pop_token(sml);
 
 	fnam->vtype = KEV_STR;
@@ -704,7 +704,7 @@ SML_EXPORT void SML_CALL ke_plgfnam(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgfont(sml_t* sml) { 
-	ke1_t *p_family, *p_style, *p_weight;
+	token_t *p_family, *p_style, *p_weight;
 	p_weight = sml_pop_token(sml);
 	p_style = sml_pop_token(sml);
 	p_family = sml_pop_token(sml);
@@ -723,7 +723,7 @@ SML_EXPORT void SML_CALL ke_plgfont(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plglevel(sml_t* sml) { 
-	ke1_t *p_level;
+	token_t *p_level;
 	p_level = sml_pop_token(sml);
 
 	p_level->vtype = KEV_INT;
@@ -733,7 +733,7 @@ SML_EXPORT void SML_CALL ke_plglevel(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgpage(sml_t* sml) { 
-	ke1_t *p_xp, *p_yp, *p_xleng, *p_yleng, *p_xoff, *p_yoff;
+	token_t *p_xp, *p_yp, *p_xleng, *p_yleng, *p_xoff, *p_yoff;
 	p_yoff= sml_pop_token(sml);
 	p_xoff = sml_pop_token(sml);
 	p_yleng = sml_pop_token(sml);
@@ -768,7 +768,7 @@ SML_EXPORT void SML_CALL ke_function_plgra(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgradient(sml_t* sml) { 
-	ke1_t *n, *x, *y, *angle;
+	token_t *n, *x, *y, *angle;
 	angle = sml_pop_token(sml);
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
@@ -780,7 +780,7 @@ SML_EXPORT void SML_CALL ke_plgradient(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgriddata(sml_t* sml) {
-	ke1_t *x, *y, *z, *npts, *xg, *nptsx, *yg, *nptsy, *zg, *type, *data;
+	token_t *x, *y, *z, *npts, *xg, *nptsx, *yg, *nptsy, *zg, *type, *data;
 	data = sml_pop_token(sml);
 	type = sml_pop_token(sml);
 	zg = sml_pop_token(sml);
@@ -812,7 +812,7 @@ SML_EXPORT void SML_CALL ke_plgriddata(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgspa(sml_t* sml) { 
-	ke1_t *xmin, *xmax, *ymin, *ymax;
+	token_t *xmin, *xmax, *ymin, *ymax;
 	ymax = sml_pop_token(sml);
 	ymin = sml_pop_token(sml);
 	xmax = sml_pop_token(sml);
@@ -836,7 +836,7 @@ SML_EXPORT void SML_CALL ke_plgspa(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgstrm(sml_t* sml) { 
-	ke1_t *p_strm;
+	token_t *p_strm;
 	p_strm = sml_pop_token(sml);
 
 	p_strm->vtype = KEV_INT;
@@ -846,7 +846,7 @@ SML_EXPORT void SML_CALL ke_plgstrm(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgver(sml_t* sml) { 
-	ke1_t *p_ver;
+	token_t *p_ver;
 	p_ver = sml_pop_token(sml);
 
 	p_ver->vtype = KEV_STR;
@@ -855,7 +855,7 @@ SML_EXPORT void SML_CALL ke_plgver(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgvpd(sml_t* sml) { 
-	ke1_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
+	token_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
 	p_ymax = sml_pop_token(sml);
 	p_ymin = sml_pop_token(sml);
 	p_xmax = sml_pop_token(sml);
@@ -878,7 +878,7 @@ SML_EXPORT void SML_CALL ke_plgvpd(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgvpw(sml_t* sml) { 
-	ke1_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
+	token_t *p_xmin, *p_xmax, *p_ymin, *p_ymax;
 	p_ymax = sml_pop_token(sml);
 	p_ymin = sml_pop_token(sml);
 	p_xmax = sml_pop_token(sml);
@@ -901,7 +901,7 @@ SML_EXPORT void SML_CALL ke_plgvpw(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgxax(sml_t* sml) { 
-	ke1_t *p_digmax, *p_digits;
+	token_t *p_digmax, *p_digits;
 	p_digits = sml_pop_token(sml);
 	p_digmax = sml_pop_token(sml);
 
@@ -916,7 +916,7 @@ SML_EXPORT void SML_CALL ke_plgxax(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgyax(sml_t* sml) { 
-	ke1_t *p_digmax, *p_digits;
+	token_t *p_digmax, *p_digits;
 	p_digits = sml_pop_token(sml);
 	p_digmax = sml_pop_token(sml);
 
@@ -931,7 +931,7 @@ SML_EXPORT void SML_CALL ke_plgyax(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plgzax(sml_t* sml) { 
-	ke1_t *p_digmax, *p_digits;
+	token_t *p_digmax, *p_digits;
 	p_digits = sml_pop_token(sml);
 	p_digmax = sml_pop_token(sml);
 
@@ -946,7 +946,7 @@ SML_EXPORT void SML_CALL ke_plgzax(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plhist(sml_t* sml) { 
-	ke1_t *n, *data, *datmin, *datmax, *nbin, *opt;
+	token_t *n, *data, *datmin, *datmax, *nbin, *opt;
 	opt = sml_pop_token(sml);
 	nbin = sml_pop_token(sml);
 	datmax = sml_pop_token(sml);
@@ -964,7 +964,7 @@ SML_EXPORT void SML_CALL ke_plhist(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plhlsrgb(sml_t* sml) { 
-	ke1_t *h, *l, *s, *p_r, *p_g, *p_b;
+	token_t *h, *l, *s, *p_r, *p_g, *p_b;
 	p_b = sml_pop_token(sml);
 	p_g = sml_pop_token(sml);
 	p_r = sml_pop_token(sml);
@@ -989,7 +989,7 @@ SML_EXPORT void SML_CALL ke_plhlsrgb(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plimagefr(sml_t* sml) { 
-	ke1_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *valuemin, *valuemax, *pltr, *pltr_data;
+	token_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *valuemin, *valuemax, *pltr, *pltr_data;
 	pltr_data = sml_pop_token(sml);
 	pltr = sml_pop_token(sml);
 	valuemax = sml_pop_token(sml);
@@ -1021,7 +1021,7 @@ SML_EXPORT void SML_CALL ke_plimagefr(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plimage(sml_t* sml) { 
-	ke1_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax,  *Dxmin, *Dxmax, *Dymin, *Dymax;
+	token_t *idata, *nx, *ny, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax,  *Dxmin, *Dxmax, *Dymin, *Dymax;
 	Dymax = sml_pop_token(sml);
 	Dymin = sml_pop_token(sml);
 	Dxmax = sml_pop_token(sml);
@@ -1053,7 +1053,7 @@ SML_EXPORT void SML_CALL ke_plimage(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_pljoin(sml_t* sml) { 
-	ke1_t *x1, *y1, *x2, *y2;
+	token_t *x1, *y1, *x2, *y2;
 	y2 = sml_pop_token(sml);
 	x2 = sml_pop_token(sml);
 	y1 = sml_pop_token(sml);
@@ -1067,7 +1067,7 @@ SML_EXPORT void SML_CALL ke_pljoin(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_pllab(sml_t* sml) { 
-	ke1_t *xlabel, *ylabel, *tlabel;
+	token_t *xlabel, *ylabel, *tlabel;
 	tlabel = sml_pop_token(sml);
 	ylabel = sml_pop_token(sml);
 	xlabel = sml_pop_token(sml);
@@ -1080,7 +1080,7 @@ SML_EXPORT void SML_CALL ke_pllab(sml_t* sml) {
 
 
 SML_EXPORT void SML_CALL ke_pllegend(sml_t* sml) { 
-	ke1_t *p_legend_width, *p_legend_height, *opt, *position, *x, *y, 
+	token_t *p_legend_width, *p_legend_height, *opt, *position, *x, *y, 
 		*plot_width, *bg_color, *bb_color, *bb_style, *nrow, *ncolumn,
 		*nlegend, *opt_array, *text_offset, *text_scale, *text_spacing, 
 		*text_justification, *text_colors, *text, *box_colors, *box_patterns, 
@@ -1157,7 +1157,7 @@ SML_EXPORT void SML_CALL ke_pllegend(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_pllightsource(sml_t* sml) { 
-	ke1_t *x, *y, *z;
+	token_t *x, *y, *z;
 	z = sml_pop_token(sml);
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
@@ -1170,7 +1170,7 @@ SML_EXPORT void SML_CALL ke_pllightsource(sml_t* sml) {
 
 
 SML_EXPORT void SML_CALL ke_plline3(sml_t* sml) { 
-	ke1_t *n, *x, *y, *z;
+	token_t *n, *x, *y, *z;
 	z = sml_pop_token(sml);
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
@@ -1184,7 +1184,7 @@ SML_EXPORT void SML_CALL ke_plline3(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_pllsty(sml_t* sml) {
-	ke1_t *lin;
+	token_t *lin;
 	lin = sml_pop_token(sml);
 
 	pllsty((PLINT)lin->r);
@@ -1192,7 +1192,7 @@ SML_EXPORT void SML_CALL ke_pllsty(sml_t* sml) {
 
 // TODO gin
 SML_EXPORT void SML_CALL ke_plmap(sml_t* sml) { 
-	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy;
+	token_t *mapform, *name, *minx, *maxx, *miny, *maxy;
 	maxy = sml_pop_token(sml);
 	miny = sml_pop_token(sml);
 	maxx = sml_pop_token(sml);
@@ -1211,7 +1211,7 @@ SML_EXPORT void SML_CALL ke_plmap(sml_t* sml) {
 
 // TODO 
 SML_EXPORT void SML_CALL ke_plmapfill(sml_t* sml) { 
-	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
+	token_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = sml_pop_token(sml);
 	plotentries = sml_pop_token(sml);
 	maxy = sml_pop_token(sml);
@@ -1234,7 +1234,7 @@ SML_EXPORT void SML_CALL ke_plmapfill(sml_t* sml) {
 
 // TODO 
 SML_EXPORT void SML_CALL ke_plmapline(sml_t* sml) { 
-	ke1_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
+	token_t *mapform, *name, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = sml_pop_token(sml);
 	plotentries = sml_pop_token(sml);
 	maxy = sml_pop_token(sml);
@@ -1257,7 +1257,7 @@ SML_EXPORT void SML_CALL ke_plmapline(sml_t* sml) {
 
 // TODO 
 SML_EXPORT void SML_CALL ke_plmapstring(sml_t* sml) { 
-	ke1_t *mapform, *name, *string, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
+	token_t *mapform, *name, *string, *minx, *maxx, *miny, *maxy, *plotentries, *nplotentries;
 	nplotentries = sml_pop_token(sml);
 	plotentries = sml_pop_token(sml);
 	maxy = sml_pop_token(sml);
@@ -1282,7 +1282,7 @@ SML_EXPORT void SML_CALL ke_plmapstring(sml_t* sml) {
 
 // TODO 
 SML_EXPORT void SML_CALL ke_plmaptex(sml_t* sml) { 
-	ke1_t *mapform, *name, *dx, *dy, *just, *text, *minx, *maxx, *miny, *maxy, *plotentry;
+	token_t *mapform, *name, *dx, *dy, *just, *text, *minx, *maxx, *miny, *maxy, *plotentry;
 	plotentry = sml_pop_token(sml);
 	maxy = sml_pop_token(sml);
 	miny = sml_pop_token(sml);
@@ -1310,7 +1310,7 @@ SML_EXPORT void SML_CALL ke_plmaptex(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plmeridians(sml_t* sml) { 
-	ke1_t *mapform, *dlong, *dlat, *minlong, *maxlong, *minlat, *maxlat;
+	token_t *mapform, *dlong, *dlat, *minlong, *maxlong, *minlat, *maxlat;
 	maxlat = sml_pop_token(sml);
 	minlat = sml_pop_token(sml);
 	maxlong = sml_pop_token(sml);
@@ -1330,7 +1330,7 @@ SML_EXPORT void SML_CALL ke_plmeridians(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plmesh(sml_t* sml) { 
-	ke1_t *x, *y, *z, *nx, *ny, *opt;
+	token_t *x, *y, *z, *nx, *ny, *opt;
 	opt = sml_pop_token(sml);
 	ny = sml_pop_token(sml);
 	nx = sml_pop_token(sml);
@@ -1348,7 +1348,7 @@ SML_EXPORT void SML_CALL ke_plmesh(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plmeshc(sml_t* sml) { 
-	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
+	token_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = sml_pop_token(sml);
 	clevel = sml_pop_token(sml);
 	opt = sml_pop_token(sml);
@@ -1370,7 +1370,7 @@ SML_EXPORT void SML_CALL ke_plmeshc(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plmkstrm(sml_t* sml) { 
-	ke1_t *p_strm;
+	token_t *p_strm;
 	p_strm = sml_pop_token(sml);
 	p_strm->vtype = KEV_INT;
 	plmkstrm((PLINT_NC_SCALAR)(&(p_strm->i)));
@@ -1378,7 +1378,7 @@ SML_EXPORT void SML_CALL ke_plmkstrm(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plmtex(sml_t* sml) { 
-	ke1_t *side, *disp, *pos, *just, *text;
+	token_t *side, *disp, *pos, *just, *text;
 	text = sml_pop_token(sml);
 	just = sml_pop_token(sml);
 	pos = sml_pop_token(sml);
@@ -1394,7 +1394,7 @@ SML_EXPORT void SML_CALL ke_plmtex(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plmtex3(sml_t* sml) { 
-	ke1_t *side, *disp, *pos, *just, *text;
+	token_t *side, *disp, *pos, *just, *text;
 	text = sml_pop_token(sml);
 	just = sml_pop_token(sml);
 	pos = sml_pop_token(sml);
@@ -1410,7 +1410,7 @@ SML_EXPORT void SML_CALL ke_plmtex3(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plot3d(sml_t* sml) { 
-	ke1_t *x, *y, *z, *nx, *ny, *opt, *side;
+	token_t *x, *y, *z, *nx, *ny, *opt, *side;
 	side = sml_pop_token(sml);
 	opt = sml_pop_token(sml);
 	ny = sml_pop_token(sml);
@@ -1430,7 +1430,7 @@ SML_EXPORT void SML_CALL ke_plot3d(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plot3dc(sml_t* sml) { 
-	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
+	token_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = sml_pop_token(sml);
 	clevel = sml_pop_token(sml);
 	opt = sml_pop_token(sml);
@@ -1452,7 +1452,7 @@ SML_EXPORT void SML_CALL ke_plot3dc(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plot3dl(sml_t* sml) {
-	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel, *indexxmin, *indexxmax, *indexymin, *indexymax;
+	token_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel, *indexxmin, *indexxmax, *indexymin, *indexymax;
 
 	indexymax = sml_pop_token(sml);
 	indexymin = sml_pop_token(sml);
@@ -1485,7 +1485,7 @@ SML_EXPORT void SML_CALL ke_plot3dl(sml_t* sml) {
 
 
 SML_EXPORT void SML_CALL ke_plparseopts(sml_t* sml) { 
-	ke1_t *p_argc, *argv, *mode;
+	token_t *p_argc, *argv, *mode;
 	mode = sml_pop_token(sml);
 	argv = sml_pop_token(sml);
 	p_argc = sml_pop_token(sml);
@@ -1499,7 +1499,7 @@ SML_EXPORT void SML_CALL ke_plparseopts(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plpat(sml_t* sml) { 
-	ke1_t *nlin, *inc, *del;
+	token_t *nlin, *inc, *del;
 	del = sml_pop_token(sml);
 	inc = sml_pop_token(sml);
 	nlin = sml_pop_token(sml);
@@ -1510,7 +1510,7 @@ SML_EXPORT void SML_CALL ke_plpat(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plpath(sml_t* sml) { 
-	ke1_t *n, *x1, *y1, *x2, *y2;
+	token_t *n, *x1, *y1, *x2, *y2;
 	y2 = sml_pop_token(sml);
 	x2 = sml_pop_token(sml);
 	y1 = sml_pop_token(sml);
@@ -1526,7 +1526,7 @@ SML_EXPORT void SML_CALL ke_plpath(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plpoin(sml_t* sml) {
-	ke1_t *n, *x, *y, *code;
+	token_t *n, *x, *y, *code;
 	code = sml_pop_token(sml);
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
@@ -1540,7 +1540,7 @@ SML_EXPORT void SML_CALL ke_plpoin(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plpoin3(sml_t* sml) { 
-	ke1_t *n, *x, *y, *z, *code;
+	token_t *n, *x, *y, *z, *code;
 	code = sml_pop_token(sml);
 	z = sml_pop_token(sml);
 	y = sml_pop_token(sml);
@@ -1556,7 +1556,7 @@ SML_EXPORT void SML_CALL ke_plpoin3(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plpoly3(sml_t* sml) {
-	ke1_t *n, *x, *y, *z, *draw, *ifcc;
+	token_t *n, *x, *y, *z, *draw, *ifcc;
 	ifcc = sml_pop_token(sml);
 	draw = sml_pop_token(sml);
 	z = sml_pop_token(sml);
@@ -1574,7 +1574,7 @@ SML_EXPORT void SML_CALL ke_plpoly3(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plprec(sml_t* sml) { 
-	ke1_t *setp, *prec;
+	token_t *setp, *prec;
 	prec = sml_pop_token(sml);
 	setp = sml_pop_token(sml);
 
@@ -1584,14 +1584,14 @@ SML_EXPORT void SML_CALL ke_plprec(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plpsty(sml_t* sml) { 
-	ke1_t *patt;
+	token_t *patt;
 	patt = sml_pop_token(sml);
 
 	plpsty((PLINT)patt->i);
 }
 
 SML_EXPORT void SML_CALL ke_plptex(sml_t* sml) { 
-	ke1_t *x, *y, *dx, *dy, *just, *text;
+	token_t *x, *y, *dx, *dy, *just, *text;
 	text = sml_pop_token(sml);
 	just = sml_pop_token(sml);
 	dy = sml_pop_token(sml);
@@ -1609,7 +1609,7 @@ SML_EXPORT void SML_CALL ke_plptex(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plptex3(sml_t* sml) { 
-	ke1_t *wx, *wy, *wz, *dx, *dy, *dz, *sx, *sy, *sz, *just, *text;
+	token_t *wx, *wy, *wz, *dx, *dy, *dz, *sx, *sy, *sz, *just, *text;
 	text = sml_pop_token(sml);
 	just = sml_pop_token(sml);
 	sz = sml_pop_token(sml);
@@ -1637,7 +1637,7 @@ SML_EXPORT void SML_CALL ke_plptex3(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plrandd(sml_t* sml) { 
-	ke1_t *p;
+	token_t *p;
 	p = sml_pop_token(sml);
 	double r = plrandd();
 	sml_push_real(sml, r);
@@ -1648,7 +1648,7 @@ SML_EXPORT void SML_CALL ke_plreplot(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plrgbhls(sml_t* sml) { 
-	ke1_t *r, *g, *b, *p_h, *p_l, *p_s;
+	token_t *r, *g, *b, *p_h, *p_l, *p_s;
 	p_s = sml_pop_token(sml);
 	p_l = sml_pop_token(sml);
 	p_h = sml_pop_token(sml);
@@ -1674,7 +1674,7 @@ SML_EXPORT void SML_CALL ke_plrgbhls(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plschr(sml_t* sml) {
-	ke1_t *def, *scale;
+	token_t *def, *scale;
 	scale = sml_pop_token(sml);
 	def = sml_pop_token(sml);
 
@@ -1682,7 +1682,7 @@ SML_EXPORT void SML_CALL ke_plschr(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscmap0(sml_t* sml) { 
-	ke1_t *r, *g, *b, *ncol0;
+	token_t *r, *g, *b, *ncol0;
 	ncol0 = sml_pop_token(sml);
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
@@ -1696,7 +1696,7 @@ SML_EXPORT void SML_CALL ke_plscmap0(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscmap0a(sml_t* sml) {
-	ke1_t *r, *g, *b, *alpha, *ncol0;
+	token_t *r, *g, *b, *alpha, *ncol0;
 	ncol0 = sml_pop_token(sml);
 	alpha = sml_pop_token(sml);
 	b = sml_pop_token(sml);
@@ -1712,14 +1712,14 @@ SML_EXPORT void SML_CALL ke_plscmap0a(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscmap0n(sml_t* sml) { 
-	ke1_t *ncol0;
+	token_t *ncol0;
 	ncol0 = sml_pop_token(sml);
 
 	plscmap0n((PLINT)ncol0->i);
 }
 
 SML_EXPORT void SML_CALL ke_plscmap1_range(sml_t* sml) { 
-	ke1_t *min_color, *max_color;
+	token_t *min_color, *max_color;
 	max_color = sml_pop_token(sml);
 	min_color = sml_pop_token(sml);
 
@@ -1727,7 +1727,7 @@ SML_EXPORT void SML_CALL ke_plscmap1_range(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscmap1(sml_t* sml) { 
-	ke1_t *r, *g, *b, *ncol1;
+	token_t *r, *g, *b, *ncol1;
 	ncol1 = sml_pop_token(sml);
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
@@ -1741,7 +1741,7 @@ SML_EXPORT void SML_CALL ke_plscmap1(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscmap1a(sml_t* sml) { 
-	ke1_t *r, *g, *b, *alpha, *ncol1;
+	token_t *r, *g, *b, *alpha, *ncol1;
 	ncol1 = sml_pop_token(sml);
 	alpha = sml_pop_token(sml);
 	b = sml_pop_token(sml);
@@ -1757,7 +1757,7 @@ SML_EXPORT void SML_CALL ke_plscmap1a(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscmap1l(sml_t* sml) { 
-	ke1_t *itype, *npts, *intensity, *coord1, *coord2, *coord3, *alt_hue_path;
+	token_t *itype, *npts, *intensity, *coord1, *coord2, *coord3, *alt_hue_path;
 	alt_hue_path = sml_pop_token(sml);
 	coord3 = sml_pop_token(sml);
 	coord2 = sml_pop_token(sml);
@@ -1777,7 +1777,7 @@ SML_EXPORT void SML_CALL ke_plscmap1l(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscmap1la(sml_t* sml) { 
-	ke1_t *itype, *npts, *intensity, *coord1, *coord2, *coord3, *alpha, *alt_hue_path;
+	token_t *itype, *npts, *intensity, *coord1, *coord2, *coord3, *alpha, *alt_hue_path;
 	alt_hue_path = sml_pop_token(sml);
 	alpha = sml_pop_token(sml);
 	coord3 = sml_pop_token(sml);
@@ -1799,14 +1799,14 @@ SML_EXPORT void SML_CALL ke_plscmap1la(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscmap1n(sml_t* sml) { 
-	ke1_t *ncol1;
+	token_t *ncol1;
 	ncol1 = sml_pop_token(sml);
 
 	plscmap1n((PLINT)ncol1->i);
 }
 
 SML_EXPORT void SML_CALL ke_plscol0(sml_t* sml) {
-	ke1_t *icol0, *r, *g, *b;
+	token_t *icol0, *r, *g, *b;
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
 	r = sml_pop_token(sml);
@@ -1820,7 +1820,7 @@ SML_EXPORT void SML_CALL ke_plscol0(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscol0a(sml_t* sml) { 
-	ke1_t *icol0, *r, *g, *b, *alpha;
+	token_t *icol0, *r, *g, *b, *alpha;
 	alpha = sml_pop_token(sml);
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
@@ -1836,7 +1836,7 @@ SML_EXPORT void SML_CALL ke_plscol0a(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscolbg(sml_t* sml) { 
-	ke1_t *r, *g, *b;
+	token_t *r, *g, *b;
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
 	r = sml_pop_token(sml);
@@ -1848,7 +1848,7 @@ SML_EXPORT void SML_CALL ke_plscolbg(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscolbga(sml_t* sml) { 
-	ke1_t *r, *g, *b, *alpha;
+	token_t *r, *g, *b, *alpha;
 	alpha = sml_pop_token(sml);
 	b = sml_pop_token(sml);
 	g = sml_pop_token(sml);
@@ -1862,21 +1862,21 @@ SML_EXPORT void SML_CALL ke_plscolbga(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plscolor(sml_t* sml) { 
-	ke1_t *color;
+	token_t *color;
 	color = sml_pop_token(sml);
 
 	plscolor((PLINT)color->i);
 }
 
 SML_EXPORT void SML_CALL ke_plscompression(sml_t* sml) { 
-	ke1_t *compression;
+	token_t *compression;
 	compression = sml_pop_token(sml);
 
 	plscompression((PLINT)compression->i);
 }
 
 SML_EXPORT void SML_CALL ke_plsdidev(sml_t* sml) { 
-	ke1_t *mar, *aspect, *jx, *jy;
+	token_t *mar, *aspect, *jx, *jy;
 	jy = sml_pop_token(sml);
 	jx = sml_pop_token(sml);
 	aspect = sml_pop_token(sml);
@@ -1890,7 +1890,7 @@ SML_EXPORT void SML_CALL ke_plsdidev(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsdimap(sml_t* sml) {
-	ke1_t *dimxmin, *dimxmax, *dimymin, *dimymax, *dimxpmm, *dimypmm;
+	token_t *dimxmin, *dimxmax, *dimymin, *dimymax, *dimxpmm, *dimypmm;
 	dimypmm = sml_pop_token(sml);
 	dimxpmm = sml_pop_token(sml);
 	dimymax = sml_pop_token(sml);
@@ -1908,14 +1908,14 @@ SML_EXPORT void SML_CALL ke_plsdimap(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsdiori(sml_t* sml) {
-	ke1_t *rot;
+	token_t *rot;
 	rot = sml_pop_token(sml);
 
 	plsdiori((PLFLT)rot->r);
 }
 
 SML_EXPORT void SML_CALL ke_plsdiplt(sml_t* sml) { 
-	ke1_t *xmin, *ymin, *xmax, *ymax;
+	token_t *xmin, *ymin, *xmax, *ymax;
 	ymax = sml_pop_token(sml);
 	xmax = sml_pop_token(sml);
 	ymin = sml_pop_token(sml);
@@ -1929,7 +1929,7 @@ SML_EXPORT void SML_CALL ke_plsdiplt(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsdiplz(sml_t* sml) { 
-	ke1_t *xmin, *ymin, *xmax, *ymax;
+	token_t *xmin, *ymin, *xmax, *ymax;
 	ymax = sml_pop_token(sml);
 	xmax = sml_pop_token(sml);
 	ymin = sml_pop_token(sml);
@@ -1943,7 +1943,7 @@ SML_EXPORT void SML_CALL ke_plsdiplz(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsdrawmode(sml_t* sml) {
-	ke1_t *mode;
+	token_t *mode;
 	mode = sml_pop_token(sml);
 
 	plsdrawmode(
@@ -1951,7 +1951,7 @@ SML_EXPORT void SML_CALL ke_plsdrawmode(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plseed(sml_t* sml) {
-	ke1_t *seed;
+	token_t *seed;
 	seed = sml_pop_token(sml);
 
 	plseed(
@@ -1959,7 +1959,7 @@ SML_EXPORT void SML_CALL ke_plseed(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsesc(sml_t* sml) { 
-	ke1_t *esc;
+	token_t *esc;
 	esc = sml_pop_token(sml);
 
 	plsesc(
@@ -1967,7 +1967,7 @@ SML_EXPORT void SML_CALL ke_plsesc(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsetopt(sml_t* sml) { 
-	ke1_t *opt, *optarg;
+	token_t *opt, *optarg;
 	optarg = sml_pop_token(sml);
 	opt = sml_pop_token(sml);
 	PLINT st = plsetopt( (PLCHAR_VECTOR)opt->obj.s, (PLCHAR_VECTOR)optarg->obj.s);
@@ -1976,7 +1976,7 @@ SML_EXPORT void SML_CALL ke_plsetopt(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsfam(sml_t* sml) { 
-	ke1_t *fam, *num, *bmax;
+	token_t *fam, *num, *bmax;
 	bmax = sml_pop_token(sml);
 	num = sml_pop_token(sml);
 	fam = sml_pop_token(sml);
@@ -1988,14 +1988,14 @@ SML_EXPORT void SML_CALL ke_plsfam(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsfci(sml_t* sml) { 
-	ke1_t *fci;
+	token_t *fci;
 	fci = sml_pop_token(sml);
 
 	plsfci(	(PLUNICODE)fci->i);
 }
 
 SML_EXPORT void SML_CALL ke_plsfnam(sml_t* sml) { 
-	ke1_t *fnam;
+	token_t *fnam;
 	fnam = sml_pop_token(sml);
 
 	plsfnam(
@@ -2003,7 +2003,7 @@ SML_EXPORT void SML_CALL ke_plsfnam(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsfont(sml_t* sml) { 
-	ke1_t *family, *style, *weight;
+	token_t *family, *style, *weight;
 	weight = sml_pop_token(sml);
 	style = sml_pop_token(sml);
 	family = sml_pop_token(sml);
@@ -2017,7 +2017,7 @@ SML_EXPORT void SML_CALL ke_plsfont(sml_t* sml) {
 
 SML_EXPORT void SML_CALL ke_plshades(sml_t* sml) {
 	
-	ke1_t *a, *nx, *ny, *defined, *xmin, *xmax, *ymin, *ymax, *clevel, *nlevel,
+	token_t *a, *nx, *ny, *defined, *xmin, *xmax, *ymin, *ymax, *clevel, *nlevel,
 		*fill_width, *cont_color, *cont_width, *fill, *rectangular, *pltr, *pltr_data;
 	pltr_data = sml_pop_token(sml);
 	pltr = sml_pop_token(sml);
@@ -2058,7 +2058,7 @@ SML_EXPORT void SML_CALL ke_plshades(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plshade(sml_t* sml) {
-	ke1_t *a, *nx, *ny, *defined, *xmin, *xmax, *ymin, *ymax, *shade_min, *shade_max, *sh_cmap, *sh_color, *sh_width,
+	token_t *a, *nx, *ny, *defined, *xmin, *xmax, *ymin, *ymax, *shade_min, *shade_max, *sh_cmap, *sh_color, *sh_width,
 		*min_color, *min_width, *max_color, *max_width, *fill, *rectangular, *pltr, *pltr_data;
 	pltr_data = sml_pop_token(sml);
 	pltr = sml_pop_token(sml);
@@ -2107,7 +2107,7 @@ SML_EXPORT void SML_CALL ke_plshade(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plslabelfunc(sml_t* sml) { 
-	ke1_t *label_func, *label_data;
+	token_t *label_func, *label_data;
 	label_data = sml_pop_token(sml);
 	label_func = sml_pop_token(sml);
 
@@ -2117,7 +2117,7 @@ SML_EXPORT void SML_CALL ke_plslabelfunc(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsmaj(sml_t* sml) {
-	ke1_t *def, *scale;
+	token_t *def, *scale;
 	scale = sml_pop_token(sml);
 	def = sml_pop_token(sml);
 
@@ -2125,7 +2125,7 @@ SML_EXPORT void SML_CALL ke_plsmaj(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsmem(sml_t* sml) { 
-	ke1_t *maxx, *maxy, *plotmem;
+	token_t *maxx, *maxy, *plotmem;
 	plotmem = sml_pop_token(sml);
 	maxy = sml_pop_token(sml);
 	maxx = sml_pop_token(sml);
@@ -2134,7 +2134,7 @@ SML_EXPORT void SML_CALL ke_plsmem(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsmema(sml_t* sml) {
-	ke1_t *maxx, *maxy, *plotmem;
+	token_t *maxx, *maxy, *plotmem;
 	plotmem = sml_pop_token(sml);
 	maxy = sml_pop_token(sml);
 	maxx = sml_pop_token(sml);
@@ -2143,7 +2143,7 @@ SML_EXPORT void SML_CALL ke_plsmema(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsmin(sml_t* sml) {
-	ke1_t *def, *scale;
+	token_t *def, *scale;
 	scale = sml_pop_token(sml);
 	def = sml_pop_token(sml);
 
@@ -2151,14 +2151,14 @@ SML_EXPORT void SML_CALL ke_plsmin(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsori(sml_t* sml) {
-	ke1_t *ori;
+	token_t *ori;
 	ori = sml_pop_token(sml);
 
 	plsori((PLINT)ori->i);
 }
 
 SML_EXPORT void SML_CALL ke_plspage(sml_t* sml) {
-	ke1_t *xp, *yp, *xleng, *yleng, *xoff, *yoff;
+	token_t *xp, *yp, *xleng, *yleng, *xoff, *yoff;
 	yoff = sml_pop_token(sml);
 	xoff = sml_pop_token(sml);
 	yleng = sml_pop_token(sml);
@@ -2176,14 +2176,14 @@ SML_EXPORT void SML_CALL ke_plspage(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plspal0(sml_t* sml) { 
-	ke1_t *filename;
+	token_t *filename;
 	filename = sml_pop_token(sml);
 
 	plspal0((PLCHAR_VECTOR)filename->obj.s);
 }
 
 SML_EXPORT void SML_CALL ke_plspal1(sml_t* sml) { 
-	ke1_t *filename, *interpolate;
+	token_t *filename, *interpolate;
 	interpolate = sml_pop_token(sml);
 	filename = sml_pop_token(sml);
 
@@ -2191,14 +2191,14 @@ SML_EXPORT void SML_CALL ke_plspal1(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsstrm(sml_t* sml) { 
-	ke1_t *strm;
+	token_t *strm;
 	strm = sml_pop_token(sml);
 
 	plsstrm((PLINT)strm->i);
 }
 
 SML_EXPORT void SML_CALL ke_plssub(sml_t* sml) { 
-	ke1_t *nx, *ny;
+	token_t *nx, *ny;
 	ny = sml_pop_token(sml);
 	nx = sml_pop_token(sml);
 
@@ -2206,7 +2206,7 @@ SML_EXPORT void SML_CALL ke_plssub(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plssym(sml_t* sml) { 
-	ke1_t *def, *scale;
+	token_t *def, *scale;
 	scale = sml_pop_token(sml);
 	def = sml_pop_token(sml);
 
@@ -2214,7 +2214,7 @@ SML_EXPORT void SML_CALL ke_plssym(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plstar(sml_t* sml) { 
-	ke1_t *nx, *ny;
+	token_t *nx, *ny;
 	ny = sml_pop_token(sml);
 	nx = sml_pop_token(sml);
 
@@ -2222,7 +2222,7 @@ SML_EXPORT void SML_CALL ke_plstar(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plstart(sml_t* sml) { 
-	ke1_t *devname, *nx, *ny;
+	token_t *devname, *nx, *ny;
 	ny = sml_pop_token(sml);
 	nx = sml_pop_token(sml);
 	devname = sml_pop_token(sml);
@@ -2234,7 +2234,7 @@ SML_EXPORT void SML_CALL ke_plstart(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plstransform(sml_t* sml) {
-	ke1_t *coordinate_transform, *coordinate_transform_data;
+	token_t *coordinate_transform, *coordinate_transform_data;
 	coordinate_transform_data = sml_pop_token(sml);
 	coordinate_transform = sml_pop_token(sml);
 
@@ -2244,7 +2244,7 @@ SML_EXPORT void SML_CALL ke_plstransform(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plstring(sml_t* sml) { 
-	ke1_t *n, *x, *y, *string;
+	token_t *n, *x, *y, *string;
 	string = sml_pop_token(sml);
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
@@ -2258,7 +2258,7 @@ SML_EXPORT void SML_CALL ke_plstring(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plstring3(sml_t* sml) { 
-	ke1_t *n, *x, *y, *z, *string;
+	token_t *n, *x, *y, *z, *string;
 	string = sml_pop_token(sml);
 	z = sml_pop_token(sml);
 	y = sml_pop_token(sml);
@@ -2274,7 +2274,7 @@ SML_EXPORT void SML_CALL ke_plstring3(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plstripa(sml_t* sml) {
-	ke1_t *id, *pen, *x, *y;
+	token_t *id, *pen, *x, *y;
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
 	pen = sml_pop_token(sml);
@@ -2288,7 +2288,7 @@ SML_EXPORT void SML_CALL ke_plstripa(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plstripc(sml_t* sml) { 
-	ke1_t *id, *xspec, *yspec, *xmin, *xmax, *xjump, *ymin, *ymax, *xlpos, *ylpos, 
+	token_t *id, *xspec, *yspec, *xmin, *xmax, *xjump, *ymin, *ymax, *xlpos, *ylpos, 
 		*y_ascl, *acc, *colbox, *collab, *colline, *styline, *legline, *labx, *laby, *labtop;
 	labtop = sml_pop_token(sml);
 	laby = sml_pop_token(sml);
@@ -2338,14 +2338,14 @@ SML_EXPORT void SML_CALL ke_plstripc(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plstripd(sml_t* sml) { 
-	ke1_t *id;
+	token_t *id;
 	id = sml_pop_token(sml);
 
 	plstripd((PLINT)id->i);
 }
 
 SML_EXPORT void SML_CALL ke_plstyl(sml_t* sml) { 
-	ke1_t *nms, *mark, *space;
+	token_t *nms, *mark, *space;
 	space = sml_pop_token(sml);
 	mark = sml_pop_token(sml);
 	nms = sml_pop_token(sml);
@@ -2357,7 +2357,7 @@ SML_EXPORT void SML_CALL ke_plstyl(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsurf3d(sml_t* sml) { 
-	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
+	token_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel;
 	nlevel = sml_pop_token(sml);
 	clevel = sml_pop_token(sml);
 	opt = sml_pop_token(sml);
@@ -2380,7 +2380,7 @@ SML_EXPORT void SML_CALL ke_plsurf3d(sml_t* sml) {
 
 SML_EXPORT void SML_CALL ke_plsurf3dl(sml_t* sml) { 
 
-	ke1_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel, *indexxmin, *indexxmax, *indexymin, *indexymax;
+	token_t *x, *y, *z, *nx, *ny, *opt, *clevel, *nlevel, *indexxmin, *indexxmax, *indexymin, *indexymax;
 	indexymax = sml_pop_token(sml);
 	indexymin = sml_pop_token(sml);
 	indexxmax = sml_pop_token(sml);
@@ -2410,7 +2410,7 @@ SML_EXPORT void SML_CALL ke_plsurf3dl(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsvect(sml_t* sml) { 
-	ke1_t *arrowx, *arrowy, *npts, *fill;
+	token_t *arrowx, *arrowy, *npts, *fill;
 	fill = sml_pop_token(sml);
 	npts = sml_pop_token(sml);
 	arrowy = sml_pop_token(sml);
@@ -2424,7 +2424,7 @@ SML_EXPORT void SML_CALL ke_plsvect(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsvpa(sml_t* sml) { 
-	ke1_t *xmin, *xmax, *ymin, *ymax;
+	token_t *xmin, *xmax, *ymin, *ymax;
 	ymax = sml_pop_token(sml);
 	ymin = sml_pop_token(sml);
 	xmax = sml_pop_token(sml);
@@ -2438,7 +2438,7 @@ SML_EXPORT void SML_CALL ke_plsvpa(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsxax(sml_t* sml) { 
-	ke1_t *digmax, *digits;
+	token_t *digmax, *digits;
 	digits = sml_pop_token(sml);
 	digmax = sml_pop_token(sml);
 
@@ -2446,7 +2446,7 @@ SML_EXPORT void SML_CALL ke_plsxax(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsyax(sml_t* sml) { 
-	ke1_t *digmax, *digits;
+	token_t *digmax, *digits;
 	digits = sml_pop_token(sml);
 	digmax = sml_pop_token(sml);
 
@@ -2454,7 +2454,7 @@ SML_EXPORT void SML_CALL ke_plsyax(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plsym(sml_t* sml) { 
-	ke1_t *n, *x, *y, *code;
+	token_t *n, *x, *y, *code;
 	code = sml_pop_token(sml);
 	y = sml_pop_token(sml);
 	x = sml_pop_token(sml);
@@ -2468,7 +2468,7 @@ SML_EXPORT void SML_CALL ke_plsym(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plszax(sml_t* sml) { 
-	ke1_t *digmax, *digits;
+	token_t *digmax, *digits;
 	digits = sml_pop_token(sml);
 	digmax = sml_pop_token(sml);
 
@@ -2480,21 +2480,21 @@ SML_EXPORT void SML_CALL ke_pltext(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_pltimefmt(sml_t* sml) { 
-	ke1_t *fmt;
+	token_t *fmt;
 	fmt = sml_pop_token(sml);
 
 	pltimefmt((PLCHAR_VECTOR)fmt->obj.s);
 }
 
 SML_EXPORT void SML_CALL ke_plvasp(sml_t* sml) { 
-	ke1_t *aspect;
+	token_t *aspect;
 	aspect = sml_pop_token(sml);
 
 	plvasp((PLFLT)aspect->r);
 }
 
 SML_EXPORT void SML_CALL ke_plvect(sml_t* sml) { 
-	ke1_t *u, *v, *nx, *ny, *scale, *pltr, *pltr_data;
+	token_t *u, *v, *nx, *ny, *scale, *pltr, *pltr_data;
 	pltr_data = sml_pop_token(sml);
 	pltr = sml_pop_token(sml);
 	scale = sml_pop_token(sml);
@@ -2514,7 +2514,7 @@ SML_EXPORT void SML_CALL ke_plvect(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plvpas(sml_t* sml) { 
-	ke1_t *xmin, *xmax, *ymin, *ymax, *aspect;
+	token_t *xmin, *xmax, *ymin, *ymax, *aspect;
 	aspect = sml_pop_token(sml);
 	ymax = sml_pop_token(sml);
 	ymin = sml_pop_token(sml);
@@ -2530,7 +2530,7 @@ SML_EXPORT void SML_CALL ke_plvpas(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plvpor(sml_t* sml) { 
-	ke1_t *xmin, *xmax, *ymin, *ymax;
+	token_t *xmin, *xmax, *ymin, *ymax;
 	ymax = sml_pop_token(sml);
 	ymin = sml_pop_token(sml);
 	xmax = sml_pop_token(sml);
@@ -2548,7 +2548,7 @@ SML_EXPORT void SML_CALL ke_plvsta(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plw3d(sml_t* sml) { 
-	ke1_t *basex,* basey, *height, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *alt, *az;
+	token_t *basex,* basey, *height, *xmin, *xmax, *ymin, *ymax, *zmin, *zmax, *alt, *az;
 	az = sml_pop_token(sml);
 	alt = sml_pop_token(sml);
 	zmax = sml_pop_token(sml);
@@ -2577,7 +2577,7 @@ SML_EXPORT void SML_CALL ke_plw3d(sml_t* sml) {
 
 
 SML_EXPORT void SML_CALL ke_plwidth(sml_t* sml) {
-	ke1_t *width;
+	token_t *width;
 	width = sml_pop_token(sml);
 
 	plwidth(
@@ -2585,7 +2585,7 @@ SML_EXPORT void SML_CALL ke_plwidth(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plwind(sml_t* sml) {
-	ke1_t *xmin, *xmax, *ymin, *ymax;
+	token_t *xmin, *xmax, *ymin, *ymax;
 	ymax = sml_pop_token(sml);
 	ymin = sml_pop_token(sml);
 	xmax = sml_pop_token(sml);
@@ -2599,7 +2599,7 @@ SML_EXPORT void SML_CALL ke_plwind(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plxormod(sml_t* sml) {
-	ke1_t *mode, *status;
+	token_t *mode, *status;
 	status = sml_pop_token(sml);
 	mode = sml_pop_token(sml);
 	status->vtype = KEV_INT;
@@ -2609,18 +2609,18 @@ SML_EXPORT void SML_CALL ke_plxormod(sml_t* sml) {
 }
 
 SML_EXPORT void SML_CALL ke_plabort(sml_t* sml) {
-	ke1_t *message;
+	token_t *message;
 	message = sml_pop_token(sml);
 
 	plabort((PLCHAR_VECTOR)message->obj.s);
 }
 
 SML_EXPORT void SML_CALL ke_plconfigtime(sml_t* sml) {
-	ke1_t *lscale;	ke1_t *offset1;
-	ke1_t *offset2;
-	ke1_t *ccontrol;
+	token_t *lscale;	token_t *offset1;
+	token_t *offset2;
+	token_t *ccontrol;
 
-	ke1_t *ifbtime_offset, *year, *month, *day, *hour, *min, *sec;
+	token_t *ifbtime_offset, *year, *month, *day, *hour, *min, *sec;
 	sec = sml_pop_token(sml);
 	min = sml_pop_token(sml);
 	hour = sml_pop_token(sml);

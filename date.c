@@ -1,7 +1,7 @@
 #include "kexpr.h"
 #include "gdate.h"
 #include "date.h"
-#include "api.c"
+#include "api.h"
 
 static void ke_date_dmy(sml_t* sml) {
 	GDateYear y = sml_pop_year(sml);

@@ -1,8 +1,7 @@
 #include <gsl/gsl_vector.h>
 #include <stdio.h>
-#include "kexpr.h"
 #include "vector.h"
-#include "api.c"
+#include "api.h"
 
 
  static void ke_vector_alloc(sml_t* sml) {
@@ -480,28 +479,28 @@ void ke_vector_hash(sml_t* sml) {
 
 }
 
-void ke_vector_print(sml_t* sml, ke1_t *k) {
+void ke_vector_print(sml_t* sml, token_t *k) {
     printf("Vector: %s\n", k->name);
     for(size_t i = 0; i < k->obj.vector->size; i++) {
         printf("%d : v:%g\n", (int)i, gsl_vector_get(k->obj.vector, i));
     }
 }
 
-void ke_vector_freemem(sml_t* sml,ke1_t *e) {
+void ke_vector_freemem(sml_t* sml,token_t *e) {
     if (e->obj.vector && e->vtype == KEV_VEC) {
         gsl_vector_free(e->obj.vector); ke_dec_memory(sml);
         e->obj.vector = NULL;
     }
 }
 
-void ke_vector_int_print(sml_t* sml,ke1_t *k) {
+void ke_vector_int_print(sml_t* sml,token_t *k) {
 	printf("Vector: %s\n", k->name);
 	for (size_t i = 0; i < k->obj.vector_int->size; i++) {
 		printf("%d : v:%d\n", (int)i, gsl_vector_int_get(k->obj.vector_int, i));
 	}
 }
 
-void ke_vector_int_freemem(sml_t* sml,ke1_t *e) {
+void ke_vector_int_freemem(sml_t* sml,token_t *e) {
 	if (e->obj.vector_int && e->vtype == KEV_VEC_INT) {
 		gsl_vector_int_free(e->obj.vector_int); ke_dec_memory(sml);
 		e->obj.vector_int = NULL;

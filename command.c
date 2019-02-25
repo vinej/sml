@@ -5,22 +5,22 @@
 #include "command.h"
 #include "stack.h"
 
-int ke_command_import(sml_t* sml, ke1_t * tokp, int top, int * itokp) {
+int ke_command_import(sml_t* sml, token_t * tokp, int top, int * itokp) {
 	return top - 1;
 }
 
-int ke_command_if(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
+int ke_command_if(sml_t* sml, struct token_s* tokp, int top, int * itokp) {
 	*itokp = sml->stack[--top]->i ? *itokp : tokp->ijmp;
     return top;
 }
 
-int ke_command_def(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
-	ke1_t * p;
-	ke1_t * q;
-	ke1_t * v;
-	ke1_t **stack = sml->stack;
+int ke_command_def(sml_t* sml, struct token_s* tokp, int top, int * itokp) {
+	token_t * p;
+	token_t * q;
+	token_t * v;
+	token_t **stack = sml->stack;
 	// get the def name
-    p = (ke1_t *)stack[top - tokp->n_args];
+    p = (token_t *)stack[top - tokp->n_args];
     if (tokp->assigned) {
         // execute it
         int n = tokp->n_args;
@@ -47,14 +47,14 @@ int ke_command_def(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
     }
 }
 
-int ke_command_exe(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
-	ke1_t *p, *q;
-	ke1_t **stack = sml->stack;
+int ke_command_exe(sml_t* sml, struct token_s* tokp, int top, int * itokp) {
+	token_t *p, *q;
+	token_t **stack = sml->stack;
 	int narg = tokp->n_args;
 	while (narg > 1) {
 		q = stack[--top];
-		ke1_t * k = ke_malloc_memory(sml, sizeof(ke1_t));
-		memcpy(k, q, sizeof(ke1_t));
+		token_t * k = ke_malloc_memory(sml, sizeof(token_t));
+		memcpy(k, q, sizeof(token_t));
 		stack_push(sml->harg, k);
 		narg--;
 	}
@@ -65,23 +65,23 @@ int ke_command_exe(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
 }
 
 
-int ke_command_for(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
+int ke_command_for(sml_t* sml, struct token_s* tokp, int top, int * itokp) {
 	// field min, max inc
-	ke1_t **stack = sml->stack;
+	token_t **stack = sml->stack;
 	int n = tokp->n_args;
 	int top_m1 = top - n;
 	if (!tokp->assigned) {
-		ke1_t *p = stack[top_m1]; // copy of the real variable into the stack
-		ke1_t *min = stack[top_m1 + 1];
+		token_t *p = stack[top_m1]; // copy of the real variable into the stack
+		token_t *min = stack[top_m1 + 1];
 		tokp->assigned = 1;
 		tokp->obj.tokp = p;
-		struct ke1_s * t = tokp->obj.tokp;
+		struct token_s * t = tokp->obj.tokp;
 		t->r = min->r;
 		t->i = (int64_t)t->r;
 		pushfor(sml,*itokp);
 	}
 	else {
-		ke1_t *p = tokp->obj.tokp; // copy of the real variable into the stack
+		token_t *p = tokp->obj.tokp; // copy of the real variable into the stack
 		if (p->r >= stack[top_m1 + 2]->r) {
 			tokp->assigned = 0;
 			popfor(sml);
@@ -95,11 +95,11 @@ int ke_command_for(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
 	return top_m1;
 }
 
-int ke_command_print_nonl(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
-	ke1_t **stack = sml->stack;
+int ke_command_print_nonl(sml_t* sml, struct token_s* tokp, int top, int * itokp) {
+	token_t **stack = sml->stack;
     int ntmp = tokp->n_args;
     int n = tokp->n_args;
-    ke1_t *p;
+    token_t *p;
     --n;
     tokp->n_args = n;
     p = stack[--top];
@@ -111,30 +111,30 @@ int ke_command_print_nonl(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) 
     return top;
 }
 
-int ke_command_print(sml_t* sml, struct ke1_s* tokp, int top, int * itokp) {
+int ke_command_print(sml_t* sml, struct token_s* tokp, int top, int * itokp) {
     top = ke_command_print_nonl(sml, tokp, top, itokp);
     printf("\n");
     return top;
 }
 
-int ke_command_val_else(sml_t* sml, struct ke1_s* tokp, int top, int itok) {
+int ke_command_val_else(sml_t* sml, struct token_s* tokp, int top, int itok) {
 	return tokp->ijmp;
 }
 
-int  ke_command_val_end(sml_t* sml, struct ke1_s* tokp, int top, int itok) {
+int  ke_command_val_end(sml_t* sml, struct token_s* tokp, int top, int itok) {
 	return itok;
 }
 
-int  ke_command_val_brk(sml_t* sml, struct ke1_s* tokp, int top, int itok) {
+int  ke_command_val_brk(sml_t* sml, struct token_s* tokp, int top, int itok) {
 
 	int ifor = popfor(sml);
-	ke1_t *efor = ke_get_tokidx(sml,ifor);
+	token_t *efor = ke_get_tokidx(sml,ifor);
 	efor->assigned = 0;
 	return tokp->ijmp;
 }
 
 
-int  ke_command_val_for(sml_t* sml, struct ke1_s* tokp, int top, int itok) {
+int  ke_command_val_for(sml_t* sml, struct token_s* tokp, int top, int itok) {
 	if (!tokp->assigned) {
 		tokp->assigned = 1;
 		pushfor(sml,itok);
@@ -142,15 +142,15 @@ int  ke_command_val_for(sml_t* sml, struct ke1_s* tokp, int top, int itok) {
 	return itok;
 }
 
-int  ke_command_val_cnt(sml_t* sml, struct ke1_s* tokp, int top, int itok) {
+int  ke_command_val_cnt(sml_t* sml, struct token_s* tokp, int top, int itok) {
 	return tokp->ijmp;
 }
 
-int  ke_command_val_next(sml_t* sml, struct ke1_s* tokp, int top, int itok) {
+int  ke_command_val_next(sml_t* sml, struct token_s* tokp, int top, int itok) {
 	return tokp->ijmp;
 }
 
-int  ke_command_val_rtn(sml_t* sml, struct ke1_s* tokp, int top, int itok) {
+int  ke_command_val_rtn(sml_t* sml, struct token_s* tokp, int top, int itok) {
 	return *kdq_pop(int, sml->callstack);
 }
 

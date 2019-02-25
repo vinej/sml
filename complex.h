@@ -1,7 +1,9 @@
 #ifndef COMPLEX_H_INCLUDED
 #define COMPLEX_H_INCLUDED
 
-void ke_complex_print(sml_t* sml, ke1_t *k);
+#include "api.h"
+
+void ke_complex_print(sml_t* sml, token_t *k);
 void ke_complex_hash(sml_t* sml);
 
 #define COMPLEX "complex"

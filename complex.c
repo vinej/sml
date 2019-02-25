@@ -1,9 +1,8 @@
 #include <gsl/gsl_complex.h>
 #include <gsl/gsl_complex_math.h>
 #include <string.h>
-#include "kexpr.h"
 #include "complex.h"
-#include "api.c"
+#include "api.h"
 
 static void ke_complex_alloc(sml_t* sml) { 
 	int y = sml_pop_int(sml);
@@ -431,7 +430,7 @@ void ke_complex_hash(sml_t* sml) {
     ke_hash_add(sml, (fncp)&ke_complex_arccoth, COMPLEX_ARCCOTH);
 }
 
-void ke_complex_print(sml_t* sml,ke1_t *k) {
+void ke_complex_print(sml_t* sml,token_t *k) {
     printf("Complex: %s\n", k->name);
     printf("%g,%g \n", GSL_REAL(k->obj.tcomplex), GSL_IMAG(k->obj.tcomplex));
 }

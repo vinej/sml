@@ -1,8 +1,7 @@
 #include <string.h>
-#include "kexpr.h"
+#include "api.h"
 #include "str.h"
 #include "utf8.h"
-#include "api.c"
 
 void ke_str_prop_get_0par(sml_t* sml) { 
 	// b = a[1]  =>  1 a(1) =
@@ -60,7 +59,7 @@ void ke_str_prop_get_2par(sml_t* sml) {
 void ke_str_prop_set_1par(sml_t* sml) {
 	// a[2] = 'z' =>  2 a(1) 'z' =
 	// TODO NOT UTF8
-	ke1_t *p, *q, *v;
+	token_t *p, *q, *v;
 	char * dest = sml_pop_str(sml);
 	char * src = sml_pop_str(sml);
 	int i = sml_pop_int(sml);

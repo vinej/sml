@@ -1,6 +1,6 @@
 #define STB_SPRINTF_IMPLEMENTATION
 #include "./stb/stb_sprintf.h"
-#include "kexpr.h"
+#include "api.h"
 #include "file.h"
 #include <stdio.h>
 #include <math.h>
@@ -8,7 +8,6 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdarg.h>
-#include "api.c"
 
 #define MAX_BUF 1023
 #define MAX_SCAN_ARG 16
@@ -198,8 +197,8 @@ static void ke_file_tmpnam(sml_t* sml) {
 }
 
 void* gen_valist(sml_t* sml, size_t n_args, int top) {
-	ke1_t **stack = sml_get_stack(sml);
-	ke1_t *q;
+	token_t **stack = sml_get_stack(sml);
+	token_t *q;
 	char * m = (char*)ke_calloc_memory(sml,MAX_BUF+1, 1); /* prepare enough memory*/
 	void * va = m; /* copies the pointer */
 	for (int i = top - (int)n_args + 1; i < top; i++) {
@@ -221,8 +220,8 @@ void* gen_valist(sml_t* sml, size_t n_args, int top) {
 }
 
 void gen_freelist(sml_t* sml, size_t n_args, int top) {
-	ke1_t **stack = sml_get_stack(sml);
-	ke1_t *q;
+	token_t **stack = sml_get_stack(sml);
+	token_t *q;
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = stack[i];
 		if (q->vtype == KEV_STR && q->tofree == 1) {
@@ -247,7 +246,7 @@ void strrepl(char *str, const char *a, const char *b) {
 // int vfprintf(FILE *stream, const char *format, char * arg)
 static void ke_file_vfprintf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml,(tokp->n_args+1));
 	FILE * file = sml_peek_file(sml,(top-tokp->n_args));
 
@@ -271,7 +270,7 @@ static void ke_file_vfprintf(sml_t* sml) {
 
 static void ke_file_xvfprintf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top-tokp->n_args+2));
 	FILE * file = sml_peek_file(sml, (top-tokp->n_args+1));
 	void * ptr = sml_peek_ptr(sml, (top-tokp->n_args));
@@ -295,7 +294,7 @@ static void ke_file_xvfprintf(sml_t* sml) {
 // int vprintf(const char *format, char * arg)
 static void ke_file_vprintf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args));
 	if (tokp->n_args > 1) {
 		char * va = gen_valist(sml,(size_t)tokp->n_args, top);
@@ -318,7 +317,7 @@ static void ke_file_vprintf(sml_t* sml) {
 
 static void ke_file_xvprintf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
 	void * ptr = sml_peek_ptr(sml, (top - tokp->n_args));
 
@@ -343,7 +342,7 @@ static void ke_file_xvprintf(sml_t* sml) {
 // int vsprintf(char *str, const char *format, char * arg)
 static void ke_file_vsprintf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
 	char * str = sml_peek_str(sml, (top - tokp->n_args));
 	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
@@ -369,7 +368,7 @@ static void ke_file_vsprintf(sml_t* sml) {
 
 static void ke_file_xvsprintf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
 	char * ptr = sml_new_ptr(sml, MAX_BUF + 1);
 	if (tokp->n_args > 2) {
@@ -387,8 +386,8 @@ static void ke_file_xvsprintf(sml_t* sml) {
 }
 
 void** gen_scan_valist(sml_t*sml, size_t n_args, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *q;
+	token_t **stack = sml->stack;
+	token_t *q;
 	void** va = ke_calloc_memory(sml,128, sizeof(void*)); /* prepare enough memory*/
 	for (int i = top - (int)n_args + 1, j = 0; i < top; i++, j++) {
 		q = stack[i];
@@ -408,8 +407,8 @@ void** gen_scan_valist(sml_t*sml, size_t n_args, int top) {
 }
 
 void ** gen_xscan_valist(sml_t*sml, size_t n_args, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *q;
+	token_t **stack = sml->stack;
+	token_t *q;
 	void** va = ke_calloc_memory(sml,100, sizeof(void*)); /* prepare enough memory*/
 	for (int i = top - (int)n_args + 1, j = 0; i < top; i++, j++) {
 		q = stack[i];
@@ -427,8 +426,8 @@ void ** gen_xscan_valist(sml_t*sml, size_t n_args, int top) {
 }
 
 void set_i_r(sml_t*sml, size_t n_args, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *q;
+	token_t **stack = sml->stack;
+	token_t *q;
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = stack[i];
 		if (q->vtype == KEV_STR) {
@@ -447,8 +446,8 @@ void set_i_r(sml_t*sml, size_t n_args, int top) {
 }
 
 void set_xi_r(sml_t*sml, size_t n_args, int top) {
-	ke1_t **stack = sml->stack;
-	ke1_t *q;
+	token_t **stack = sml->stack;
+	token_t *q;
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = stack[i];
 		if (q->vtype == KEV_INT) {
@@ -464,7 +463,7 @@ void set_xi_r(sml_t*sml, size_t n_args, int top) {
 // int vscanf(char * restrict format, char * arg_ptr); 
 static void ke_file_vscanf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args));
 	if (tokp->n_args > 1) {
 		void **va = gen_scan_valist(sml, (size_t) tokp->n_args, top);
@@ -491,7 +490,7 @@ static void ke_file_vscanf(sml_t* sml) {
 
 static void ke_file_xvscanf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args));
 	if (tokp->n_args > 1) {
 		void** va = gen_xscan_valist(sml,(size_t)tokp->n_args, top);
@@ -518,7 +517,7 @@ static void ke_file_xvscanf(sml_t* sml) {
 // int vfscanf(FILE * restrict stream, const char * restrict format,char * arg_ptr); 
 static void ke_file_vfscanf(sml_t* sml) { 
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
 	FILE * file = sml_peek_file(sml, (top - tokp->n_args));
 	if (tokp->n_args > 2) {
@@ -547,7 +546,7 @@ static void ke_file_vfscanf(sml_t* sml) {
 
 static void ke_file_xvfscanf(sml_t* sml) {
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
 	FILE * file = sml_peek_file(sml, (top - tokp->n_args));
 
@@ -576,7 +575,7 @@ static void ke_file_xvfscanf(sml_t* sml) {
 // int sscanf(char * restrict str, const char * restrict format, char* buffer, char * arg_ptr);
 static void ke_file_vsscanf(sml_t* sml) {
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
 	char * str = sml_peek_str(sml, (top - tokp->n_args));
 
@@ -602,9 +601,9 @@ static void ke_file_vsscanf(sml_t* sml) {
 	sml_set_top(sml, top);
 }
 
-static void ke_file_xvsscanf(sml_t* sml) { ke1_t **stack = sml->stack;
+static void ke_file_xvsscanf(sml_t* sml) { token_t **stack = sml->stack;
 	int top = sml_get_top(sml);
-	ke1_t * tokp = sml_get_tokp(sml);
+	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
 	char * ptr = sml_peek_ptr(sml, (top - tokp->n_args));
 	if (tokp->n_args > 2) {
@@ -630,7 +629,7 @@ static void ke_file_xvsscanf(sml_t* sml) { ke1_t **stack = sml->stack;
 
 // Gets the next character(an unsigned char) from the specified stream and advances the position indicator for the stream.
 // int fgetc(FILE *stream)
-static void ke_file_fgetc(sml_t* sml) { ke1_t **stack = sml->stack;
+static void ke_file_fgetc(sml_t* sml) { token_t **stack = sml->stack;
 	FILE * file = sml_pop_file(sml);
 	int i = fgetc(file);
 	sml_push_int(sml, i);
@@ -641,7 +640,7 @@ static void ke_file_fgetc(sml_t* sml) { ke1_t **stack = sml->stack;
 // n not used
 static void ke_file_fgets(sml_t* sml) { 
 	FILE * file = sml_pop_file(sml);
-	ke1_t * token = sml_pop_token(sml);
+	token_t * token = sml_pop_token(sml);
 	char ** str = sml_adr_str(token);
 	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
 	if (fgets(ptr, MAX_BUF, file) == NULL) {
@@ -662,7 +661,7 @@ static void ke_file_fgets(sml_t* sml) {
 static void ke_file_xfgets(sml_t* sml) { 
 	FILE * file = sml_pop_file(sml);
 	int size = sml_pop_int(sml);
-	ke1_t* token = sml_pop_token(sml);
+	token_t* token = sml_pop_token(sml);
 	char ** str = sml_adr_str(token);
 	if ( fgets(*str, size, file) == NULL) {
 		printf("Error: ke_file_xfgets");
@@ -705,7 +704,7 @@ static void ke_file_getchar(sml_t* sml) {
 // Reads a line from stdin and stores it into the string pointed to by, str.It stops when either the newline character is read or when the end - of - file is reached, whichever comes first.
 // char *gets(char *str)
 static void ke_file_gets(sml_t* sml) { 
-	ke1_t* token = sml_pop_token(sml);
+	token_t* token = sml_pop_token(sml);
 	char ** str = sml_adr_str(token);
 
 	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
@@ -726,7 +725,7 @@ static void ke_file_gets(sml_t* sml) {
 // gets(char *buf, int size)
 static void ke_file_xgets(sml_t* sml) { 
 	int size = sml_pop_int(sml);
-	ke1_t * token = sml_pop_token(sml);
+	token_t * token = sml_pop_token(sml);
 	char ** str = sml_adr_str(token);
 	if ( fgets(*str, (int)size, stdin) == 0) {
 		printf("Error ke_file_xgets");
@@ -767,7 +766,7 @@ static void ke_file_ungetc(sml_t* sml) {
 // Prints a descriptive error message to stderr.First the string str is printed followed by a colon and then a space.
 // void perror(const char *str)
 static void ke_file_perror(sml_t* sml) { 
-	ke1_t* token = sml_pop_token(sml);
+	token_t* token = sml_pop_token(sml);
 	char ** str = sml_adr_str(token);
 	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
 	perror(ptr);
@@ -839,7 +838,7 @@ void ke_file_hash(sml_t* sml) {
 
 }
 
-void ke_file_print(ke1_t *k) {
+void ke_file_print(token_t *k) {
 	printf("File: %d\n", k->icmd);
 	printf("%g\n", k->r);
 }

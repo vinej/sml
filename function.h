@@ -1,7 +1,9 @@
 #ifndef FUNCTION_H_INCLUDED
 #define FUNCTION_H_INCLUDED
 
-void ke_function_print(sml_t* sml, ke1_t *k);
+#include "api.h"
+
+void ke_function_print(sml_t* sml, token_t *k);
 void ke_function_hash(sml_t* sml);
 
 #define FUNCTION_ANGLEM "anglem"

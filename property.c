@@ -1,8 +1,7 @@
-#include "kexpr.h"
+#include "api.h"
 #include "vector.h"
 #include "matrix.h"
 #include "str.h"
-#include "api.c"
 
 static void ke_poperty_str_get(sml_t* sml) {
 	int narg = sml_get_args(sml);
