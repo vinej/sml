@@ -4,7 +4,9 @@
 #include <time.h>
 #include "kexpr.h"
 #include "utf8.h"
+#include "sml.h"
 #include <setjmp.h>
+#include "parser.h"
 
 char * gets(char *str);
 utf8* read_utf8_file(utf8* filename);
@@ -82,7 +84,7 @@ int main(int argc, char *argv[])
 				char *vs;
 				int ret_type;
 				clock_t start_t = clock();
-				err |= ke_eval(sml, ke, &vi, &vr, &vs, &ret_type);
+				err |= ke_sml(sml, ke, &vi, &vr, &vs, &ret_type);
 				clock_t end_t = clock();
 				double total_t = (double)((double)end_t - start_t) / CLOCKS_PER_SEC;
 				printf("Total time taken by CPU: %.6lf second\n", total_t);
@@ -127,7 +129,7 @@ int main(int argc, char *argv[])
                 } else {
 					int status = ke_fill_list(sml,ke);
 					if (status != -1) {
-						err |= ke_eval(sml,ke, &vi, &vr, &vs, &ret_type);
+						err |= ke_sml(sml,ke, &vi, &vr, &vs, &ret_type);
 					}
 					ke_free_tokens(sml);
 					if (err) {

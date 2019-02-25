@@ -4,14 +4,14 @@
 #include "utf8.h"
 #include "api.c"
 
-int ke_str_prop_get_0par(sml_t* sml) { 
+void ke_str_prop_get_0par(sml_t* sml) { 
 	// b = a[1]  =>  1 a(1) =
 	token_t * prop = sml_pop_token(sml);
 	int i = utf8len(sml_get_str(prop));
 	sml_push_int(sml, i);
 }
 
-int ke_str_prop_get_1par(sml_t* sml) { 
+void ke_str_prop_get_1par(sml_t* sml) { 
 	// b = a[1]  =>  1 a(1) =
 	token_t * prop = sml_pop_token(sml);
 	token_t * indice = sml_pop_token(sml);
@@ -25,7 +25,7 @@ int ke_str_prop_get_1par(sml_t* sml) {
 	}
 }
 
-int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
+void ke_str_prop_get_2par(sml_t* sml) { 
 	// b = a[1,2]  =>  1 2 a(2) =
 
 	// 0,2
@@ -57,7 +57,7 @@ int ke_str_prop_get_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml
 	sml_push_str(sml, s);
 }
 
-void ke_str_prop_set_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
+void ke_str_prop_set_1par(sml_t* sml) {
 	// a[2] = 'z' =>  2 a(1) 'z' =
 	// TODO NOT UTF8
 	ke1_t *p, *q, *v;
@@ -67,7 +67,7 @@ void ke_str_prop_set_1par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sm
 	src[i] = dest[0];
 }
 
-void ke_str_prop_set_2par(sml_t* sml, ke1_t *tokp, int top) { ke1_t **stack = sml->stack;
+void ke_str_prop_set_2par(sml_t* sml) {
 	// a{1,2} = 'as'    1 2 a(2) 'sd' =
 	char * src = sml_pop_str(sml);
 	char * dest = sml_pop_str(sml);

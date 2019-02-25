@@ -162,7 +162,7 @@
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
       <Optimization>MaxSpeedHighLevel</Optimization>
       <DisableFunctionSplitting>true</DisableFunctionSplitting>
-      <CheckUndimensionedArrays>true</CheckUndimensionedArrays>
+      <CheckUndimensionedArrays>false</CheckUndimensionedArrays>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -242,7 +242,9 @@
     <ClInclude Include="khash.h" />
     <ClInclude Include="liblmdb\lmdb.h" />
     <ClInclude Include="matrix.h" />
+    <ClInclude Include="parser.h" />
     <ClInclude Include="property.h" />
+    <ClInclude Include="sml.h" />
     <ClInclude Include="stack.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="str.h" />
@@ -262,7 +264,9 @@
     <ClCompile Include="kexpr.c" />
     <ClCompile Include="main.c" />
     <ClCompile Include="matrix.c" />
+    <ClCompile Include="parser.c" />
     <ClCompile Include="property.c" />
+    <ClCompile Include="sml.c" />
     <ClCompile Include="stack.c" />
     <ClCompile Include="str.c" />
     <ClCompile Include="utf8util.c" />

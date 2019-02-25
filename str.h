@@ -2,11 +2,11 @@
 #define STR_H_INCLUDED
 
 void ke_str_hash(sml_t* sml);
-int ke_str_prop_get_0par(sml_t* sml);
-int ke_str_prop_get_1par(sml_t* sml);
-int ke_str_prop_set_1par(sml_t* sml);
-int ke_str_prop_get_2par(sml_t* sml);
-int ke_str_prop_set_2par(sml_t* sml);
+void ke_str_prop_get_0par(sml_t* sml);
+void ke_str_prop_get_1par(sml_t* sml);
+void ke_str_prop_set_1par(sml_t* sml);
+void ke_str_prop_get_2par(sml_t* sml);
+void ke_str_prop_set_2par(sml_t* sml);
 
 #define STR_STRBUF "strbuf"
 #define STR_STRFREE "strfree"

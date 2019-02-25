@@ -25,7 +25,6 @@ SML_EXPORT void SML_CALL ke_dll_hash_add(sml_t* sml) {
 	dllke_hash_add = sml->dllke_hash_add;
 	dllke_get_out = sml->dllke_get_out;
 	dllke_plot_hash(sml);
-	return 0;
 }
 
 SML_EXPORT void SML_CALL ke_plimload(sml_t* sml) { 
@@ -54,7 +53,7 @@ SML_EXPORT void SML_CALL ke_plimload(sml_t* sml) {
 SML_EXPORT void SML_CALL ke_plimfree(sml_t* sml) {
 	token_t * tokp = sml_pop_token(sml);
 	void * ptr = sml_get_ptr(tokp);
-	free(sml, ptr);
+	free(ptr);
 	sml_set_ptr_null(tokp);
 }
 

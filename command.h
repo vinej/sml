@@ -27,15 +27,4 @@ int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, ke1_t ** tokens);
 #define CMD_IMPORT "import"
 #define CMD_CONSTANTS "M_"
 
-#define CMD_IFOR 1
-#define CMD_INEXT 2
-#define CMD_IBRK 3
-#define CMD_ICNT 4
-#define CMD_IDEF 5
-#define CMD_IRTN 6
-#define CMD_IIF 7
-#define CMD_IELSE 8
-#define CMD_IEND 9
-#define CMD_IEXE 10
-
 #endif // COMMAND_H_INCLUDED
