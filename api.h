@@ -188,8 +188,8 @@ typedef struct token_s {
 		double(*real_func2)(double, double);
 		int(*defprop)(sml_t* sml, struct token_s* prop, int top);
 		void(*deffunc)(sml_t* sml);
-		int(*defcmd)(sml_t* sml, struct token_s* tokp, int top, int *);
-		int(*defvcmd)(sml_t* sml, struct token_s* tokp, int top, int i);
+		int(*defcmd)(sml_t* sml, int itok);
+		int(*defvcmd)(sml_t* sml, int itok);
 		struct token_s * recp;
 	} f;
 	union {  //     
@@ -256,6 +256,7 @@ void ke_free_memory(sml_t *sml, void * m);
 #define sml_get_args(sml) sml->tokp->n_args
 #define sml_get_ttype(sml) sml->tokp->ttype
 #define sml_get_vtype(sml) sml->tokp->vtype
+#define sml_get_ijmp(sml) sml->tokp->ijmp
 
 #define sml_pop_token(sml) sml->stack[--sml->top]
 #define sml_pop_int(sml) sml->stack[--sml->top]->i
