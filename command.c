@@ -86,33 +86,6 @@ int ke_command_for(sml_t* sml, int itok) {
 	}
 	sml_set_top(sml, top);
 	return itok;
-
-    /*
-	// field min, max inc
-	double inc = sml_pop_real(sml);
-	double max = sml_pop_real(sml);
-	double min = sml_pop_real(sml);
-	token_t * field = sml_pop_token(sml);
-
-	if (!sml_get_assigned(sml)) {
-		sml_set_assigned(sml, 1);
-		field->r = min;
-		field->i = (int64_t)min;
-		pushfor(sml,itok);
-	}
-	else {
-		if (field->r >= max) {
-			sml_set_assigned(sml, 0);
-			popfor(sml);
-			return sml_get_ijmp(sml);
-		}
-		else {
-			field->r += inc;
-			field->i += (int64_t)inc;
-		}
-	}
-	return itok;
-	*/
 }
 
 int ke_command_print_nonl(sml_t* sml, int itok) {

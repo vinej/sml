@@ -106,9 +106,9 @@ struct kexpr_s;
 struct sml_s;
 
 typedef struct token_s* ke1_p;
-typedef int(*cmdp)(struct sml_s * sml, struct token_s* tokp, int top, int *);
+typedef int(*cmdp)(struct sml_s * sml, int);
 typedef void(*fncp)(struct sml_s *);
-typedef int(*vcmdp)(struct sml_s * sml, struct token_s* tokp, int top, int);
+typedef int(*vcmdp)(struct sml_s * sml, int);
 typedef int(__cdecl *dllke_hash_add_t)(struct sml_s *, fncp, char *);
 typedef struct token_s *(__cdecl *dllke_get_out_t)(struct sml_s *);
 
@@ -194,7 +194,7 @@ typedef struct token_s {
 	} f;
 	union {  //     
 		void * ptr;
-		struct token_s * tokp;
+		//struct token_s * tokp;
 		char *s;
 		char* image;
 		char ** ms;
