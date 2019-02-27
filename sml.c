@@ -92,7 +92,7 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 	}
 
 #ifdef DEBUG
-	ke_print_stack(sml, tokp, top);
+	ke_print_stack(sml, tokp, sml->top);
 #endif // DEBUG
 
 	*ret_type = stack[0]->vtype;

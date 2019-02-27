@@ -229,7 +229,7 @@ typedef struct token_s {
 	int8_t op;
 	int8_t n_args;
 	int8_t realToken;
-	int8_t futur;
+	int8_t isfor;
 } token_t;
 
 struct kexpr_s {
@@ -250,13 +250,17 @@ void ke_free_memory(sml_t *sml, void * m);
 #define __GLOBAL_DSEP "__"
 
 #define sml_get_top(sml) sml->top
+#define sml_dec_top(sml) --sml->top
 #define sml_set_top(sml,top) sml->top=top
 #define sml_get_stack(sml) sml->stack
 #define sml_get_tokp(sml) sml->tokp
 #define sml_get_args(sml) sml->tokp->n_args
+#define sml_set_args(sml,a) sml->tokp->n_args = a
 #define sml_get_ttype(sml) sml->tokp->ttype
 #define sml_get_vtype(sml) sml->tokp->vtype
 #define sml_get_ijmp(sml) sml->tokp->ijmp
+#define sml_get_assigned(sml) sml->tokp->assigned
+#define sml_set_assigned(sml,a) sml->tokp->assigned = a
 
 #define sml_pop_token(sml) sml->stack[--sml->top]
 #define sml_pop_int(sml) sml->stack[--sml->top]->i

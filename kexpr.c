@@ -415,7 +415,7 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 	}
     #ifdef DEBUG
         if (tokp->ttype == KET_OP) {
-            printf("%s ", ke_opstr[tokp->op]);
+            //printf("%s ", ke_opstr[tokp->op]);
         } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_CMD || tokp->ttype == KET_PROP) {
             printf("%s(%d) ", tokp->name, tokp->n_args);
         }
