@@ -5,8 +5,13 @@
 
 void ke_file_hash(sml_t* sml);
 
+#define FILE_ASSERT_TRUE "assert_true"
+#define FILE_ASSERT_FALSE "assert_false"
+
 #define FILE_NEWBUFFER "newbuffer"
-#define FILE_FREBUFFER "freebuffer"
+#define FILE_FREEBUFFER "freebuffer"
+#define FILE_LENBUFFER "lenbuffer"
+
 #define FILE_FCLOSE "fclose"
 #define FILE_FCLOSE "fclose"
 #define FILE_CLEARERR "clearerr"
@@ -15,6 +20,7 @@ void ke_file_hash(sml_t* sml);
 #define FILE_FFLUSH "fflush"
 #define FILE_FGETPOS "fgetpos"
 #define FILE_FOPEN "fopen"
+#define FILE_FISOPEN "fisopen"
 #define FILE_FREAD "fread"
 #define FILE_FREOPEN "freopen"
 #define FILE_FSEEK "fseek"

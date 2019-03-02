@@ -19,7 +19,24 @@
 #include "command.h"
 #include "utf8.h"
 
-
+char * kev_to_str[16] = {
+	"NONE",
+	"REAL",
+	"INT",
+	"STR",
+	"VEC",
+	"MAT",
+	"COMPLEX",
+	"FNC",
+	"REC",
+	"VEC_INT",
+	"DEF",
+	"IMAGE",
+	"FILE",
+	"BUFFER",
+	"DATE",
+	"PTR"
+};
 // VALIDATION
 
 #ifdef _DEBUG
@@ -164,7 +181,7 @@ fncp ke_function(sml_t *sml, char * name) {
 	}
 }
 
-typedef int(*DLLPROC)();
+//typedef int(*DLLPROC)();
 void ke_import(sml_t *sml, char * s) {
 #if defined(_MSC_VER) || defined(_WIN32)
 	// load the dll
@@ -322,7 +339,7 @@ static void ke_set_str_internal(sml_t* sml,token_t *tokp, char * tmp) {
         ke_free_memory(sml,tokp->obj.s);
     }
     tokp->obj.s = tmp;
-    tokp->i = 0, tokp->r = 0, tokp->assigned = 1;
+    tokp->i = strlen(tmp), tokp->r = (double)tokp->i, tokp->assigned = 1;
     tokp->vtype = KEV_STR;
 }
 
@@ -353,12 +370,16 @@ void ke_set_file(sml_t *sml, token_t *source, token_t *dest) {
 	dest->ttype = source->ttype;
 	dest->vtype = source->vtype;
 	dest->obj.file = source->obj.file;
+	dest->i = source->i;  // 1 = isopen
+	dest->r = source->r;  // 1 = isopen
 }
 
 void ke_set_buffer(sml_t *sml, token_t *source, token_t *dest) {
 	dest->ttype = source->ttype;
 	dest->vtype = source->vtype;
 	dest->obj.buffer = source->obj.buffer;
+	dest->i = source->i;  // buffer len
+	dest->r = source->r;  // buffer len
 }
 
 void ke_print_one_stack(token_t * tokp)
@@ -383,10 +404,12 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 	if (tokp->vtype == KEV_REC) {
 		for (int i = 0; i < tokp->i; i++) {
 			token_t * tmptokp = sml->fields[tokp->obj.reclist[i]];
-			printf("%s = ",tmptokp->name);
+			printf("%s = ", tmptokp->name);
 			ke_print_one(sml, tmptokp);
 			printf("\n");
 		}
+	} else if (tokp->vtype == KEV_BUFFER && tokp->i > 0) {
+		printf("%.*s", tokp->i, tokp->obj.buffer);
 	} else if (tokp->vtype == KEV_VEC ) {
 		ke_vector_print(sml,tokp);
 	}
@@ -400,14 +423,16 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 		#ifdef DEBUG
 			if (tokp->name != NULL) printf("%s=", tokp->name);
 		#endif // DEBUG
-        if (tokp->vtype == KEV_REAL) 
-			printf("%g", tokp->r);
-        else if (tokp->vtype == KEV_INT) 
-			printf("%lld", (long long)tokp->i);
-        else if (tokp->vtype == KEV_STR && tokp->obj.s != NULL) 
-            printf("%s", tokp->obj.s);
-        else if (tokp->vtype == KEV_DATE && tokp->obj.date != NULL) 
-			 printf("dd-mm-yyyy: %d-%d-%d", g_date_get_day(tokp->obj.date), g_date_get_month(tokp->obj.date), g_date_get_year(tokp->obj.date));
+			if (tokp->vtype == KEV_REAL)
+				printf("%g", tokp->r);
+			else if (tokp->vtype == KEV_INT)
+				printf("%lld", (long long)tokp->i);
+			else if (tokp->vtype == KEV_STR && tokp->obj.s != NULL)
+				printf("%s", tokp->obj.s);
+			else if (tokp->vtype == KEV_DATE && tokp->obj.date != NULL)
+				printf("dd-mm-yyyy: %d-%d-%d", g_date_get_day(tokp->obj.date), g_date_get_month(tokp->obj.date), g_date_get_year(tokp->obj.date));
+			else if (tokp->vtype == KEV_BUFFER && tokp->i > 0)
+				printf("%.*s", tokp->i, tokp->obj.buffer);
 	} else if (tokp->tofree == 1) {
 		if (tokp->vtype == KEV_STR) {
 			ke_free_memory(sml, tokp->obj.s);
@@ -469,6 +494,7 @@ void ke_print(sml_t* sml, kexpr_t *kexpr)
 		ke_print_one_stack(tokp);
 	}
 	putchar('\n');
+	printf("\n");
 }
 
 void ke_hash_add(sml_t *sml, fncp key, char * name) {
@@ -512,7 +538,7 @@ void ke_set_val(sml_t* sml, token_t* e, token_t *q) {
 	 else if (q->vtype == KEV_IMAGE) ke_set_image(sml, q, e);
 	 else if (q->vtype == KEV_FILE) ke_set_file(sml, q, e);
 	 else if (q->vtype == KEV_DATE) ke_set_date(sml, e, q->obj.date);
-	 else if (q->vtype == KEV_BUFFER) ke_set_buffer(sml, e, q);
+	 else if (q->vtype == KEV_BUFFER) ke_set_buffer(sml, q, e);
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
@@ -559,7 +585,7 @@ void ke_free_hash(sml_t *sml)
 	ke_command_destroy(sml);
 
 	if (sml->mem_count != 0) {
-        printf("%s:%d", "Not all memory has been deallocated", sml->mem_count);
+        printf("%s:%d", "\n\nNot all memory has been deallocated\n", sml->mem_count);
 	}
 }
 

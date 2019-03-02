@@ -7,6 +7,7 @@
 #include <plplot/plplot.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 #include "stack.h"
 #include "utf8.h"
 #include "gdate.h"
@@ -39,7 +40,6 @@
 #define KEV_VEC  4
 #define KEV_MAT  5
 #define KEV_COMPLEX 6
-#define KEV_CMD  6
 #define KEV_FNC  7
 #define KEV_REC  8
 #define KEV_VEC_INT  9
@@ -50,6 +50,24 @@
 #define KEV_DATE 14
 #define KEV_PTR   15
 
+#define KEV_REAL_S "REAL"
+#define KEV_INT_S "INT"
+#define KEV_STR_S "STR"
+#define KEV_VEC_S  "VEC"
+#define KEV_MAT_S  "MAT"
+#define KEV_COMPLEX_S "COMPLEX"
+#define KEV_CMD_S  "CMD"
+#define KEV_FNC_S  "FNC"
+#define KEV_REC_S  "REC"
+#define KEV_VEC_INT_S  "VEC_INT"
+#define KEV_DEF_S  "DEF"
+#define KEV_IMAGE_S "IMAGE"
+#define KEV_FILE_S "FILE"
+#define KEV_BUFFER_S "BUFFER"
+#define KEV_DATE_S "DATE"
+#define KEV_PTR_S  "PTR"
+
+extern char * kev_to_str[16];
 
 #define KEO_NULL  0
 #define KEO_POS   1
@@ -131,6 +149,7 @@ KDQ_INIT(int)
 struct sml_s;
 typedef struct sml_s {
 	struct token_s **stack;        // stack for the evaluation of the program
+	double *rstack;                    // stack for the evaluation of the program
 	struct token_s *out;           // pointer to the array of out parameter to put into the stack
 	struct kexpr_s *kexpr;
 	struct token_s ** fields;		// array of all global fields of the program to exectue
@@ -232,6 +251,7 @@ typedef struct token_s {
 	int8_t isfor;
 } token_t;
 
+
 struct kexpr_s {
 	int n;
 	token_t *e;
@@ -300,17 +320,21 @@ void ke_free_memory(sml_t *sml, void * m);
 #define sml_get_str(t) t->obj.s
 #define sml_get_real(t) t->r
 #define sml_get_int(t) t->i
+#define sml_set_int(t,ii) t->i = ii
 #define sml_get_ptr(t) t->obj.ptr
+#define sml_get_file(t) t->obj.file
 #define sml_set_ptr_null(t) t->obj.ptr = NULL
-
+#define sml_get_len(t) t->i
 
 #define sml_adr_str(t) &t->obj.s
 #define sml_adr_ptr(t) &t->obj
 
-#define sml_push_buffer(sml, b) token_t* out; \
+#define sml_push_buffer(sml, b, ii) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
 	out = sml->stack[sml->top++]; \
 	out->obj.buffer = b; \
+	out->i = ii; \
+	out->r == (double)ii; \
 	out->ttype = KET_VAL; \
 	out->vtype = KEV_BUFFER; \
 	out->assigned = 1;
@@ -319,6 +343,8 @@ void ke_free_memory(sml_t *sml, void * m);
 	sml->stack[sml->top] = ke_get_out(sml); \
 	out = sml->stack[sml->top++]; \
 	out->obj.file = file; \
+	out->i = 1; \
+	out->r == 1.0; \
 	out->ttype = KET_VAL; \
 	out->vtype = KEV_FILE; \
 	out->assigned = 1;
@@ -355,11 +381,11 @@ void ke_free_memory(sml_t *sml, void * m);
 	out->vtype = KEV_DATE; \
 	out->assigned = 1;
 
-#define  sml_push_int(sml, i) token_t* out; \
+#define  sml_push_int(sml, ii) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
 	out = sml->stack[sml->top++]; \
-	out->i = i; \
-	out->r = (double)i; \
+	out->i = ii; \
+	out->r = (double)ii; \
 	out->ttype = KET_VAL; \
 	out->vtype = KEV_INT; \
 	out->assigned = 1;
@@ -435,3 +461,87 @@ void ke_free_memory(sml_t *sml, void * m);
 	tokp->vtype = KEV_STR;
 
 #endif
+
+#ifdef _DEBUG
+#define sml_assert_args(sml,i,fnc) if (sml->tokp->n_args != i) { \
+		printf("ASSERT ERROR : Invalid number of parameters, expected <%d> got <%d> at line <%d> for function <%s>", i, sml->tokp->n_args, sml->tokp->sourceLine,fnc);	\
+		longjmp(sml->env_buffer, 1); \
+	} 
+#else
+#define sml_assert_args(sml,i,s)
+#endif 
+
+#ifdef _DEBUG
+#define sml_assert_type(sml,i,t,fnc) \
+	if (sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->vtype != t) { \
+		printf("ASSERT ERROR : Invalid type for parameter #%d, expected <%s> got <%s> at line <%d> for function <%s>", i, kev_to_str[t], kev_to_str[sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->vtype], sml->tokp->sourceLine,fnc); \
+		longjmp(sml->env_buffer, 1); \
+	}
+#else
+#define sml_assert_type(sml,i,t,s)
+#endif 
+
+#ifdef _DEBUG
+#define sml_assert_type_int_or_real(sml,i,fnc) \
+	if (sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->vtype != KEV_INT && sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->vtype != KEV_REAL) { \
+		printf("ASSERT ERROR : Invalid type for parameter #%d, expected <INT OR REAL> got <%s> at line <%d> for function <%s>", i, kev_to_str[sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->vtype], sml->tokp->sourceLine,fnc); \
+		longjmp(sml->env_buffer, 1); \
+	}
+#else
+#define sml_assert_type_int_or_real(sml,i,s)
+#endif 
+
+#ifdef _DEBUG
+#define sml_assert_str_in(sml,i,search,fnc) \
+	if (!strstr(search, sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->obj.s)) { \
+		printf("ASSERT ERROR : Invalid parameter value for parameter #%d, at line <%d> for function <%s>", i, sml->tokp->sourceLine,fnc); \
+		longjmp(sml->env_buffer, 1); \
+	}
+#else
+#define sml_assert_str_in(sml,i,f,s)
+#endif 
+
+#ifdef _DEBUG
+#define sml_assert_str(sml,i,fnc) \
+	if (!strlen(sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->obj.s)) { \
+		printf("ASSERT ERROR : Invalid parameter value (empty) for parameter #%d, at line <%d> for function <%s>", i, sml->tokp->sourceLine,fnc); \
+		longjmp(sml->env_buffer, 1); \
+	}
+#else
+#define sml_assert_str(sml,i,fnc)
+#endif 
+
+#ifdef _DEBUG
+#define sml_assert_size(sml,size,i,fnc) \
+	if (size <= 0) { \
+		printf("ASSERT ERROR : Invalid parameter value (<=0) for parameter #%d, at line <%d> for function <%s>", i, sml->tokp->sourceLine,fnc); \
+		longjmp(sml->env_buffer, 1); \
+	}
+#else
+#define sml_assert_size(sml,size,i,fnc)
+#endif 
+
+#ifdef _DEBUG
+#define sml_assert_gz(sml,size,fnc) \
+	if (size < 0) { \
+		printf("ASSERT ERROR : Invalid parameters (size validation < 0) at line <%d> for function <%s>", sml->tokp->sourceLine,fnc); \
+		longjmp(sml->env_buffer, 1); \
+	}
+#else
+#define sml_assert_gz(sml,size,fnc)
+#endif 
+
+#ifdef _DEBUG
+#define sml_assert_ptr(sml,p,i,fnc) \
+	if (p == NULL) { \
+		printf("ASSERT ERROR : Invalid parameter value (==NULL) for parameter #%d, at line <%d> for function <%s>", i, sml->tokp->sourceLine,fnc); \
+		longjmp(sml->env_buffer, 1); \
+	}
+#else
+#define sml_assert_ptr(sml,p,i,fnc)
+#endif 
+
+
+#define sml_fatal_error(sml,c,fnc) \
+		printf("ASSERT ERROR : Fatal error <%s> at line <%d> for function <%s>", c, sml->tokp->sourceLine , fnc); \
+		longjmp(sml->env_buffer, 1);

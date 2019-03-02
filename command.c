@@ -33,9 +33,9 @@ int ke_command_def(sml_t* sml, int itok) {
 	int n = sml_get_args(sml);
 	int top = sml_get_top(sml);
     if (sml_get_assigned(sml)) {
-		for (int i = 0; i < n - 1; i++) {
-			token_t * def_token = stack[top - i - 1];     //   6   5
-			token_t * exe_token = stack[sml, top - i - n - 1]; //   3   2
+		for (int i = 1; i < n; i++) {
+			token_t * def_token = stack[top - i];          //   6   5
+			token_t * exe_token = stack[sml, top - i - n]; //   3   2
 			ke_set_val(sml, def_token, exe_token);
 		}
 		top = top - (n * 2);
@@ -66,6 +66,7 @@ int ke_command_for(sml_t* sml, int itok) {
 
 	token_t *var = stack[top]; // copy of the real variable into the stack
 	if (!sml_get_assigned(sml)) {
+	
 		token_t *min = stack[top + 1];
 		sml_set_assigned(sml, 1);
 		var->ijmp = sml_get_ijmp(sml);
@@ -80,8 +81,14 @@ int ke_command_for(sml_t* sml, int itok) {
 			return var->ijmp;
 		}
 		else {
-			var->r += stack[top + 3]->r;
-			var->i += stack[top + 3]->i;
+			if (n == 4) {
+				var->r += stack[top + 3]->r;
+				var->i += stack[top + 3]->i;
+			}
+			else {
+				var->r += 1;
+				++var->i;
+			}
 		}
 	}
 	sml_set_top(sml, top);

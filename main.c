@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 				err |= ke_sml(sml, ke, &vi, &vr, &vs, &ret_type);
 				clock_t end_t = clock();
 				double total_t = (double)((double)end_t - start_t) / CLOCKS_PER_SEC;
-				printf("Total time taken by CPU: %.6lf second\n", total_t);
+				printf("\nTotal time taken by CPU: %.6lf second\n", total_t);
 			}
 			else ke_print(sml, ke);
 		}

@@ -12,27 +12,244 @@
 #define MAX_BUF 1023
 #define MAX_SCAN_ARG 16
 
-// alloc a buffer
-static void ke_file_alloc_buffer(sml_t* sml) { 
+const char * valid_mode = ",r,w,a,rb,wb,ab,r+,w+,a+,r+b,w+b,rb+,wb+,a+b,ab+";
+const char * cant_open_file = "can't open file for the mode parameter";
+const char * cant_close_file = "can't close file";
+/* Parameters
+	IN
+		1 : boolen expression
+		2 : message
+	OUT
+		none
+*/
+static void ke_file_assert_true(sml_t* sml) {
+	sml_assert_args(sml, 2, FILE_ASSERT_TRUE);
+	sml_assert_type_int_or_real(sml, 1, FILE_ASSERT_TRUE);
+	sml_assert_type(sml, 2, KEV_STR, FILE_ASSERT_TRUE);
+	char * s = sml_pop_str(sml);
 	int i = sml_pop_int(sml);
-	void * ptr = sml_new_ptr(sml, i);
-	sml_push_buffer(sml, ptr);
+	if (i) {
+		printf("Success: %s\n", s);
+	} else {
+		printf("Error: %s\n", s);
+	}
 }
 
-// free a buffer
-static void ke_file_free_buffer(sml_t* sml) { 
+/* Parameters
+IN
+1 : boolen expression
+2 : message
+OUT
+none
+*/
+static void ke_file_assert_false(sml_t* sml) {
+	sml_assert_args(sml, 2, FILE_ASSERT_FALSE);
+	sml_assert_type_int_or_real(sml, 1, FILE_ASSERT_FALSE);
+	sml_assert_type(sml, 2, KEV_STR, FILE_ASSERT_FALSE);
+	char * s = sml_pop_str(sml);
+	int i = sml_pop_int(sml);
+	if (!i) {
+		printf("Success: %s\n", s);
+	}
+	else {
+		printf("Error: %s\n", s);
+	}
+}
+
+/* Parameters
+IN
+	1 : KEV_INT : buffer len
+OUT
+	KEV_BUFFER	: allocated buffer
+COMMENT
+	buffer len is set
+*/
+static void ke_file_alloc_buffer(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_NEWBUFFER);
+	sml_assert_type(sml, 1, KEV_INT, FILE_NEWBUFFER);
+	int i = sml_pop_int(sml);
+	void * ptr = sml_new_ptr(sml, i);
+	sml_push_buffer(sml,ptr,i);
+}
+
+/* Parameters
+IN
+	1 : KEV_BUFFER	: allocated buffer
+OUT
+	none
+COMMENT
+	buffer len is set to zero
+*/
+static void ke_file_free_buffer(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_FREEBUFFER);
+	sml_assert_type(sml, 1, KEV_BUFFER, FILE_FREEBUFFER);
 	token_t * tokp = sml_pop_token(sml);
 	void * ptr = sml_get_ptr(tokp);
 	sml_free_ptr(sml, ptr);
+	sml_set_int(tokp, 0);
 	sml_set_ptr_null(tokp);
 }
 
-// Closes the stream.All buffers are flushed.
-// int fclose(FILE *stream)
-static void ke_file_fclose(sml_t* sml) { 
-	FILE* file = sml_pop_file(sml);
-	fclose(file);
+/* Parameters
+IN
+	1 : KEV_BUFFER	: allocated buffer
+OUT
+	KEV_INT	: buffer len
+*/
+static void ke_file_buffer_len(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_LENBUFFER);
+	sml_assert_type(sml, 1, KEV_BUFFER, FILE_LENBUFFER);
+	token_t *tokp = sml_pop_token(sml);
+	int i = sml_get_len(tokp);
+	sml_push_int(sml, i);
 }
+
+/* Parameters
+IN
+	1 : KEV_STR	: file name
+	2 : KEV_STR	: open mode "r", "rw", ect..
+		"r" 	ouverture d'un fichier texte en lecture.
+		"w" 	ouverture d'un fichier texte en écriture.
+		"a" 	ouverture d'un fichier texte en écriture à la fin.
+		"rb" 	ouverture d'un fichier binaire en lecture.
+		"wb"	ouverture d'un fichier binaire en écriture.
+		"ab"	ouverture d'un fichier binaire en écriture à la fin.
+		"r+"	ouverture d'un fichier texte en lecture/écriture.
+		"w+"	ouverture d'un fichier texte en lecture/écriture.
+		"a+"	ouverture d'un fichier texte en lecture/écriture à la fin.
+		"r+b" ou "rb+	ouverture d'un fichier binaire en lecture/écriture.
+		"w+b" ou "wb+	ouverture d'un fichier binaire en lecture/écriture.
+		"a+b" ou "ab+	ouverture d'un fichier binaire en lecture/écriture à la fin.
+OUT
+	KEV_FILE	: FILE *
+*/
+static void ke_file_fopen(sml_t* sml) {
+	sml_assert_args(sml, 2, FILE_FOPEN);
+	sml_assert_type(sml, 1, KEV_STR, FILE_FOPEN);
+	sml_assert_str(sml, 1, FILE_FOPEN);
+	sml_assert_type(sml, 2, KEV_STR, FILE_FOPEN);
+	sml_assert_str(sml, 2, FILE_FOPEN);
+	sml_assert_str_in(sml, 2, valid_mode, FILE_FOPEN);
+	char * mode = sml_pop_str(sml);
+	char * name = sml_pop_str(sml);
+	FILE* file = fopen(name, mode);
+	if (file == NULL) {
+		sml_fatal_error(sml, cant_open_file, FILE_FOPEN);
+	}
+	sml_push_file(sml, file);
+}
+
+/* Parameters
+IN
+1 : KEV_FILE	: file ptr
+OUT
+	KEV_INT	:	1 == OPEN, 0 == CLOSE
+*/
+static void ke_file_fisopen(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_FISOPEN);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FISOPEN);
+	token_t * tokp = sml_pop_token(sml);
+	sml_assert_ptr(sml, sml_get_file(tokp), 1, FILE_FCLOSE);
+	sml_push_int(sml, sml_get_int(tokp));
+}
+
+/* Parameters
+IN
+1 : KEV_FILE	: file ptr
+OUT
+none
+*/
+static void ke_file_fclose(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_FCLOSE);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FCLOSE);
+	token_t * tokp = sml_pop_token(sml);
+	FILE* file = sml_get_file(tokp);
+	sml_assert_ptr(sml, file, 1, FILE_FCLOSE);
+	int st = fclose(file);
+	if (st != 0) {
+		sml_fatal_error(sml, cant_close_file, FILE_FCLOSE);
+	}
+	sml_set_int(tokp, 0);
+}
+
+// Reads data from the given stream into the array pointed to by ptr.
+// size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
+/* Parameters
+IN
+	1 : KEV_PTR		: buffer, could be a STR or a BUFFER
+	2:  KEV_INT		: size
+	3:  KEV_INT     : ememb
+	4 : KEV_FILE	: file ptr
+OUT
+	KEV_INT	:	number read
+
+*/
+static void ke_file_fread(sml_t* sml) {
+	sml_assert_args(sml, 4, FILE_FREAD);
+
+	sml_assert_type(sml, 1, KEV_BUFFER, FILE_FREAD);
+	sml_assert_type_int_or_real(sml, 2, FILE_FREAD);
+	sml_assert_type_int_or_real(sml, 3, FILE_FREAD);
+	sml_assert_type(sml, 4, KEV_FILE, FILE_FREAD);
+	
+	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 4, FILE_FREAD);
+
+	int nmemb = sml_pop_int(sml);
+	sml_assert_size(sml, nmemb, 3, FILE_FREAD);
+
+	int size = sml_pop_int(sml);
+	sml_assert_size(sml, size, 2, FILE_FREAD);
+
+	token_t* tokp = sml_pop_token(sml);
+	sml_assert_gz(sml, sml_get_int(tokp)-(size*nmemb), FILE_FREAD)
+	char * ptr = sml_get_ptr(tokp);
+	sml_assert_ptr(sml, ptr, 1, FILE_FREAD);
+
+	int i = fread(ptr, size, nmemb, file);
+	sml_push_int(sml, i);
+}
+
+// Writes data from the array pointed to by ptr to the given stream.
+// size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
+/* Parameters
+IN
+	1 : KEV_PRT		: buffer, could be a STR or a BUFFER
+	2:  KEV_INT		: element size
+	3:  KEV_INT     : element count
+	4 : KEV_FILE	: file ptr
+OUT
+KEV_INT	:	number read
+
+*/
+static void ke_file_fwrite(sml_t* sml) {
+	sml_assert_args(sml, 4, FILE_FWRITE);
+
+	sml_assert_type_int_or_real(sml, 2, FILE_FWRITE);
+	sml_assert_type_int_or_real(sml, 3, FILE_FWRITE);
+	sml_assert_type(sml, 4, KEV_FILE, FILE_FWRITE);
+	
+	token_t* filep = sml_pop_token(sml);
+	sml_assert_size(sml, sml_get_int(filep), 4, FILE_FWRITE);
+	FILE * file = sml_get_file(filep);
+	sml_assert_ptr(sml, file, 4, FILE_FWRITE);
+
+	int nmemb = sml_pop_int(sml);
+	sml_assert_size(sml, nmemb, 3, FILE_FREAD);
+
+	int size = sml_pop_int(sml);
+	sml_assert_size(sml, size, 2, FILE_FREAD);
+
+	token_t* tokp = sml_pop_token(sml);
+	void * ptr = sml_get_ptr(tokp);
+	sml_assert_ptr(sml, ptr, 1, FILE_FWRITE);
+	sml_assert_gz(sml, sml_get_int(tokp) - (size*nmemb), FILE_FWRITE)
+
+	int i = fwrite(ptr, size, nmemb, file);
+	sml_push_int(sml, i);
+}
+
+
 
 // Clears the end - of - file and error indicators for the given stream.
 // void clearerr(FILE *stream)
@@ -73,25 +290,7 @@ static void ke_file_fgetpos(sml_t* sml) {
 	sml_push_int(sml, i);
 }
 
-// Opens the filename pointed to by filename using the given mode.
-// FILE *fopen(const char *filename, const char *mode)
-static void ke_file_fopen(sml_t* sml) { 
-	char * mode = sml_pop_str(sml);
-	char * name = sml_pop_str(sml);
-	FILE* file = fopen(name, mode);
-	sml_push_file(sml, file);
-}
 
-// Reads data from the given stream into the array pointed to by ptr.
-// size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
-static void ke_file_fread(sml_t* sml) { 
-	FILE * file = sml_pop_file(sml);
-	int nmemb = sml_pop_int(sml);
-	int size = sml_pop_int(sml);
-	char * ptr = sml_pop_ptr(sml);
-	int i = fread(ptr, size, nmemb, file);
-	sml_push_int(sml, i);
-}
 
 // Associates a new filename with the given open stream and same time closing the old file in stream.
 // FILE *freopen(const char *filename, const char *mode, FILE *stream)
@@ -129,16 +328,6 @@ static void ke_file_ftell(sml_t* sml) {
 	sml_push_int(sml, i);
 }
 
-// Writes data from the array pointed to by ptr to the given stream.
-// size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
-static void ke_file_fwrite(sml_t* sml) { 
-	FILE * file = sml_pop_file(sml);
-	int nmemb = sml_pop_int(sml);
-	int size = sml_pop_int(sml);
-	void * ptr = sml_pop_ptr(sml);
-	int i = fwrite(ptr, size, nmemb, file);
-	sml_push_int(sml, i);
-}
 
 // Deletes the given filename so that it is no longer accessible.
 // int remove(const char *filename)
@@ -784,14 +973,20 @@ static void ke_file_perror(sml_t* sml) {
 
 
 void ke_file_hash(sml_t* sml) {
+	ke_hash_add(sml, (fncp)&ke_file_assert_true, FILE_ASSERT_TRUE);
+	ke_hash_add(sml, (fncp)&ke_file_assert_false, FILE_ASSERT_FALSE);
+
 	ke_hash_add(sml, (fncp)&ke_file_alloc_buffer, FILE_NEWBUFFER);
-	ke_hash_add(sml, (fncp)&ke_file_free_buffer, FILE_FREBUFFER);
+	ke_hash_add(sml, (fncp)&ke_file_free_buffer, FILE_FREEBUFFER);
+	ke_hash_add(sml, (fncp)&ke_file_buffer_len, FILE_LENBUFFER);
+
 	ke_hash_add(sml, (fncp)&ke_file_fclose, FILE_FCLOSE);
 	ke_hash_add(sml, (fncp)&ke_file_clearerr, FILE_CLEARERR);
 	ke_hash_add(sml, (fncp)&ke_file_feof, FILE_FEOF);
 	ke_hash_add(sml, (fncp)&ke_file_ferror, FILE_FERROR);
 	ke_hash_add(sml, (fncp)&ke_file_fflush, FILE_FFLUSH);
 	ke_hash_add(sml, (fncp)&ke_file_fgetpos, FILE_FGETPOS);
+	ke_hash_add(sml, (fncp)&ke_file_fisopen, FILE_FISOPEN);
 	ke_hash_add(sml, (fncp)&ke_file_fopen, FILE_FOPEN);
 	ke_hash_add(sml, (fncp)&ke_file_fread, FILE_FREAD);
 	ke_hash_add(sml, (fncp)&ke_file_freopen, FILE_FREOPEN);

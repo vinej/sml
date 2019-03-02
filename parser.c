@@ -478,6 +478,8 @@ int ke_manage_string(sml_t *sml, token_t *tok, char **r, char **p, char **q, int
 		tok->ttype = KET_VAL;
 		tok->vtype = KEV_STR;
 		tok->obj.s = ke_mystrndup(sml, *q + 1, *p - *q - 1);
+		tok->i = strlen(tok->obj.s);
+		tok->r = (double)tok->i;
 		*r = *p + 1;
 	}
 	else
@@ -538,7 +540,7 @@ int ke_manage_comment(sml_t *sml, token_t * tok, char **p) {
 	++(*p);
 	while (**p != 0) {
 		if (**p == '\n') {
-			++sml->sourceCodeLine;
+			//++sml->sourceCodeLine;
 			break;
 		}
 		++(*p);
@@ -683,8 +685,8 @@ static inline token_t *push_back(sml_t *sml, token_t **a, int *n, int *m)
 		if (*a == 0) ke_inc_memory(sml);
 		*a = (token_t*)realloc(*a, *m * sizeof(token_t));
 		if (*a == NULL) {
-			printf("out of memory at push_back");
-			printf("TODO clean up the memory");
+			printf("out of memory at push_back\n");
+			printf("TODO clean up the memory\n");
 			abort();
 		}
 
