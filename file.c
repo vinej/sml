@@ -85,7 +85,9 @@ static void ke_file_free_buffer(sml_t* sml) {
 	sml_assert_type(sml, 1, KEV_BUFFER, FILE_FREEBUFFER);
 	token_t * tokp = sml_pop_token(sml);
 	void * ptr = sml_get_ptr(tokp);
+	sml_assert_ptr(sml, ptr, 1, FILE_FREEBUFFER);
 	sml_free_ptr(sml, ptr);
+	sml_set_ptr_null(tokp);
 	sml_set_int(tokp, 0);
 	sml_set_ptr_null(tokp);
 }
@@ -149,7 +151,6 @@ static void ke_file_fisopen(sml_t* sml) {
 	sml_assert_args(sml, 1, FILE_FISOPEN);
 	sml_assert_type(sml, 1, KEV_FILE, FILE_FISOPEN);
 	token_t * tokp = sml_pop_token(sml);
-	sml_assert_ptr(sml, sml_get_file(tokp), 1, FILE_FCLOSE);
 	sml_push_int(sml, sml_get_int(tokp));
 }
 
@@ -169,6 +170,7 @@ static void ke_file_fclose(sml_t* sml) {
 	if (st != 0) {
 		sml_fatal_error(sml, cant_close_file, FILE_FCLOSE);
 	}
+	sml_set_ptr_null(tokp);
 	sml_set_int(tokp, 0);
 }
 
@@ -249,6 +251,51 @@ static void ke_file_fwrite(sml_t* sml) {
 	sml_push_int(sml, i);
 }
 
+// Sets the file position of the given stream to the given position.The argument pos is a position given by the function fgetpos.
+// int fsetpos(FILE *stream, const fpos_t *pos)
+/* Parameters
+IN
+1 : KEV_FILE	: file *
+2 : KEV_FPOS	: fpos *
+OUT
+	none
+*/
+static void ke_file_fsetpos(sml_t* sml) {
+	sml_assert_args(sml, 2, FILE_FSETPOS);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FSETPOS);
+	sml_assert_type(sml, 2, KEV_FPOS, FILE_FSETPOS);
+
+	fpos_t* fposp = sml_pop_fpos(sml);
+	//sml_assert_size(sml, sml_peek_int(sml), 2, FILE_FSETPOS);
+	sml_assert_ptr(sml, fposp, 2, FILE_FSETPOS);
+
+	token_t* tokp = sml_pop_token(sml);
+	FILE * file = sml_get_file(tokp);
+	sml_assert_ptr(sml, file, 1, FILE_FSETPOS);
+	fsetpos(file, fposp);
+}
+
+// Gets the current file position of the stream and writes it to pos.
+// int fgetpos(FILE *stream) //, fpos_t *pos)
+// JYV: TODO
+/* Parameters
+IN
+	1 : KEV_FILE	: file *
+OUT
+	KEV_FPOS	: f_pos_t *
+
+*/
+static void ke_file_fgetpos(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_FGETPOS);
+	FILE* file = sml_pop_file(sml);
+	fpos_t * fposp = ke_calloc_memory(sml, sizeof(fpos_t), 1);
+	int st = fgetpos(file, fposp);
+	if (st != 0) {
+		sml_fatal_error(sml, "fgetpos error", FILE_FGETPOS);
+	}
+	sml_push_fpos(sml, fposp);
+}
+
 
 
 // Clears the end - of - file and error indicators for the given stream.
@@ -281,15 +328,6 @@ static void ke_file_fflush(sml_t* sml) {
 	fflush(file);
 }
 
-// Gets the current file position of the stream and writes it to pos.
-// int fgetpos(FILE *stream) //, fpos_t *pos)
-// JYV: TODO
-static void ke_file_fgetpos(sml_t* sml) { 
-	FILE* file = sml_pop_file(sml);
-	int i = 0;
-	sml_push_int(sml, i);
-}
-
 
 
 // Associates a new filename with the given open stream and same time closing the old file in stream.
@@ -311,14 +349,6 @@ static void ke_file_fseek(sml_t* sml) {
 	fseek(file, offset, whence);
 }
 
-// Sets the file position of the given stream to the given position.The argument pos is a position given by the function fgetpos.
-// int fsetpos(FILE *stream, const fpos_t *pos)
-// TODO JYV
-static void ke_file_fsetpos(sml_t* sml) { 
-	int pos = sml_pop_int(sml);
-	FILE * file = sml_pop_file(sml);
-	//fsetpos(file, pos);
-}
 
 // Returns the current file position of the given stream.
 // long int ftell(FILE *stream)

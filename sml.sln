@@ -49,6 +49,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{100DBD8D-D
 		test\test7.sml = test\test7.sml
 		test\test8.sml = test\test8.sml
 		test\test9.sml = test\test9.sml
+		test\test_assert.sml = test\test_assert.sml
+		test\test_file.sml = test\test_file.sml
 	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "plplotdll", "plplotdll\plplotdll.vcxproj", "{3B58EB87-6B7F-49F8-BAD5-300EC58D2F43}"

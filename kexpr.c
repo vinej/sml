@@ -19,7 +19,7 @@
 #include "command.h"
 #include "utf8.h"
 
-char * kev_to_str[16] = {
+char * kev_to_str[17] = {
 	"NONE",
 	"REAL",
 	"INT",
@@ -35,7 +35,8 @@ char * kev_to_str[16] = {
 	"FILE",
 	"BUFFER",
 	"DATE",
-	"PTR"
+	"PTR",
+	"FPOS"
 };
 // VALIDATION
 
@@ -374,6 +375,12 @@ void ke_set_file(sml_t *sml, token_t *source, token_t *dest) {
 	dest->r = source->r;  // 1 = isopen
 }
 
+void ke_set_fpos(sml_t *sml, token_t *source, token_t *dest) {
+	dest->ttype = source->ttype;
+	dest->vtype = source->vtype;
+	dest->obj.fpos = source->obj.fpos;
+}
+
 void ke_set_buffer(sml_t *sml, token_t *source, token_t *dest) {
 	dest->ttype = source->ttype;
 	dest->vtype = source->vtype;
@@ -409,7 +416,8 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 			printf("\n");
 		}
 	} else if (tokp->vtype == KEV_BUFFER && tokp->i > 0) {
-		printf("%.*s", tokp->i, tokp->obj.buffer);
+	} else if (tokp->vtype == KEV_FPOS && tokp->i > 0) {
+		printf("fpos");
 	} else if (tokp->vtype == KEV_VEC ) {
 		ke_vector_print(sml,tokp);
 	}
@@ -539,6 +547,7 @@ void ke_set_val(sml_t* sml, token_t* e, token_t *q) {
 	 else if (q->vtype == KEV_FILE) ke_set_file(sml, q, e);
 	 else if (q->vtype == KEV_DATE) ke_set_date(sml, e, q->obj.date);
 	 else if (q->vtype == KEV_BUFFER) ke_set_buffer(sml, q, e);
+	 else if (q->vtype == KEV_FPOS) ke_set_fpos(sml, q, e);
 	 else {
         printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
      }
