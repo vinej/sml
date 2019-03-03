@@ -489,6 +489,15 @@ void ke_free_memory(sml_t *sml, void * m);
 #endif 
 
 #ifdef _DEBUG
+#define sml_assert_args_min(sml,i,fnc) if (sml->tokp->n_args < i) { \
+		printf("ASSERT ERROR : Invalid number of parameters, expected at least <%d> got <%d> at line <%d> for function <%s>", i, sml->tokp->n_args, sml->tokp->sourceLine,fnc);	\
+		longjmp(sml->env_buffer, 1); \
+	} 
+#else
+#define sml_assert_args(sml,i,s)
+#endif 
+
+#ifdef _DEBUG
 #define sml_assert_type(sml,i,t,fnc) \
 	if (sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->vtype != t) { \
 		printf("ASSERT ERROR : Invalid type for parameter #%d, expected <%s> got <%s> at line <%d> for function <%s>", i, kev_to_str[t], kev_to_str[sml->stack[sml->top - 1 - (sml->tokp->n_args - i)]->vtype], sml->tokp->sourceLine,fnc); \

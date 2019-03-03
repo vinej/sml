@@ -52,15 +52,15 @@ assert_true( fexist == 1, "fexist == 1")
 
 frename("t.dat", "tt.dat")
 
-fexist = fexist("t.dat")
-assert_true( fexist == 0, "fexist == 0")
+fex = fexist("t.dat")
+assert_true( fex == 0, "fexist == 0")
 
-fexist = fexist("tt.dat")
-assert_true( fexist == 1, "fexist == 1")
+fex = fexist("tt.dat")
+assert_true( fex == 1, "fexist == 1")
 
 fremove("tt.dat")
-fexist = fexist("tt.dat")
-assert_true( fexist == 0, "fexist == 0")
+fex = fexist("tt.dat")
+assert_true( fex == 0, "fexist == 0")
 
 ftmp = ftmpfile()
 count = fwrite( "test", 1, 4, ftmp)
@@ -70,5 +70,59 @@ fclose(ftmp)
 tnmae = ftmpnam()
 print(tnmae)
 
+# test fprintf 1
+if(fexist("t2.dat") == 1)
+  fremove("t2.dat")
+end
+fex = fexist("t2.dat")
+assert_true( fex == 0, "fexist == 0")
 
+f2 = fopen("t2.dat","w+")
+
+fprintf(f2, "test %d", 12)
+fflush(f2);
+frewind(f2)
+buf2 = newbuffer(100)
+qte = fread(buf2, 1, 7, f2)
+assert_true( qte == 7, "qte == 7")
+assert_true( strcmp(buf2, "test 12") == 0, "compare test 12")
+freebuffer(buf2)
+fclose(f2)
+
+# test fprintf 2
+if(fexist("t2.dat") == 1)
+  fremove("t2.dat")
+end
+fex = fexist("t2.dat")
+assert_true( fex == 0, "fexist == 0")
+
+f2 = fopen("t2.dat","w+")
+
+fprintf(f2, "test %d:%s", 12, "JY")
+fflush(f2);
+frewind(f2)
+buf2 = newbuffer(100)
+qte = fread(buf2, 1, 10, f2)
+assert_true( qte == 10, "qte == 10")
+assert_true( strcmp(buf2, "test 12:JY") == 0, "compare test 12:JY")
+freebuffer(buf2)
+fclose(f2)
+
+# test fprintf 3
+if(fexist("t2.dat") == 1)
+  fremove("t2.dat")
+end
+fex = fexist("t2.dat")
+assert_true( fex == 0, "fexist == 0")
+
+f2 = fopen("t2.dat","w+")
+fprintf(f2, "test %d:%s:%f", 12, "JY", 1.1)
+fflush(f2);
+frewind(f2)
+buf2 = newbuffer(100)
+qte = fread(buf2, 1, 19, f2)
+assert_true( qte == 19, "qte == 19")
+assert_true( strcmp(buf2, "test 12:JY:1.100000") == 0, "compare test 12:JY:1.100000")
+freebuffer(buf2)
+fclose(f2)
 

@@ -638,7 +638,6 @@ static void ke_file_tmpfile(sml_t* sml) {
 
 // Generates and returns a valid temporary filename which does not exist.
 // char *tmpnam(char *str)
-// JYV TODO
 /* Parameters
 IN
 	none
@@ -696,15 +695,31 @@ void strrepl(char *str, const char *a, const char *b) {
 	}
 }
 
-// OUT HERE
-
+// TESTED
 // Sends formatted output to a stream using an argument list.
 // int vfprintf(FILE *stream, const char *format, char * arg)
+/* Parameters
+IN
+	KEV_FILE	:	fine *
+	KEV_SDTR	:	format
+	...			:	variable number of arguments
+OUT
+KEV_STR		:	unique file name
+*/
+
 static void ke_file_vfprintf(sml_t* sml) { 
+	sml_assert_args_min(sml, 2, FILE_FPRINTF);
 	int top = sml_get_top(sml);
 	token_t * tokp = sml_get_tokp(sml);
-	char * format = sml_peek_str(sml,(tokp->n_args+1));
+
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FPRINTF);
+	sml_assert_type(sml, 2, KEV_STR, FILE_FPRINTF);
+
+	char * format = sml_peek_str(sml,(top-tokp->n_args+1));
+	sml_assert_str(sml, 2, FILE_FPRINTF);
+
 	FILE * file = sml_peek_file(sml,(top-tokp->n_args));
+	sml_assert_ptr(sml, file, 1, FILE_FPRINTF)
 
 	if (tokp->n_args > 2) {
 		char * va = gen_valist(sml,(size_t)tokp->n_args-1, top);
