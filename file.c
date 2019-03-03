@@ -19,8 +19,12 @@ const char * cant_close_file = "can't close file";
 const char * cant_seek_file = "can't seek file";
 const char * cant_setpos_file = "can't setpos file";
 const char * cant_flush_file = "can't flush file";
+const char * cant_remove_file = "can't remove file";
+const char * cant_rename_file = "can't rename file";
+const char * cant_tmp_file = "can't temp file";
 #endif
 
+// TESTED
 /* Parameters
 	IN
 		1 : boolen expression
@@ -41,6 +45,7 @@ static void ke_file_assert_true(sml_t* sml) {
 	}
 }
 
+// TESTED
 /* Parameters
 IN
 1 : boolen expression
@@ -62,6 +67,7 @@ static void ke_file_assert_false(sml_t* sml) {
 	}
 }
 
+// TESTED
 /* Parameters
 IN
 	1 : KEV_INT : buffer len
@@ -78,6 +84,7 @@ static void ke_file_alloc_buffer(sml_t* sml) {
 	sml_push_buffer(sml,ptr,i);
 }
 
+// TESTED
 /* Parameters
 IN
 	1 : KEV_BUFFER	: allocated buffer
@@ -98,6 +105,7 @@ static void ke_file_free_buffer(sml_t* sml) {
 	sml_set_ptr_null(tokp);
 }
 
+// TESTED
 /* Parameters
 IN
 	1 : KEV_BUFFER	: allocated buffer
@@ -112,6 +120,7 @@ static void ke_file_buffer_len(sml_t* sml) {
 	sml_push_int(sml, i);
 }
 
+// TESTED
 /* Parameters
 IN
 1 : KEV_BUFFER	: allocated buffer
@@ -128,6 +137,7 @@ static void ke_file_buffer_clr(sml_t* sml) {
 	memset(buffer, 0, i);
 }
 
+// TESTED
 /* Parameters
 IN
 	1 : KEV_STR	: file name
@@ -156,6 +166,7 @@ static void ke_file_fopen(sml_t* sml) {
 	sml_assert_str_in(sml, 2, valid_mode, FILE_FOPEN);
 	char * mode = sml_pop_str(sml);
 	char * name = sml_pop_str(sml);
+	sml_assert_size(sml, strlen(name), 1, FILE_FREOPEN);
 	FILE* file = fopen(name, mode);
 	if (file == NULL) {
 		sml_fatal_error(sml, cant_open_file, FILE_FOPEN);
@@ -163,6 +174,7 @@ static void ke_file_fopen(sml_t* sml) {
 	sml_push_file(sml, file);
 }
 
+// TESTED
 /* Parameters
 IN
 1 : KEV_FILE	: file ptr
@@ -176,6 +188,7 @@ static void ke_file_fisopen(sml_t* sml) {
 	sml_push_int(sml, sml_get_int(tokp));
 }
 
+// TESTED
 /* Parameters
 IN
 1 : KEV_FILE	: file ptr
@@ -196,6 +209,7 @@ static void ke_file_fclose(sml_t* sml) {
 	sml_set_int(tokp, 0);
 }
 
+// TESTED
 // Reads data from the given stream into the array pointed to by ptr.
 // size_t fread(void *ptr, size_t size, size_t nmemb, FILE *stream)
 /* Parameters
@@ -234,6 +248,7 @@ static void ke_file_fread(sml_t* sml) {
 	sml_push_int(sml, i);
 }
 
+// TESTED
 // Writes data from the array pointed to by ptr to the given stream.
 // size_t fwrite(const void *ptr, size_t size, size_t nmemb, FILE *stream)
 /* Parameters
@@ -300,7 +315,7 @@ static void ke_file_fsetpos(sml_t* sml) {
 	}
 }
 
-
+// TESTED
 // Sets the file position of the stream to the given offset.The argument offset signifies the number of bytes to seek from the given whence position.
 // int fseek(FILE *stream, long int offset, int whence)
 /* Parameters
@@ -331,9 +346,15 @@ static void ke_file_fseek(sml_t* sml) {
 	}
 }
 
-
+// TESTED
 // Returns the current file position of the given stream.
 // long int ftell(FILE *stream)
+/* Parameters
+IN
+	1 : KEV_FILE:	FILE *
+OUT
+	none
+*/
 static void ke_file_ftell(sml_t* sml) {
 	sml_assert_args(sml, 1, FILE_FSEEK);
 	sml_assert_type(sml, 1, KEV_FILE, FILE_FSEEK);
@@ -367,10 +388,16 @@ static void ke_file_fgetpos(sml_t* sml) {
 }
 
 
-
+// TESTED
 // Clears the end - of - file and error indicators for the given stream.
 // void clearerr(FILE *stream)
-static void ke_file_clearerr(sml_t* sml) { 
+/* Parameters
+IN
+	1 : KEV_FILE:	FILE *
+OUT
+	none
+*/
+static void ke_file_clearerr(sml_t* sml) {
 	sml_assert_args(sml, 1, FILE_CLEARERR);
 	sml_assert_type(sml, 1, KEV_FILE, FILE_CLEARERR);
 	FILE* file = sml_pop_file(sml);
@@ -378,8 +405,15 @@ static void ke_file_clearerr(sml_t* sml) {
 	clearerr(file);
 }
 
+// TESTED
 // Tests the end - of - file indicator for the given stream.
 // int feof(FILE *stream)
+/* Parameters
+IN
+	1 : KEV_FILE:	FILE *
+OUT
+	none
+*/
 static void ke_file_feof(sml_t* sml) { 
 	sml_assert_args(sml, 1, FILE_FEOF);
 	sml_assert_type(sml, 1, KEV_FILE, FILE_FEOF);
@@ -389,8 +423,16 @@ static void ke_file_feof(sml_t* sml) {
 	sml_push_int(sml, i);
 }
 
+// TESTED
 // Tests the error indicator for the given stream.
 // int ferror(FILE *stream)
+/* Parameters
+IN
+	1 : KEV_FILE:	FILE *
+OUT
+	none
+*/
+
 static void ke_file_ferror(sml_t* sml) { 
 	sml_assert_args(sml, 1, FILE_FERROR);
 	sml_assert_type(sml, 1, KEV_FILE, FILE_FERROR);
@@ -400,9 +442,16 @@ static void ke_file_ferror(sml_t* sml) {
 	sml_push_int(sml, i);
 }
 
+// TESTED
 // Flushes the output buffer of a stream.
 // int fflush(FILE *stream)
-static void ke_file_fflush(sml_t* sml) { 
+/* Parameters
+IN
+	1 : KEV_FILE:	FILE *
+OUT
+	none
+*/
+static void ke_file_fflush(sml_t* sml) {
 	sml_assert_args(sml, 1, FILE_FFLUSH);
 	sml_assert_type(sml, 1, KEV_FILE, FILE_FFLUSH);
 	FILE* file = sml_pop_file(sml);
@@ -417,69 +466,190 @@ static void ke_file_fflush(sml_t* sml) {
 
 // Associates a new filename with the given open stream and same time closing the old file in stream.
 // FILE *freopen(const char *filename, const char *mode, FILE *stream)
+/* Parameters
+IN
+	1 : KEV_STR	:	filename
+	2 : KEV_STR	:	mode
+	3 : KEV_FILE:   FILE *
+OUT
+	KEV_FILE:   FILE *
+*/
 static void ke_file_freopen(sml_t* sml) { 
+	sml_assert_args(sml, 3, FILE_FREOPEN);
+	sml_assert_type(sml, 1, KEV_STR, FILE_FREOPEN);
+	sml_assert_type(sml, 2, KEV_STR, FILE_FREOPEN);
+	sml_assert_type(sml, 3, KEV_FILE, FILE_FREOPEN);
+
 	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 3, FILE_FREOPEN);
+
 	char * mode = sml_pop_str(sml);
+	sml_assert_str_in(sml, 2, valid_mode, FILE_FREOPEN);
+
 	char * filename = sml_pop_str(sml);
+	sml_assert_size(sml, strlen(filename), 1, FILE_FREOPEN);
+
 	FILE * ptr = freopen(filename, mode, file);
-	sml_push_file(sml, file);
+	if (ptr == NULL) {
+		sml_fatal_error(sml, cant_open_file, FILE_FREOPEN);
+	}
+	sml_push_file(sml, ptr);
 }
 
+// TESTED
+// Deletes the given filename so that it is no longer accessible.
+// int exist(const char *filename)
+/* Parameters
+IN
+	1 : KEV_STR	:	filename
+OUT
+	KEV_INT:   0 false, 1 true
+*/
+static void ke_file_exist(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_FEXIST);
+	sml_assert_type(sml, 1, KEV_STR, FILE_FEXIST);
+	sml_assert_str(sml, 1, FILE_FEXIST);
+	char * filename = sml_pop_str(sml);
+	FILE * f = fopen(filename, "r");
+	if (f) {
+		fclose(f);
+		sml_push_int(sml, 1);
+	}
+	else {
+		sml_push_int(sml, 0);
+	}
+}
 
+// TESTED
 // Deletes the given filename so that it is no longer accessible.
 // int remove(const char *filename)
+/* Parameters
+IN
+	1 : KEV_STR	:	filename
+OUT
+	none
+*/
 static void ke_file_remove(sml_t* sml) { 
+	sml_assert_args(sml, 1, FILE_REMOVE);
+	sml_assert_type(sml, 1, KEV_STR, FILE_REMOVE);
+	sml_assert_str(sml, 1, FILE_REMOVE);
 	char * filename = sml_pop_str(sml);
-	remove(filename);
+
+	int st = remove(filename);
+	if (st != 0) {
+		sml_fatal_error(sml, cant_remove_file, FILE_REMOVE);
+	}
 }
 
+// TESTED
 // Causes the filename referred to, by old_filename to be changed to new_filename.
 // int rename(const char *old_filename, const char *new_filename)
-static void ke_file_rename(sml_t* sml) { 
+/* Parameters
+IN
+	1 : KEV_STR	:	filename
+	2 : KEV_STR	:	filename
+OUT
+	none
+*/
+static void ke_file_rename(sml_t* sml) {
+	sml_assert_args(sml, 2, FILE_REMOVE);
+	sml_assert_type(sml, 1, KEV_STR, FILE_REMOVE);
+	sml_assert_str(sml, 1, FILE_REMOVE);
+	sml_assert_type(sml, 2, KEV_STR, FILE_REMOVE);
+	sml_assert_str(sml, 2, FILE_REMOVE);
 	char * new_filename = sml_pop_str(sml);
 	char * old_filename = sml_pop_str(sml);
-	rename(old_filename, new_filename);
+	int st = rename(old_filename, new_filename);
+	if (st != 0) {
+		sml_fatal_error(sml, cant_rename_file, FILE_REMOVE);
+	}
 }
 
+// TESTED
 // Sets the file position to the beginning of the file of the given stream.
 // void rewind(FILE *stream)
-static void ke_file_rewind(sml_t* sml) { 
+/* Parameters
+IN
+	1 : KEV_FILE	:	file *
+OUT
+	none
+*/
+static void ke_file_rewind(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_REWIND);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_REWIND);
 	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_REWIND)
 	rewind(file);
 }
 
 // Defines how a stream should be buffered.
 // void setbuf(FILE *stream, char *buffer)
 static void ke_file_setbuf(sml_t* sml) { 
+	sml_assert_args(sml, 2, FILE_SETBUF);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_SETBUF);
+	sml_assert_type(sml, 1, KEV_BUFFER, FILE_SETBUF);
+	
 	void * ptr = sml_pop_ptr(sml);
+	sml_assert_ptr(sml, ptr, 2, FILE_SETBUF)
+
 	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_SETBUF)
+
 	setbuf(file, ptr);
 }
 
 // Another function to define how a stream should be buffered.
 // int setvbuf(FILE *stream, char *buffer, int mode, size_t size)
 static void ke_file_setvbuf(sml_t* sml) { 
+	sml_assert_args(sml, 4, FILE_SETVBUF);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_SETVBUF);
+	sml_assert_type(sml, 2, KEV_BUFFER, FILE_SETVBUF);
+	sml_assert_type_int_or_real(sml, 3, FILE_SETVBUF);
+	sml_assert_type_int_or_real(sml, 4, FILE_SETVBUF);
 	size_t size = sml_pop_int(sml);
+	sml_assert_size(sml, size, 4, FILE_SETVBUF);
 	int mode = sml_pop_int(sml);
+	sml_assert_size(sml, size, 3, FILE_SETVBUF);
 	void * ptr = sml_pop_ptr(sml);
+	sml_assert_ptr(sml, ptr, 2, FILE_SETVBUF);
 	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, ptr, 1, FILE_SETVBUF);
+
 	setvbuf(file, ptr, mode, size);
 }
 
-
+// TESTED
 // Creates a temporary file in binary update mode(wb + ).
 // FILE *tmpfile(void)
+/* Parameters
+IN
+	none
+OUT
+	KEV_FILE	: file *
+*/
 static void ke_file_tmpfile(sml_t* sml) { 
+	sml_assert_args(sml, 0, FILE_TMPFILE);
 	FILE * file = tmpfile();
+	if (file == NULL) {
+		sml_fatal_error(sml, cant_tmp_file, FILE_TMPFILE);
+	}
 	sml_push_file(sml, file);
 }
 
 // Generates and returns a valid temporary filename which does not exist.
 // char *tmpnam(char *str)
 // JYV TODO
-static void ke_file_tmpnam(sml_t* sml) { 
-	char * str = sml_new_ptr(sml, MAX_BUF + 1);
-	sml_push_str(sml, str);
+/* Parameters
+IN
+	none
+OUT
+	KEV_STR		:	unique file name
+*/
+static void ke_file_tmpnam(sml_t* sml) {
+	sml_assert_args(sml, 0, FILE_TMPNAME);
+	char * buffer = ke_calloc_memory(sml, 261, 1);
+	buffer = tmpnam(NULL);
+	sml_push_str(sml,buffer);
 }
 
 void* gen_valist(sml_t* sml, size_t n_args, int top) {
@@ -1092,6 +1262,7 @@ void ke_file_hash(sml_t* sml) {
 	ke_hash_add(sml, (fncp)&ke_file_fsetpos, FILE_FSETPOS);
 	ke_hash_add(sml, (fncp)&ke_file_ftell, FILE_FTELL);
 	ke_hash_add(sml, (fncp)&ke_file_fwrite, FILE_FWRITE);
+	ke_hash_add(sml, (fncp)&ke_file_exist, FILE_FEXIST);
 	ke_hash_add(sml, (fncp)&ke_file_remove, FILE_REMOVE);
 	ke_hash_add(sml, (fncp)&ke_file_rename, FILE_RENAME);
 	ke_hash_add(sml, (fncp)&ke_file_rewind, FILE_REWIND);
