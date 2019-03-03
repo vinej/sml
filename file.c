@@ -12,9 +12,15 @@
 #define MAX_BUF 1023
 #define MAX_SCAN_ARG 16
 
+#ifdef _DEBUG
 const char * valid_mode = ",r,w,a,rb,wb,ab,r+,w+,a+,r+b,w+b,rb+,wb+,a+b,ab+";
 const char * cant_open_file = "can't open file for the mode parameter";
 const char * cant_close_file = "can't close file";
+const char * cant_seek_file = "can't seek file";
+const char * cant_setpos_file = "can't setpos file";
+const char * cant_flush_file = "can't flush file";
+#endif
+
 /* Parameters
 	IN
 		1 : boolen expression
@@ -67,7 +73,7 @@ COMMENT
 static void ke_file_alloc_buffer(sml_t* sml) {
 	sml_assert_args(sml, 1, FILE_NEWBUFFER);
 	sml_assert_type(sml, 1, KEV_INT, FILE_NEWBUFFER);
-	int i = sml_pop_int(sml);
+	int i = sml_pop_int(sml) + 1;  // add  an extra 0 byte at the end
 	void * ptr = sml_new_ptr(sml, i);
 	sml_push_buffer(sml,ptr,i);
 }
@@ -101,9 +107,25 @@ OUT
 static void ke_file_buffer_len(sml_t* sml) {
 	sml_assert_args(sml, 1, FILE_LENBUFFER);
 	sml_assert_type(sml, 1, KEV_BUFFER, FILE_LENBUFFER);
+	int i = sml_pop_int(sml);
+	if (i > 0) --i; // remove the extra byte at the end
+	sml_push_int(sml, i);
+}
+
+/* Parameters
+IN
+1 : KEV_BUFFER	: allocated buffer
+OUT
+	none
+*/
+static void ke_file_buffer_clr(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_CLRBUFFER);
+	sml_assert_type(sml, 1, KEV_BUFFER, FILE_CLRBUFFER);
 	token_t *tokp = sml_pop_token(sml);
 	int i = sml_get_len(tokp);
-	sml_push_int(sml, i);
+	void * buffer = sml_get_buffer(tokp);
+	sml_assert_ptr(sml, buffer, 1, FILE_CLRBUFFER);
+	memset(buffer, 0, i);
 }
 
 /* Parameters
@@ -180,7 +202,7 @@ static void ke_file_fclose(sml_t* sml) {
 IN
 	1 : KEV_PTR		: buffer, could be a STR or a BUFFER
 	2:  KEV_INT		: size
-	3:  KEV_INT     : ememb
+	3:  KEV_INT     : nmemb
 	4 : KEV_FILE	: file ptr
 OUT
 	KEV_INT	:	number read
@@ -272,8 +294,56 @@ static void ke_file_fsetpos(sml_t* sml) {
 	token_t* tokp = sml_pop_token(sml);
 	FILE * file = sml_get_file(tokp);
 	sml_assert_ptr(sml, file, 1, FILE_FSETPOS);
-	fsetpos(file, fposp);
+	int st = fsetpos(file, fposp);
+	if (st != 0) {
+		sml_fatal_error(sml, cant_setpos_file, FILE_FSEEK);
+	}
 }
+
+
+// Sets the file position of the stream to the given offset.The argument offset signifies the number of bytes to seek from the given whence position.
+// int fseek(FILE *stream, long int offset, int whence)
+/* Parameters
+IN
+	1 : KEV_FILE:	FILE *
+	2 : KEV_INT	:	offset :  from the next param
+	3 : KEV_INT	:   whence :  1=SEEK_SET Beginning of file, 2=SEEK_CUR Current position of the file pointer, 3=SEEK_END
+	OUT
+none
+*/
+static void ke_file_fseek(sml_t* sml) {
+	sml_assert_args(sml, 3, FILE_FSEEK);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FSEEK);
+	sml_assert_type_int_or_real(sml, 2, FILE_FSEEK);
+	sml_assert_type_int_or_real(sml, 3, FILE_FSEEK);
+	
+	int whence = sml_pop_int(sml);
+	sml_assert_range(sml, 1, whence, SEEK_SET, SEEK_END, FILE_FSEEK);
+
+	int offset = sml_pop_int(sml);
+	sml_assert_size(sml, offset+1, 1, FILE_FSEEK);
+
+	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_FSEEK);
+	int st = fseek(file, offset, whence);
+	if (st != 0) {
+		sml_fatal_error(sml, cant_seek_file, FILE_FSEEK);
+	}
+}
+
+
+// Returns the current file position of the given stream.
+// long int ftell(FILE *stream)
+static void ke_file_ftell(sml_t* sml) {
+	sml_assert_args(sml, 1, FILE_FSEEK);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FSEEK);
+	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_FSEEK);
+	int i = ftell(file);
+	sml_push_int(sml, i);
+}
+
+
 
 // Gets the current file position of the stream and writes it to pos.
 // int fgetpos(FILE *stream) //, fpos_t *pos)
@@ -301,14 +371,20 @@ static void ke_file_fgetpos(sml_t* sml) {
 // Clears the end - of - file and error indicators for the given stream.
 // void clearerr(FILE *stream)
 static void ke_file_clearerr(sml_t* sml) { 
+	sml_assert_args(sml, 1, FILE_CLEARERR);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_CLEARERR);
 	FILE* file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_CLEARERR);
 	clearerr(file);
 }
 
 // Tests the end - of - file indicator for the given stream.
 // int feof(FILE *stream)
 static void ke_file_feof(sml_t* sml) { 
+	sml_assert_args(sml, 1, FILE_FEOF);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FEOF);
 	FILE* file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_FEOF);
 	int i = feof(file);
 	sml_push_int(sml, i);
 }
@@ -316,7 +392,10 @@ static void ke_file_feof(sml_t* sml) {
 // Tests the error indicator for the given stream.
 // int ferror(FILE *stream)
 static void ke_file_ferror(sml_t* sml) { 
+	sml_assert_args(sml, 1, FILE_FERROR);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FERROR);
 	FILE* file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_FERROR);
 	int i = ferror(file);
 	sml_push_int(sml, i);
 }
@@ -324,8 +403,14 @@ static void ke_file_ferror(sml_t* sml) {
 // Flushes the output buffer of a stream.
 // int fflush(FILE *stream)
 static void ke_file_fflush(sml_t* sml) { 
+	sml_assert_args(sml, 1, FILE_FFLUSH);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FFLUSH);
 	FILE* file = sml_pop_file(sml);
-	fflush(file);
+	sml_assert_ptr(sml, file, 1, FILE_FFLUSH);
+	int st = fflush(file);
+	if (st != 0) {
+		sml_fatal_error(sml, cant_flush_file, FILE_FFLUSH);
+	}
 }
 
 
@@ -338,24 +423,6 @@ static void ke_file_freopen(sml_t* sml) {
 	char * filename = sml_pop_str(sml);
 	FILE * ptr = freopen(filename, mode, file);
 	sml_push_file(sml, file);
-}
-
-// Sets the file position of the stream to the given offset.The argument offset signifies the number of bytes to seek from the given whence position.
-// int fseek(FILE *stream, long int offset, int whence)
-static void ke_file_fseek(sml_t* sml) { 
-	int whence = sml_pop_int(sml);
-	int offset = sml_pop_int(sml);
-	FILE * file = sml_pop_file(sml);
-	fseek(file, offset, whence);
-}
-
-
-// Returns the current file position of the given stream.
-// long int ftell(FILE *stream)
-static void ke_file_ftell(sml_t* sml) { 
-	FILE * file = sml_pop_file(sml);
-	int i = ftell(file);
-	sml_push_int(sml, i);
 }
 
 
@@ -1009,6 +1076,7 @@ void ke_file_hash(sml_t* sml) {
 	ke_hash_add(sml, (fncp)&ke_file_alloc_buffer, FILE_NEWBUFFER);
 	ke_hash_add(sml, (fncp)&ke_file_free_buffer, FILE_FREEBUFFER);
 	ke_hash_add(sml, (fncp)&ke_file_buffer_len, FILE_LENBUFFER);
+	ke_hash_add(sml, (fncp)&ke_file_buffer_clr, FILE_CLRBUFFER);
 
 	ke_hash_add(sml, (fncp)&ke_file_fclose, FILE_FCLOSE);
 	ke_hash_add(sml, (fncp)&ke_file_clearerr, FILE_CLEARERR);

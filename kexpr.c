@@ -416,6 +416,7 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 			printf("\n");
 		}
 	} else if (tokp->vtype == KEV_BUFFER && tokp->i > 0) {
+		printf("%.*s", tokp->i, tokp->obj.buffer);
 	} else if (tokp->vtype == KEV_FPOS && tokp->i > 0) {
 		printf("fpos");
 	} else if (tokp->vtype == KEV_VEC ) {

@@ -328,6 +328,7 @@ void ke_free_memory(sml_t *sml, void * m);
 #define sml_set_int(t,ii) t->i = ii
 #define sml_get_ptr(t) t->obj.ptr
 #define sml_get_file(t) t->obj.file
+#define sml_get_buffer(t) t->obj.buffer
 #define sml_get_fpos(t) t->obj.fpos
 #define sml_set_fpos(t,fposp) t->obj.fpos = fposp
 #define sml_set_ptr_null(t) t->obj.ptr = NULL
@@ -551,6 +552,16 @@ void ke_free_memory(sml_t *sml, void * m);
 #define sml_assert_ptr(sml,p,i,fnc) \
 	if (p == NULL) { \
 		printf("ASSERT ERROR : Invalid parameter value (==NULL) for parameter #%d, at line <%d> for function <%s>", i, sml->tokp->sourceLine,fnc); \
+		longjmp(sml->env_buffer, 1); \
+	}
+#else
+#define sml_assert_ptr(sml,p,i,fnc)
+#endif 
+
+#ifdef _DEBUG
+#define sml_assert_range(sml,i,v,from,to,fnc) \
+	if (v < from || v > to) { \
+		printf("ASSERT ERROR : Invalid parameter value <%d> expected (%d - %d) for parameter #%d, at line <%d> for function <%s>", v, from, to, i, sml->tokp->sourceLine,fnc); \
 		longjmp(sml->env_buffer, 1); \
 	}
 #else

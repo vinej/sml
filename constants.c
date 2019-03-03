@@ -1,12 +1,16 @@
 #include <math.h>
 #include <string.h>
+#include <stdio.h>
 
 double ke_constants(const char * name) {
-	if (strcmp(name, "m_pi") == 0) return	M_PI;
-	else if (strcmp(name, "m_e") == 0) return M_E;
-	else if (strcmp(name, "m_radian") == 0) return 1;
-	else if (strcmp(name, "m_degree") == 0) return 2;
-	else if (strcmp(name, "m_gradian") == 0) return 3;
+	if (strcmp(name, "PI") == 0) return	M_PI;
+	else if (strcmp(name, "E") == 0) return M_E;
+	else if (strcmp(name, "RADIAN") == 0) return 1;
+	else if (strcmp(name, "DEGREE") == 0) return 2;
+	else if (strcmp(name, "GRADIAN") == 0) return 3;
+	else if (strcmp(name, "SEEK_SET") == 0) return SEEK_SET;
+	else if (strcmp(name, "SEEK_END") == 0) return SEEK_END;
+	else if (strcmp(name, "SEEK_CUR") == 0) return SEEK_CUR;
 	return 0;
 }
 

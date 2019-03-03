@@ -11,6 +11,7 @@ void ke_file_hash(sml_t* sml);
 #define FILE_NEWBUFFER "newbuffer"
 #define FILE_FREEBUFFER "freebuffer"
 #define FILE_LENBUFFER "lenbuffer"
+#define FILE_CLRBUFFER "clrbuffer"
 
 #define FILE_FCLOSE "fclose"
 #define FILE_FCLOSE "fclose"
