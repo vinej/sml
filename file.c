@@ -23,6 +23,7 @@ const char * cant_remove_file = "can't remove file";
 const char * cant_rename_file = "can't rename file";
 const char * cant_tmp_file = "can't temp file";
 const char * cant_sprintf = "can't sprintf";
+const char * cant_fgets = "can't fgets";
 #endif
 
 // TESTED
@@ -837,25 +838,6 @@ void** gen_scan_valist(sml_t*sml, size_t n_args, int top) {
 	return va;
 }
 
-void ** gen_xscan_valist(sml_t*sml, size_t n_args, int top) {
-	token_t **stack = sml->stack;
-	token_t *q;
-	void** va = ke_calloc_memory(sml,100, sizeof(void*)); /* prepare enough memory*/
-	for (int i = top - (int)n_args + 1, j = 0; i < top; i++, j++) {
-		q = stack[i];
-		if (q->vtype == KEV_STR) {
-			va[j] = q->obj.s; /* puts the next value */
-		}
-		else if (q->vtype == KEV_INT) {
-			va[j] = (int*)&(q->i);
-		}
-		else if (q->vtype == KEV_REAL) {
-			va[j] = (double*)&(q->r);
-		}
-	}
-	return va;
-}
-
 void set_i_r(sml_t*sml, size_t n_args, int top) {
 	token_t **stack = sml->stack;
 	token_t *q;
@@ -890,6 +872,7 @@ void set_xi_r(sml_t*sml, size_t n_args, int top) {
 	}
 }
 
+// TESTED
 /* Parameters
 IN
 	KEV_STR		:	format   (with double lf, lg, 
@@ -925,8 +908,15 @@ static void ke_file_scanf(sml_t* sml) {
 	sml_set_top(sml, top);
 }
 
-// Sends formatted output to a string using an argument list.
-// int vfscanf(FILE * restrict stream, const char * restrict format,char * arg_ptr); 
+// TESTED
+/* Parameters
+IN
+	KEV_FILE	:	file *
+	KEV_STR		:	format   (with double lf, lg,
+	...			:	variable number of arguments for output
+OUT
+none
+*/
 static void ke_file_fscanf(sml_t* sml) { 
 	sml_assert_args_min(sml, 3, FILE_FSCANF);
 	sml_assert_type(sml, 1, KEV_FILE, FILE_FSCANF);
@@ -966,8 +956,15 @@ static void ke_file_fscanf(sml_t* sml) {
 	sml_set_top(sml, top);
 }
 
-// read formatted output to a string using an argument list.
-// int sscanf(char * restrict str, const char * restrict format, char* buffer, char * arg_ptr);
+// TESTED
+/* Parameters
+IN
+	KEV_FILE	:	source str
+	KEV_STR		:	format   (with double lf, lg,
+	...			:	variable number of arguments for output
+OUT
+	none
+*/
 static void ke_file_sscanf(sml_t* sml) {
 	sml_assert_args_min(sml, 3, FILE_SSCANF);
 	//sml_assert_type(sml, 1, KEV_BUFFER, FILE_SSCANF);
@@ -1004,24 +1001,44 @@ static void ke_file_sscanf(sml_t* sml) {
 	sml_set_top(sml, top);
 }
 
-// Gets the next character(an unsigned char) from the specified stream and advances the position indicator for the stream.
-// int fgetc(FILE *stream)
+// TESTED
+/* Parameters
+IN
+	KEV_FILE	:	source str
+OUT
+	KEV_INT		:	ascii number of the char
+*/
 static void ke_file_fgetc(sml_t* sml) { token_t **stack = sml->stack;
+	sml_assert_args(sml, 1, FILE_FGETC);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FGETC);
+
 	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_FGETC);
+
 	int i = fgetc(file);
 	sml_push_int(sml, i);
 }
 
-// Reads a line from the specified stream and stores it into the string pointed to by str.It stops when either(n - 1) characters are read, the newline character is read, or the end - of - file is reached, whichever comes first.
-// char *fgets(char *str, FILE *stream)
-// n not used
-static void ke_file_fgets(sml_t* sml) { 
+/* Parameters
+IN
+	KEV_STR		:	str output
+	KEV_FILE	:	FILE *
+OUT
+	none
+*/
+static void ke_file_fgets(sml_t* sml) {
+	sml_assert_args(sml, 2, FILE_FGETS);
+	sml_assert_type(sml, 1, KEV_STR, FILE_FGETS);
+	sml_assert_type(sml, 2, KEV_FILE, FILE_FGETS);
+
 	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 1, FILE_FGETS);
+
 	token_t * token = sml_pop_token(sml);
 	char ** str = sml_adr_str(token);
 	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
 	if (fgets(ptr, MAX_BUF, file) == NULL) {
-		printf("Error: ke_file_fgets");
+		sml_fatal_error(sml,cant_fgets, FILE_FGETS);
 	}
 	if (token->vtype == KEV_STR) {
 		sml_free_ptr(sml, *str);
@@ -1032,12 +1049,22 @@ static void ke_file_fgets(sml_t* sml) {
 	size_t len = strlen(ptr);
 	*str = sml_new_ptr(sml,len + 1);
 	memcpy(*str, ptr, len + 1);
+	sml_free_ptr(sml, ptr);
 }
 
 // gets(char *buf, int size, FILE)
 static void ke_file_xfgets(sml_t* sml) { 
+	sml_assert_args(sml, 3, FILE_XFGETS);
+	sml_assert_type(sml, 1, KEV_BUFFER, FILE_XFGETS);
+	sml_assert_type(sml, 2, KEV_INT, FILE_XFGETS);
+	sml_assert_type(sml, 3, KEV_FILE, FILE_XFGETS);
+	
 	FILE * file = sml_pop_file(sml);
+	sml_assert_ptr(sml, file, 3, FILE_XFGETS);
+
 	int size = sml_pop_int(sml);
+	sml_assert_size(sml, size, 2, FILE_XFGETS);
+
 	token_t* token = sml_pop_token(sml);
 	char ** str = sml_adr_str(token);
 	if ( fgets(*str, size, file) == NULL) {

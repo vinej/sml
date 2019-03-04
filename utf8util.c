@@ -3,7 +3,7 @@
 
 utf8* ReadUTF8(FILE* fp, int offset)
 {
-	unsigned char b[3] = { 0 };
+	unsigned char b[7] = "xxxxxx";
 	fseek(fp, 0L, SEEK_END);
 	int sz = ftell(fp);
 	utf8 * str = calloc(1,sz + 1 - offset);
@@ -17,7 +17,7 @@ utf8* ReadUTF8(FILE* fp, int offset)
 	if (offset > 0) {
 		fread(b, 1, offset, fp);
 	}
-	fread(str, 1, sz, fp);
+	fread(str, 1, sz - offset, fp);
 	fclose(fp);
 	return str;
 }
@@ -33,7 +33,7 @@ utf8* ReadUTF16LE(FILE* fp)
 }
 
 utf8* read_utf8_file(utf8* filename) {
-	FILE* fp = fopen(filename, "r");
+	FILE* fp = fopen(filename, "rb");
 	utf8* str = NULL;
 	if (fp != NULL)
 	{

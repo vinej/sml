@@ -1,8 +1,8 @@
-﻿buf = newbuffer(4);
+﻿buf = newbuffer(4)
 assert_true( lenbuffer(buf) == 4, "buffer len is set")
 
 # test fopen
-f = fopen("t.dat","w+");
+f = fopen("t.dat","w+")
 
 assert_true( fisopen(f) == 1, "fisopen = 1")
 
@@ -170,7 +170,7 @@ f3 = fopen("t3.dat", "r")
 fscanf(f3,"%d", n2)
 assert_true( n2 == 2, "fscanf n2 == 2")
 fclose(f3)
-
+ 
 f3 = fopen("t3.dat", "w")
 fwrite( "2.5", 1, 3, f3)
 fclose(f3)
@@ -187,4 +187,29 @@ n2 = ""
 f3 = fopen("t3.dat", "r")
 fscanf(f3, "%s", n2)
 assert_true( n2 == "zz", "fscanf n2 == zz")
+
+f3 = fopen("t3.dat", "w")
+fwrite( "2", 1, 1, f3)
+fclose(f3)
+f3 = fopen("t3.dat", "r")
+c = fgetc(f3)
+assert_true( c == 50, "fgetc c == 50")
+fclose(f3)
+
+f3 = fopen("t3.dat", "w")
+fwrite( "zzz", 1, 3, f3)
+fclose(f3)
+n2 = "  "
+f3 = fopen("t3.dat", "r")
+fgets(n2, f3)
+assert_true( strcmp(n2, "zzz") == 0, "fgets == zzz")
+fclose(f3)
+
+b4 = newbuffer(4)
+f3 = fopen("t3.dat","r")
+xfgets(b4,4,f3)
+print(b4)
+assert_true( strcmp( b4, "zzz") ==0, "xfgets == zzz")
+fclose(f3)
+freebuffer(b4)
 

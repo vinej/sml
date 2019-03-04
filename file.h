@@ -43,12 +43,7 @@ void ke_file_hash(sml_t* sml);
 #define FILE_FSCANF "fscanf"
 #define FILE_SCANF "scanf"
 #define FILE_SSCANF "sscanf"
-#define FILE_XFPRINTF "xfprintf"
-#define FILE_XPRINTF "xprintf"
-#define FILE_XSPRINTF "xsprintf"
-#define FILE_XFSCANF "xfscanf"
-#define FILE_XSCANF "xscanf"
-#define FILE_XSSCANF "xsscanf"
+
 #define FILE_FGETC "fgetc"
 #define FILE_FGETS "fgets"
 #define FILE_XFGETS "xfgets"
