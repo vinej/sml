@@ -126,3 +126,65 @@ assert_true( strcmp(buf2, "test 12:JY:1.100000") == 0, "compare test 12:JY:1.100
 freebuffer(buf2)
 fclose(f2)
 
+buf2 = newbuffer(1024)
+sprintf(buf2, "test %d:%s:%f", 12, "JY", 1.1)
+assert_true( strcmp(buf2, "test 12:JY:1.100000") == 0, "compare test 12:JY:1.100000")
+freebuffer(buf2)
+
+printf("Success: compare test %d:%s:%f\n", 12, "JY", 1.1)
+printf("Success: compare test\n")
+
+print("enter the number 2")
+n2 = 1
+scanf("%d", n2)
+assert_true( n2 == 2, "scanf n2 == 2")
+
+print("enter the number 2.5")
+n2 = 1.1
+scanf("%lf", n2)
+assert_true( n2 == 2.5, "scanf n2 == 2.5")
+
+print("enter zz")
+n2 = ""
+scanf("%s", n2)
+assert_true( n2 == "zz", "scanf n2 == zz")
+
+
+n2 = 1
+sscanf("2","%d", n2)
+assert_true( n2 == 2, "sscanf n2 == 2")
+
+n2 = 1.1
+sscanf("2.5","%lf", n2)
+assert_true( n2 == 2.5, "sscanf n2 == 2.5")
+
+n2 = ""
+sscanf("zz", "%s", n2)
+assert_true( n2 == "zz", "sscanf n2 == zz")
+
+f3 = fopen("t3.dat", "w")
+fwrite( "2", 1, 1, f3)
+fclose(f3)
+n2 = 1
+f3 = fopen("t3.dat", "r")
+fscanf(f3,"%d", n2)
+assert_true( n2 == 2, "fscanf n2 == 2")
+fclose(f3)
+
+f3 = fopen("t3.dat", "w")
+fwrite( "2.5", 1, 3, f3)
+fclose(f3)
+n2 = 1.1
+f3 = fopen("t3.dat", "r")
+fscanf(f3,"%lf", n2)
+assert_true( n2 == 2.5, "fscanf n2 == 2.5")
+fclose(f3)
+
+f3 = fopen("t3.dat", "w")
+fwrite( "zz", 1, 2, f3)
+fclose(f3)
+n2 = ""
+f3 = fopen("t3.dat", "r")
+fscanf(f3, "%s", n2)
+assert_true( n2 == "zz", "fscanf n2 == zz")
+

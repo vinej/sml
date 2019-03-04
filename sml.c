@@ -42,8 +42,8 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 				if (!stack[top_m2]->propset) {
 					q = stack[--sml->top];
 					p = stack[--sml->top];
-					if (q->vtype == KEV_INT)  p->i = q->i, p->r = (double)p->i;
-					else if (q->vtype == KEV_REAL) p->r = q->r, p->i = (int64_t)p->r;
+					if (q->vtype == KEV_INT)  p->vtype = KEV_INT, p->i = q->i, p->r = (double)p->i;
+					else if (q->vtype == KEV_REAL) p->vtype = KEV_REAL, p->r = q->r, p->i = (int64_t)p->r;
 					else { ke_set_val(sml, p, q); }
 				}
 				else {

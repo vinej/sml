@@ -22,6 +22,7 @@ const char * cant_flush_file = "can't flush file";
 const char * cant_remove_file = "can't remove file";
 const char * cant_rename_file = "can't rename file";
 const char * cant_tmp_file = "can't temp file";
+const char * cant_sprintf = "can't sprintf";
 #endif
 
 // TESTED
@@ -696,18 +697,15 @@ void strrepl(char *str, const char *a, const char *b) {
 }
 
 // TESTED
-// Sends formatted output to a stream using an argument list.
-// int vfprintf(FILE *stream, const char *format, char * arg)
 /* Parameters
 IN
-	KEV_FILE	:	fine *
-	KEV_SDTR	:	format
+	KEV_FILE	:	file *
+	KEV_STR		:	format
 	...			:	variable number of arguments
 OUT
-KEV_STR		:	unique file name
+	none
 */
-
-static void ke_file_vfprintf(sml_t* sml) { 
+static void ke_file_fprintf(sml_t* sml) { 
 	sml_assert_args_min(sml, 2, FILE_FPRINTF);
 	int top = sml_get_top(sml);
 	token_t * tokp = sml_get_tokp(sml);
@@ -739,34 +737,66 @@ static void ke_file_vfprintf(sml_t* sml) {
 	sml_set_top(sml,top);  
 }
 
-static void ke_file_xvfprintf(sml_t* sml) { 
+// TESTED
+/* Parameters
+IN
+	KEV_BUFFER	:	void * buffer
+	KEV_STR		:	format
+	...			:	variable number of arguments
+OUT
+	none
+*/
+static void ke_file_sprintf(sml_t* sml) { 
+	sml_assert_args_min(sml, 2, FILE_SPRINTF);
+
+	sml_assert_type(sml, 1, KEV_BUFFER, FILE_SPRINTF);
+	sml_assert_type(sml, 2, KEV_STR, FILE_SPRINTF);
+
 	int top = sml_get_top(sml);
 	token_t * tokp = sml_get_tokp(sml);
-	char * format = sml_peek_str(sml, (top-tokp->n_args+2));
-	FILE * file = sml_peek_file(sml, (top-tokp->n_args+1));
+	
+	char * format = sml_peek_str(sml, (top-tokp->n_args+1));
+	sml_assert_str(sml, 2, FILE_SPRINTF);
+
 	void * ptr = sml_peek_ptr(sml, (top-tokp->n_args));
-	if (tokp->n_args > 3) {
-		char * va = gen_valist(sml, (size_t)tokp->n_args - 2, top);
-		stbsp_vsprintf(ptr, format, va);
+	sml_assert_ptr(sml, ptr, 1, FILE_SPRINTF);
+
+	if (tokp->n_args > 2) {
+		char * va = gen_valist(sml, (size_t)tokp->n_args - 1, top);
+		int cnt = stbsp_vsprintf(ptr, format, va);
+		if (cnt <= 0) {
+			sml_fatal_error(sml, cant_sprintf, FILE_SPRINTF)
+		}
 		strrepl(ptr, "\\n", "\n");
-		fputs(ptr, file);
 		sml_free_ptr(sml,va);
 	}
 	else {
 		strrepl(format, "\\n", "\n");
-		fputs(format, file);
+		memcpy(ptr, format, strlen(format));
 	}
 	gen_freelist(sml,(size_t)tokp->n_args - 2, top);
 	top = top - tokp->n_args;
 	sml_set_top(sml, top);
 }
 
-// Sends formatted output to stdout using an argument list.
-// int vprintf(const char *format, char * arg)
-static void ke_file_vprintf(sml_t* sml) { 
+// TESTED
+/* Parameters
+IN
+	KEV_STR		:	format
+...			:	variable number of arguments
+OUT
+	none
+*/
+static void ke_file_printf(sml_t* sml) { 
+	sml_assert_args_min(sml, 1, FILE_PRINTF);
+	sml_assert_type(sml, 1, KEV_STR, FILE_PRINTF);
+
 	int top = sml_get_top(sml);
 	token_t * tokp = sml_get_tokp(sml);
+
 	char * format = sml_peek_str(sml, (top - tokp->n_args));
+	sml_assert_str(sml, 1, FILE_PRINTF);
+
 	if (tokp->n_args > 1) {
 		char * va = gen_valist(sml,(size_t)tokp->n_args, top);
 		char * ptr = sml_new_ptr(sml,MAX_BUF+1);
@@ -782,76 +812,6 @@ static void ke_file_vprintf(sml_t* sml) {
 		fputs(format, stdout);
 	}
 	gen_freelist(sml, (size_t)tokp->n_args, top);
-	top = top - tokp->n_args;
-	sml_set_top(sml, top);
-}
-
-static void ke_file_xvprintf(sml_t* sml) { 
-	int top = sml_get_top(sml);
-	token_t * tokp = sml_get_tokp(sml);
-	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
-	void * ptr = sml_peek_ptr(sml, (top - tokp->n_args));
-
-	if (tokp->n_args > 2) {
-		char * va = gen_valist(sml,(size_t)tokp->n_args - 1, top);
-		stbsp_vsprintf(ptr, format, (char *)va);
-		strrepl(ptr, "\\n", "\n");
-		fputs(ptr, stdout);
-		sml_free_ptr(sml,va);
-		gen_freelist(sml,(size_t)tokp->n_args - 1, top);
-	}
-	else {
-		strrepl(format, "\\n", "\n");
-		fputs(format, stdout);
-	}
-	gen_freelist(sml, (size_t)tokp->n_args, top);
-	top = top - tokp->n_args;
-	sml_set_top(sml, top);
-}
-
-// Sends formatted output to a string using an argument list.
-// int vsprintf(char *str, const char *format, char * arg)
-static void ke_file_vsprintf(sml_t* sml) { 
-	int top = sml_get_top(sml);
-	token_t * tokp = sml_get_tokp(sml);
-	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
-	char * str = sml_peek_str(sml, (top - tokp->n_args));
-	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
-	if (tokp->n_args > 2) {
-		char * va = gen_valist(sml,(size_t)tokp->n_args - 1, top);
-		stbsp_vsprintf(ptr, format, va);
-		sml_free_ptr(sml,va);
-	}
-	else {
-		memcpy(ptr, format, strlen(format) + 1);
-	}
-	size_t len = strlen(ptr);
-	char * str2 = sml_new_ptr(sml,len + 1);
-	memcpy(str2, ptr, len + 1);
-	sml_free_ptr(sml,ptr);
-	str = str2;
-	//str->vtype = KEV_STR;
-	gen_freelist(sml, (size_t)tokp->n_args, top);
-
-	top = top - tokp->n_args;
-	sml_set_top(sml, top);
-}
-
-static void ke_file_xvsprintf(sml_t* sml) { 
-	int top = sml_get_top(sml);
-	token_t * tokp = sml_get_tokp(sml);
-	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
-	char * ptr = sml_new_ptr(sml, MAX_BUF + 1);
-	if (tokp->n_args > 2) {
-		char * va = gen_valist(sml,(size_t)tokp->n_args - 1, top);
-		stbsp_vsprintf(ptr, format, va);
-		sml_free_ptr(sml,va);
-	}
-	else {
-		memcpy(ptr, format, strlen(format) + 1);
-	}
-	gen_freelist(sml,(size_t)tokp->n_args - 1, top);
-
 	top = top - tokp->n_args;
 	sml_set_top(sml, top);
 }
@@ -930,55 +890,36 @@ void set_xi_r(sml_t*sml, size_t n_args, int top) {
 	}
 }
 
-// Sends formatted output to stdout using an argument list.
-// int vscanf(char * restrict format, char * arg_ptr); 
-static void ke_file_vscanf(sml_t* sml) { 
+/* Parameters
+IN
+	KEV_STR		:	format   (with double lf, lg, 
+	...			:	variable number of arguments for output
+OUT
+	none
+*/
+static void ke_file_scanf(sml_t* sml) { 
+	sml_assert_args_min(sml, 2, FILE_SCANF);
+	sml_assert_type(sml, 1, KEV_STR, FILE_SCANF);
+
 	int top = sml_get_top(sml);
 	token_t * tokp = sml_get_tokp(sml);
 	char * format = sml_peek_str(sml, (top - tokp->n_args));
-	if (tokp->n_args > 1) {
-		void **va = gen_scan_valist(sml, (size_t) tokp->n_args, top);
-		int count = 0;
-		if (tokp->n_args <= MAX_SCAN_ARG + 1) {
-		   count = scanf(format, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
-						  va[8], va[9], va[10], va[11], va[12], va[13], va[14], va[15]);
-		} else {
-			printf("Error: ke_file_vscanf :  max 16 arguments");
-		}
-		if (count != tokp->n_args - 1 ) {
-			printf("Error: ke_file_xvfscanf");
-		}
-		sml_free_ptr(sml,va);
-	}
-	else {
-		printf("error of parameter sscanf");
-	}
-	set_i_r(sml, (size_t)tokp->n_args - 1, top);
+	sml_assert_ptr(sml, format, 1, FILE_SCANF);
 
-	top = top - tokp->n_args;
-	sml_set_top(sml, top);
-}
+	void **va = gen_scan_valist(sml, (size_t) tokp->n_args, top);
+	int count = 0;
+	if (tokp->n_args <= MAX_SCAN_ARG + 1) {
+		count = scanf(format, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
+						va[8], va[9], va[10], va[11], va[12], va[13], va[14], va[15]);
+	} else {
+		printf("Error: ke_file_vscanf :  max 16 arguments");
+	}
+	if (count != tokp->n_args - 1 ) {
+		printf("Error: ke_file_scanf");
+	}
 
-static void ke_file_xvscanf(sml_t* sml) { 
-	int top = sml_get_top(sml);
-	token_t * tokp = sml_get_tokp(sml);
-	char * format = sml_peek_str(sml, (top - tokp->n_args));
-	if (tokp->n_args > 1) {
-		void** va = gen_xscan_valist(sml,(size_t)tokp->n_args, top);
-		if (tokp->n_args <= MAX_SCAN_ARG + 1) {
-			if (scanf(format, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
-					  va[8], va[9], va[10], va[11], va[12], va[13], va[14], va[15]) != tokp->n_args - 1) {
-				printf("Error : ke_file_xvscanf");
-			}
-		} else {
-			printf("Error: ke_file_xvscanf :  max 16 arguments");
-		}
-		sml_free_ptr(sml,va);
-	}
-	else {
-		printf("error of parameter sscanf");
-	}
-	set_xi_r(sml,(size_t)tokp->n_args, top);
+	set_i_r(sml, (size_t)tokp->n_args, top);
+	sml_free_ptr(sml, va);
 
 	top = top - tokp->n_args;
 	sml_set_top(sml, top);
@@ -986,11 +927,20 @@ static void ke_file_xvscanf(sml_t* sml) {
 
 // Sends formatted output to a string using an argument list.
 // int vfscanf(FILE * restrict stream, const char * restrict format,char * arg_ptr); 
-static void ke_file_vfscanf(sml_t* sml) { 
+static void ke_file_fscanf(sml_t* sml) { 
+	sml_assert_args_min(sml, 3, FILE_FSCANF);
+	sml_assert_type(sml, 1, KEV_FILE, FILE_FSCANF);
+	sml_assert_type(sml, 2, KEV_STR, FILE_FSCANF);
+
 	int top = sml_get_top(sml);
 	token_t * tokp = sml_get_tokp(sml);
+
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
+	sml_assert_str(sml, 2, FILE_FSCANF);
+
 	FILE * file = sml_peek_file(sml, (top - tokp->n_args));
+	sml_assert_ptr(sml, file, 1, FILE_FSCANF);
+
 	if (tokp->n_args > 2) {
 		void** va = gen_scan_valist(sml,(size_t)tokp->n_args - 1, top);
 		if (tokp->n_args <= MAX_SCAN_ARG + 2) {
@@ -1009,34 +959,8 @@ static void ke_file_vfscanf(sml_t* sml) {
 	else {
 		printf("error of parameter sscanf");
 	}
+
 	set_i_r(sml,(size_t)tokp->n_args - 1, top);
-
-	top = top - tokp->n_args;
-	sml_set_top(sml, top);
-}
-
-static void ke_file_xvfscanf(sml_t* sml) {
-	int top = sml_get_top(sml);
-	token_t * tokp = sml_get_tokp(sml);
-	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
-	FILE * file = sml_peek_file(sml, (top - tokp->n_args));
-
-	if (tokp->n_args > 2) {
-		void** va = gen_xscan_valist(sml,(size_t)tokp->n_args - 1, top);
-		if (tokp->n_args <= MAX_SCAN_ARG + 2) {
-			if (fscanf(file, format, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
-					   va[8],va[9], va[10], va[11], va[12], va[13], va[14], va[15] ) != tokp->n_args - 2) {
-				printf("error : ke_file_xvfscanf");
-			}
-		} else {
-			printf("Error: ke_file_xvscanf :  max 16 arguments");
-		}
-		sml_free_ptr(sml,va);
-	}
-	else {
-		printf("error of parameter sscanf");
-	}
-	set_xi_r(sml,(size_t)tokp->n_args - 1, top);
 
 	top = top - tokp->n_args;
 	sml_set_top(sml, top);
@@ -1044,11 +968,19 @@ static void ke_file_xvfscanf(sml_t* sml) {
 
 // read formatted output to a string using an argument list.
 // int sscanf(char * restrict str, const char * restrict format, char* buffer, char * arg_ptr);
-static void ke_file_vsscanf(sml_t* sml) {
+static void ke_file_sscanf(sml_t* sml) {
+	sml_assert_args_min(sml, 3, FILE_SSCANF);
+	//sml_assert_type(sml, 1, KEV_BUFFER, FILE_SSCANF);
+	sml_assert_type(sml, 2, KEV_STR, FILE_SSCANF);
+
 	int top = sml_get_top(sml);
 	token_t * tokp = sml_get_tokp(sml);
+
 	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
+	sml_assert_str(sml, 1, FILE_SSCANF);
+
 	char * str = sml_peek_str(sml, (top - tokp->n_args));
+	sml_assert_str(sml, 2, FILE_SSCANF);
 
 	if (tokp->n_args > 2) {
 		void** va = gen_scan_valist(sml,(size_t)tokp->n_args-1, top);
@@ -1067,32 +999,6 @@ static void ke_file_vsscanf(sml_t* sml) {
 		printf("error of parameter sscanf");
 	}
 	set_i_r(sml,(size_t)tokp->n_args-1, top);
-
-	top = top - tokp->n_args;
-	sml_set_top(sml, top);
-}
-
-static void ke_file_xvsscanf(sml_t* sml) { token_t **stack = sml->stack;
-	int top = sml_get_top(sml);
-	token_t * tokp = sml_get_tokp(sml);
-	char * format = sml_peek_str(sml, (top - tokp->n_args + 1));
-	char * ptr = sml_peek_ptr(sml, (top - tokp->n_args));
-	if (tokp->n_args > 2) {
-		void** va = gen_xscan_valist(sml,(size_t)tokp->n_args - 1, top);
-		if (tokp->n_args <= MAX_SCAN_ARG + 2) {
-			if (sscanf(ptr, format, va[0], va[1], va[2], va[3], va[4], va[5], va[6], va[7],
-					   va[8],va[9], va[10], va[11], va[12], va[13], va[14], va[15]) != -tokp->n_args-2){
-				printf("Error: ke_file_xvsscanf");
-			}
-		} else {
-			printf("Error: ke_file_xvscanf :  max 16 arguments");
-		}
-		sml_free_ptr(sml,va);
-	}
-	else {
-		printf("error of parameter sscanf");
-	}
-	set_xi_r(sml,(size_t)tokp->n_args - 1, top);
 
 	top = top - tokp->n_args;
 	sml_set_top(sml, top);
@@ -1286,19 +1192,13 @@ void ke_file_hash(sml_t* sml) {
 	ke_hash_add(sml, (fncp)&ke_file_tmpfile, FILE_TMPFILE);
 	ke_hash_add(sml, (fncp)&ke_file_tmpnam, FILE_TMPNAME);
 
-	ke_hash_add(sml, (fncp)&ke_file_vfprintf, FILE_FPRINTF);
-	ke_hash_add(sml, (fncp)&ke_file_vsprintf, FILE_SPRINTF);
-	ke_hash_add(sml, (fncp)&ke_file_vprintf, FILE_PRINTF);
-	ke_hash_add(sml, (fncp)&ke_file_vfscanf, FILE_FSCANF);
-	ke_hash_add(sml, (fncp)&ke_file_vscanf, FILE_SCANF);
-	ke_hash_add(sml, (fncp)&ke_file_vsscanf, FILE_SSCANF);
+	ke_hash_add(sml, (fncp)&ke_file_printf, FILE_PRINTF);
+	ke_hash_add(sml, (fncp)&ke_file_sprintf, FILE_SPRINTF);
+	ke_hash_add(sml, (fncp)&ke_file_fprintf, FILE_FPRINTF);
 
-	ke_hash_add(sml, (fncp)&ke_file_xvfprintf, FILE_XFPRINTF);
-	ke_hash_add(sml, (fncp)&ke_file_xvsprintf, FILE_XSPRINTF);
-	ke_hash_add(sml, (fncp)&ke_file_xvprintf, FILE_XPRINTF);
-	ke_hash_add(sml, (fncp)&ke_file_xvfscanf, FILE_XFSCANF);
-	ke_hash_add(sml, (fncp)&ke_file_xvscanf, FILE_XSCANF);
-	ke_hash_add(sml, (fncp)&ke_file_xvsscanf, FILE_XSSCANF);
+	ke_hash_add(sml, (fncp)&ke_file_scanf, FILE_SCANF);
+	ke_hash_add(sml, (fncp)&ke_file_sscanf, FILE_SSCANF);
+	ke_hash_add(sml, (fncp)&ke_file_fscanf, FILE_FSCANF);
 
 	ke_hash_add(sml, (fncp)&ke_file_fgetc, FILE_FGETC);
 	ke_hash_add(sml, (fncp)&ke_file_fgets, FILE_FGETS);
