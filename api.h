@@ -463,7 +463,7 @@ void ke_free_memory(sml_t *sml, void * m);
 
 #define sml_out_date out->obj.date
 
-#define sml_free_ptr(sml,ptr) ke_free_memory(sml,ptr); ke_dec_memory(sml); ptr = NULL
+#define sml_free_ptr(sml,ptr) ke_free_memory(sml,ptr); ptr = NULL
 
 #define sml_new_ptr(sml,size) ke_calloc_memory(sml, size,1)
 

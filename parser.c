@@ -385,18 +385,23 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 		tok->ifield = kh_val(sml->hname, iter);
 	}
 	else {
-		// if the name contains '.', we must create a variable for the record and
+		// if the name contains '~', we must create a variable for the record and
 		// add the current ifield to the record list
-		char * dotp = strchr(tok->name, '.');
+		char * dotp = strchr(tok->name, '~');
 		if (dotp) {
-			// split at the dot. tok.name will contain only the rec name  p.test => p
+			// split at the dot. tok.name will contain only the rec name  p~test => p
 			*dotp = 0;
 			int ifield;
 			// check if the record is alreeady there
 			khint_t iter = kh_get(6, sml->hname, tok->name);
 			if (kh_end(sml->hname) != iter) {
 				ifield = kh_val(sml->hname, iter);
-				recp = sml->recp[ifield];
+				for (int k = 0; k < sml->rec_qte; ++k) {
+					if (sml->recp[k]->ifield == ifield) {
+						recp = sml->recp[k];
+						break;
+					}
+				}
 			}
 			else {
 				int absent;
@@ -405,14 +410,14 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 				khint_t iter = kh_put(6, sml->hname, recName, &absent);
 				kh_val(sml->hname, iter) = sml->rec_qte;
 				recp = (token_t *)ke_calloc_memory(sml, sizeof(token_t), 1);
-				recp->ifield = sml->rec_qte;
+				recp->ifield = sml->field_qte++;
 				recp->name = recName;
 				recp->ttype = KET_REC;
 				recp->vtype = KEV_REC;
 				sml->recp[sml->rec_qte] = recp;
 				sml->rec_qte++;
 			}
-			*dotp = '.';
+			*dotp = '~';
 		}
 		int absent;
 		khint_t iter = kh_put(6, sml->hname, tok->name, &absent);
@@ -627,7 +632,7 @@ token_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) 
 	sml->isLastTokenNop = 0;
 	tok.sourceLine = sml->sourceCodeLine;
 	if (*p == '_' || utf8isalpha((void**)&p)) { // a variable or a function
-		for (; *p && (*p == '_' || *p == '.' || utf8isalnum((void**)&p)); ++p);
+		for (; *p && (*p == '_' || *p == '.' || *p == '~' || utf8isalnum((void**)&p)); ++p);
 		if (*p == 0) { tok.realToken = 0;	return tok; }
 
 		tok.name = ke_mystrndup(sml, q, p - q);

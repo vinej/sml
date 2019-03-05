@@ -1,12 +1,12 @@
-buffer = newbuffer(10000)
+buffer = buf.new(10000)
 
 print("TEST 08")
-file = fopen("c:\sml\test\test15.sml", "r")
+file = file.open("c:\sml\test\test15.sml", "r")
 name = "kkkkk"
 qte = 129
 eq = ''
-fscanf(file, "%s %s %d", name, eq, qte)
-printf("\n%s %s %d\n",name, eq, qte)
-fclose(file)
+file.fscanf(file, "%s %s %d", name, eq, qte)
+file.printf("\n%s %s %d\n",name, eq, qte)
+file.close(file)
 
 

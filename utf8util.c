@@ -3,7 +3,7 @@
 
 utf8* ReadUTF8(FILE* fp, int offset)
 {
-	unsigned char b[7] = "xxxxxx";
+	unsigned char b[3] = { 0 };
 	fseek(fp, 0L, SEEK_END);
 	int sz = ftell(fp);
 	utf8 * str = calloc(1,sz + 1 - offset);

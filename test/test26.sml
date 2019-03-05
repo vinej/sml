@@ -2,30 +2,30 @@ max = 1000
 
 strbuf(buf,max)
 
-file = fopen('c:\sml\test\ex_01.sml','r')
+file = file.open('c:\sml\test\ex_01.sml','r')
 
 for
-  if (feof(file) == 1)
+  if (file.eof(file) == 1)
     break
   end
-  xfgets(buf, max, file)
-  if(ferror(file))
+  file.fgets(buf, file)
+  if(file.error(file))
     print('error reading file')
 	break
   end
-  printf(buf)
+  file.printf(buf)
 next
-fclose(file)
+file.close(file)
 
-printf("Saisir un code:")
-xscanf("%s",buf)
+file.printf("Saisir un code:")
+file.scanf("%s",buf)
 print(buf)
-xprintf("%s",buf)
+file.printf("%s",buf)
 
 strfree(buf)
 
 mybuf=''
-printf("saisir un code :")
-scanf("%s",mybuf)
+file.printf("saisir un code :")
+file.scanf("%s",mybuf)
 
-printf("%s\n",mybuf)
+file.printf("%s\n",mybuf)

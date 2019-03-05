@@ -221,7 +221,7 @@ IN
 	3:  KEV_INT     : nmemb
 	4 : KEV_FILE	: file ptr
 OUT
-	KEV_INT	:	number read
+	none
 
 */
 static void ke_file_fread(sml_t* sml) {
@@ -247,7 +247,9 @@ static void ke_file_fread(sml_t* sml) {
 	sml_assert_ptr(sml, ptr, 1, FILE_FREAD);
 
 	int i = fread(ptr, size, nmemb, file);
-	sml_push_int(sml, i);
+	if (i != nmemb) {
+		sml_fatal_error(sml, "fread_mismatch", FILE_FWRITE);
+	}
 }
 
 // TESTED
@@ -260,8 +262,7 @@ IN
 	3:  KEV_INT     : element count
 	4 : KEV_FILE	: file ptr
 OUT
-KEV_INT	:	number read
-
+	none
 */
 static void ke_file_fwrite(sml_t* sml) {
 	sml_assert_args(sml, 4, FILE_FWRITE);
@@ -287,7 +288,9 @@ static void ke_file_fwrite(sml_t* sml) {
 	sml_assert_gz(sml, sml_get_int(tokp) - (size*nmemb), FILE_FWRITE)
 
 	int i = fwrite(ptr, size, nmemb, file);
-	sml_push_int(sml, i);
+	if (i != nmemb) {
+		sml_fatal_error(sml, "write_mismatch", FILE_FWRITE);
+	}
 }
 
 // Sets the file position of the given stream to the given position.The argument pos is a position given by the function fgetpos.
@@ -796,7 +799,7 @@ static void ke_file_printf(sml_t* sml) {
 	token_t * tokp = sml_get_tokp(sml);
 
 	char * format = sml_peek_str(sml, (top - tokp->n_args));
-	sml_assert_str(sml, 1, FILE_PRINTF);
+	//sml_assert_str(sml, 1, FILE_PRINTF);
 
 	if (tokp->n_args > 1) {
 		char * va = gen_valist(sml,(size_t)tokp->n_args, top);
@@ -1038,7 +1041,7 @@ static void ke_file_fgets(sml_t* sml) {
 	char ** str = sml_adr_str(token);
 	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
 	if (fgets(ptr, MAX_BUF, file) == NULL) {
-		sml_fatal_error(sml,cant_fgets, FILE_FGETS);
+		//sml_fatal_error(sml,cant_fgets, FILE_FGETS);
 	}
 	if (token->vtype == KEV_STR) {
 		sml_free_ptr(sml, *str);

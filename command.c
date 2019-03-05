@@ -14,7 +14,8 @@ int ke_command_import(sml_t* sml, int itok) {
 int ke_command_if(sml_t* sml, int itok) {
 	// i != 0 =? true, continue the code
 	// i == 0 => false, jmp to end
-	return sml_pop_int(sml) ? itok : sml_get_ijmp(sml);
+	int i = sml_pop_int(sml);
+	return i ? itok : sml_get_ijmp(sml);
 }
 
 //def(sum, _a, _b)    //  stack sum _a _b
@@ -78,6 +79,7 @@ int ke_command_for(sml_t* sml, int itok) {
 		if (var->r >= stack[top + 2]->r) {
 			sml_set_assigned(sml, 0);
 			popfor(sml);
+			sml_set_top(sml, top);
 			return var->ijmp;
 		}
 		else {
@@ -111,8 +113,14 @@ int ke_command_print_nonl(sml_t* sml, int itok) {
 }
 
 int ke_command_print(sml_t* sml, int itok) {
+	int top = sml_get_top(sml);
+	int n = sml_get_args(sml);
+
     ke_command_print_nonl(sml, itok);
     printf("\n");
+
+	top -= n;
+	sml_set_top(sml, top);
     return itok;
 }
 
