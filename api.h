@@ -215,7 +215,7 @@ typedef struct token_s {
 	} f;
 	union {  //     
 		void * ptr;
-		//struct token_s * tokp;
+		struct token_s * tokp;
 		char *s;
 		char* image;
 		char ** ms;
@@ -494,7 +494,7 @@ void ke_free_memory(sml_t *sml, void * m);
 		longjmp(sml->env_buffer, 1); \
 	} 
 #else
-#define sml_assert_args(sml,i,s)
+#define sml_assert_args_min(sml,i,fnc)
 #endif 
 
 #ifdef _DEBUG
@@ -574,7 +574,7 @@ void ke_free_memory(sml_t *sml, void * m);
 		longjmp(sml->env_buffer, 1); \
 	}
 #else
-#define sml_assert_ptr(sml,p,i,fnc)
+#define sml_assert_range(sml,i,v,from,to,fnc)
 #endif 
 
 

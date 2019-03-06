@@ -12,7 +12,6 @@
 #define MAX_BUF 1023
 #define MAX_SCAN_ARG 16
 
-#ifdef _DEBUG
 const char * valid_mode = ",r,w,a,rb,wb,ab,r+,w+,a+,r+b,w+b,rb+,wb+,a+b,ab+";
 const char * cant_open_file = "can't open file for the mode parameter";
 const char * cant_close_file = "can't close file";
@@ -24,7 +23,6 @@ const char * cant_rename_file = "can't rename file";
 const char * cant_tmp_file = "can't temp file";
 const char * cant_sprintf = "can't sprintf";
 const char * cant_fgets = "can't fgets";
-#endif
 
 // TESTED
 /* Parameters
