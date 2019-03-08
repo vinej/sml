@@ -29,7 +29,8 @@ int ke_command_if(sml_t* sml, int itok) {
 // 6 == 3
 // 5 == 2
 int ke_command_def(sml_t* sml, int itok) {
-	// the goal
+	token_t * tokp = sml_get_tokp(sml);
+
 	token_t **stack = sml_get_stack(sml);
 	int n = sml_get_args(sml);
 	int top = sml_get_top(sml);
@@ -159,6 +160,7 @@ int  ke_command_val_next(sml_t* sml, int itok) {
 }
 
 int  ke_command_val_rtn(sml_t* sml, int itok) {
+	sml->localtop -= sml_get_ijmp(sml);
 	return *kdq_pop(int, sml->callstack);
 }
 

@@ -237,7 +237,7 @@ void ke_free_val(sml_t *sml) {
 		} else if (fieldp->vtype == KEV_BUFFER && fieldp->obj.buffer) {
 			ke_free_memory(sml, fieldp->obj.buffer);
 		}
-        ke_free_memory(sml,fieldp);
+        //ke_free_memory(sml,fieldp);
     }
 	if (sml->field_qte > 0) {
 		ke_free_memory(sml, sml->fields);
@@ -258,10 +258,11 @@ void ke_free_tokens(sml_t *sml) {
 
 int ke_fill_list(sml_t *sml, kexpr_t *ke)
 {
-    sml->tokens = ke_calloc_memory(sml, ke->n * sizeof(token_t *),1);
+	sml->tokens = ke_calloc_memory(sml, ke->n * sizeof(token_t *),1);
 	token_t * ne = NULL;
 	for (int i = 0; i < ke->n; ++i) {
         token_t *tokp = &ke->e[i];
+		/*
         if (tokp->ttype == KET_VNAME) {
 			ne = sml->fields[tokp->ifield];
 			if (ne == NULL) {
@@ -283,6 +284,7 @@ int ke_fill_list(sml_t *sml, kexpr_t *ke)
             }
 			tokp = ne;
 		}
+		*/
         sml->tokens[i] = tokp;
 	}
 	return ke_set_ijmp(sml, ke, sml->tokens);
@@ -391,7 +393,7 @@ void ke_set_buffer(sml_t *sml, token_t *source, token_t *dest) {
 
 void ke_print_one_stack(token_t * tokp)
 {
-    if (tokp->ttype == KET_VNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL ) {
+    if (tokp->ttype == KET_VNAME || tokp->ttype == KET_XNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL ) {
         if (tokp->name != NULL) printf("%s", tokp->name);
         else {
             if (tokp->vtype == KEV_STR) printf("'%s'", tokp->obj.s);
@@ -428,7 +430,7 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 		ke_matrix_print(sml,tokp);
 	} else if (tokp->vtype == KEV_COMPLEX) {
 		ke_complex_print(sml,tokp);
-	} else if(tokp->ttype == KET_VNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL) {
+	} else if(tokp->ttype == KET_VNAME || tokp->ttype == KET_XNAME || tokp->ttype == KET_VCMD || tokp->ttype == KET_VAL) {
 		#ifdef DEBUG
 			if (tokp->name != NULL) printf("%s=", tokp->name);
 		#endif // DEBUG
@@ -515,6 +517,7 @@ void ke_hash_add(sml_t *sml, fncp key, char * name) {
 void ke_fill_hash(sml_t *sml) {
     sml->hfunction = kh_init(5); ke_inc_memory(sml);
 	sml->hname = kh_init(6); ke_inc_memory(sml);
+	sml->gname = kh_init(7); ke_inc_memory(sml);
 	ke_command_hash(sml);
     ke_vector_hash(sml);
 	ke_file_hash(sml);
@@ -591,6 +594,7 @@ void ke_free_hash(sml_t *sml)
 {
 	kh_destroy(5, sml->hfunction);	ke_dec_memory(sml);
 	kh_destroy(6, sml->hname); ke_dec_memory(sml);
+	kh_destroy(7, sml->gname); ke_dec_memory(sml);
 	//ke_constants_destroy();
 	ke_command_destroy(sml);
 

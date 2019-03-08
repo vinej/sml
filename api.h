@@ -102,16 +102,18 @@ extern char * kev_to_str[17];
 #define KEO_MAX  27
 
 #define KET_NULL  0
-#define KET_CMD   1
-#define KET_VCMD  2
-#define KET_OP    3
-#define KET_FUNC  4
-#define KET_PROP  5
-#define KET_CONST 6
-#define KET_VAL   7
-#define KET_VNAME 8
-#define KET_REC   9
-#define KET_FILE  10
+#define KET_DEFNAME 1 
+#define KET_CMD   2
+#define KET_VCMD  3
+#define KET_OP    4
+#define KET_FUNC  5
+#define KET_PROP  6
+#define KET_CONST 7
+#define KET_VAL   8
+#define KET_VNAME 9
+#define KET_REC   10
+#define KET_FILE  11
+#define KET_XNAME 12 // already set when it's VNAME
 
 #define KEF_NULL  0
 #define KEF_REAL  1
@@ -138,6 +140,7 @@ KHASH_MAP_INIT_STR(2, int)
 KHASH_MAP_INIT_INT(3, int)
 KHASH_MAP_INIT_STR(5, fncp)
 KHASH_MAP_INIT_STR(6, int)
+KHASH_MAP_INIT_STR(7, int)
 
 #pragma warning( push )
 #pragma warning( disable : 273)
@@ -150,6 +153,8 @@ KDQ_INIT(int)
 
 struct sml_s;
 typedef struct sml_s {
+	int topGlobal;
+	struct token_s *def_name;      // current def name to put the stack ref
 	struct token_s **stack;        // stack for the evaluation of the program
 	double *rstack;                    // stack for the evaluation of the program
 	struct token_s *out;           // pointer to the array of out parameter to put into the stack
@@ -157,13 +162,16 @@ typedef struct sml_s {
 	struct token_s ** fields;		// array of all global fields of the program to exectue
 	struct token_s ** tokens;     // array of pointers of all program tokens
 	int top;
+	int localtop;				// will be init with gfield_qte;
+	int inittop;				// will be init with gfield_qte;
 	struct token_s * tokp;
 	int out_qte;
 	int tok_idx;
 	int val;
 	jmp_buf env_buffer;
 	// GLOBAL VARIABLE USED BY ALL FUNCTIONS
-	int field_qte;				// number of global fields  
+	int field_qte;				// number of local fields, reset for each def
+	int gfield_qte;				// number of global fields  
 	int mem_count;				// current count of memory allocation
 								// parser variables
 	int isNextDefName;			// flag to indicate that the next token is the def name
@@ -175,7 +183,8 @@ typedef struct sml_s {
 	struct token_s * recp[100];
 	int rec_qte;        // number of global fields  
 	khash_t(5) *hfunction;
-	khash_t(6) *hname;
+	khash_t(6) *hname;  // function name = negative stack
+	khash_t(7) *gname;  // global name = positif stack
 #if defined(_MSC_VER) || defined(_WIN32)
 	HMODULE libhandle[64];
 	int libhandle_qte;      // number of global fields
@@ -325,6 +334,7 @@ void ke_free_memory(sml_t *sml, void * m);
 #define sml_get_str(t) t->obj.s
 #define sml_get_real(t) t->r
 #define sml_get_int(t) t->i
+#define sml_get_ifield(t) t->ifield
 #define sml_set_int(t,ii) t->i = ii
 #define sml_get_ptr(t) t->obj.ptr
 #define sml_get_file(t) t->obj.file

@@ -246,9 +246,9 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, token_t ** tokens) {
 			else if (icmd == CMD_IDEF) {
 				sml->lastDef = itok;
 				int absent;
-				token_t *def_name = tokens[itok - tokp->n_args];
-				def_name->vtype = KEV_DEF;
-				khint_t iter = kh_put(3, sml->hidefcommand, def_name->ifield, &absent);
+				sml->def_name = tokens[itok - tokp->n_args];
+				sml->def_name->vtype = KEV_DEF;
+				khint_t iter = kh_put(3, sml->hidefcommand, sml->def_name->ifield, &absent);
 				kh_val(sml->hidefcommand, iter) = ((itok)-tokp->n_args - 1);
 
 				if (!tokp->ijmp) {
@@ -273,6 +273,8 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, token_t ** tokens) {
 					printf("SML: ERROR: Command <def> not found for token <enddef> at line <%d>\n", tokp->sourceLine);
 					return -1;
 				}
+				sml->def_name->ijmp = tokp->ifield; // set the stack increment for the def that was saved into the return statement
+				sml->def_name->ttype = KET_DEFNAME;
 				if (!tokp->ijmp) {
 					tokp->ijmp = sml->lastDef;
 				}
@@ -339,16 +341,43 @@ int ke_manage_property(sml_t *sml, token_t *tok, int err) {
 	tok->propget = 1;
 	tok->propset = 0;
 	tok->i = 0, tok->r = 0.;
-	khint_t iter = kh_get(6, sml->hname, tok->name);
-	if (kh_end(sml->hname) != iter) {
-		tok->ifield = kh_val(sml->hname, iter);
+	if (*sml->currentDefName != 0) {
+		tok->islocal = 1;
 	}
 	else {
+		tok->islocal = 0;
+	}
+
+	int isFieldExist = 0;
+	if (!tok->islocal) {
+		khint_t iter = kh_get(7, sml->gname, tok->name);
+		if (kh_end(sml->gname) != iter) {
+			tok->ifield = kh_val(sml->gname, iter);
+			isFieldExist = 1;
+		}
+	}
+	else {
+		khint_t iter = kh_get(6, sml->hname, tok->name);
+		if (kh_end(sml->hname) != iter) {
+			tok->ifield = kh_val(sml->hname, iter);
+			isFieldExist = 1;
+		}
+	}
+
+	if (!isFieldExist) {
 		int absent;
-		khint_t iter = kh_put(6, sml->hname, tok->name, &absent);
-		kh_val(sml->hname, iter) = sml->field_qte;
-		tok->ifield = sml->field_qte;
-		sml->field_qte++;
+		if (!tok->islocal) {
+			khint_t iter = kh_put(7, sml->gname, tok->name, &absent);
+			kh_val(sml->gname, iter) = sml->gfield_qte;
+			tok->ifield = sml->gfield_qte;
+			sml->gfield_qte++;
+		}
+		else {
+			khint_t iter = kh_put(6, sml->hname, tok->name, &absent);
+			kh_val(sml->hname, iter) = sml->field_qte;
+			tok->ifield = sml->field_qte;
+			sml->field_qte++;
+		}
 		//*err |= KEE_UNVAR;
 	}
 	return err;
@@ -360,18 +389,21 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 		strcpy(sml->currentDefName, tok->name);
 		sml->isNextDefName = 0;
 		tok->islocal = 1;
+		// empty the current local name
+		kh_clear(6, sml->hname);
+		sml->field_qte = 0;
 	}
 	else {
 		// inside a function, the variables are localized with the functon name, except
 		// variables starting with "_g"
 		if ((*sml->currentDefName != 0) && (strncmp(tok->name, __GLOBAL, 2) != 0)) {
-			char * localName = ke_calloc_memory(sml, strlen(tok->name) + strlen(sml->currentDefName) + 4, 1);
-			strcpy(localName, __GLOBAL_DSEP);
-			strcat(localName, sml->currentDefName);
-			strcat(localName, __GLOBAL_SEP);
-			strcat(localName, tok->name);
-			ke_free_memory(sml, tok->name);
-			tok->name = localName;
+			//char * localName = ke_calloc_memory(sml, strlen(tok->name) + strlen(sml->currentDefName) + 4, 1);
+			//strcpy(localName, __GLOBAL_DSEP);
+			//strcat(localName, sml->currentDefName);
+			//strcat(localName, __GLOBAL_SEP);
+			//strcat(localName, tok->name);
+			//ke_free_memory(sml, tok->name);
+			//tok->name = localName;
 			tok->islocal = 1;
 		}
 		else {
@@ -380,11 +412,25 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 	}
 
 	token_t * recp = NULL;
-	khint_t iter = kh_get(6, sml->hname, tok->name);
-	if (kh_end(sml->hname) != iter) {
-		tok->ifield = kh_val(sml->hname, iter);
+
+	// if local into a def
+	int isFieldExist = 0;
+	if (!tok->islocal) {
+		khint_t iter = kh_get(7, sml->gname, tok->name);
+		if (kh_end(sml->gname) != iter) {
+			tok->ifield = kh_val(sml->gname, iter);
+			isFieldExist = 1;
+		}
 	}
 	else {
+		khint_t iter = kh_get(6, sml->hname, tok->name);
+		if (kh_end(sml->hname) != iter) {
+			tok->ifield = (kh_val(sml->hname, iter));
+			isFieldExist = 1;
+		}
+	}
+
+	if (!isFieldExist) {
 		// if the name contains '~', we must create a variable for the record and
 		// add the current ifield to the record list
 		char * dotp = strchr(tok->name, '~');
@@ -393,24 +439,50 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 			*dotp = 0;
 			int ifield;
 			// check if the record is alreeady there
-			khint_t iter = kh_get(6, sml->hname, tok->name);
-			if (kh_end(sml->hname) != iter) {
-				ifield = kh_val(sml->hname, iter);
-				for (int k = 0; k < sml->rec_qte; ++k) {
-					if (sml->recp[k]->ifield == ifield) {
-						recp = sml->recp[k];
-						break;
+			int isRecordExist = 0;
+			if (!tok->islocal) {
+				khint_t iter = kh_get(7, sml->gname, tok->name);
+				if (kh_end(sml->gname) != iter) {
+					isRecordExist = 1;
+					ifield = kh_val(sml->gname, iter);
+					for (int k = 0; k < sml->rec_qte; ++k) {
+						if (sml->recp[k]->ifield == ifield) {
+							recp = sml->recp[k];
+							break;
+						}
 					}
 				}
 			}
 			else {
+				khint_t iter = kh_get(6, sml->hname, tok->name);
+				if (kh_end(sml->hname) != iter) {
+					isRecordExist = 1;
+					ifield = kh_val(sml->hname, iter);
+					for (int k = 0; k < sml->rec_qte; ++k) {
+						if (sml->recp[k]->ifield == ifield) {
+							recp = sml->recp[k];
+							break;
+						}
+					}
+				}
+			}
+
+			if (!isRecordExist) {
 				int absent;
 				char * recName = ke_calloc_memory(sml, strlen(tok->name) + 1, 1);
 				strcpy(recName, tok->name);
-				khint_t iter = kh_put(6, sml->hname, recName, &absent);
-				kh_val(sml->hname, iter) = sml->rec_qte;
+
+				if (!tok->islocal) {
+					khint_t iter = kh_put(7, sml->gname, recName, &absent);
+					kh_val(sml->gname, iter) = sml->rec_qte;
+					recp->ifield = sml->gfield_qte++;
+				}
+				else {
+					khint_t iter = kh_put(6, sml->hname, recName, &absent);
+					kh_val(sml->hname, iter) = -(++sml->rec_qte);
+					recp->ifield = -(sml->field_qte);
+				}
 				recp = (token_t *)ke_calloc_memory(sml, sizeof(token_t), 1);
-				recp->ifield = sml->field_qte++;
 				recp->name = recName;
 				recp->ttype = KET_REC;
 				recp->vtype = KEV_REC;
@@ -420,13 +492,18 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 			*dotp = '~';
 		}
 		int absent;
-		khint_t iter = kh_put(6, sml->hname, tok->name, &absent);
-		kh_val(sml->hname, iter) = sml->field_qte;
-		tok->ifield = sml->field_qte;
+		if (!tok->islocal) {
+			khint_t iter = kh_put(7, sml->gname, tok->name, &absent);
+			kh_val(sml->gname, iter) = sml->gfield_qte;
+			tok->ifield = sml->gfield_qte++;
+		}
+		else {
+			khint_t iter = kh_put(6, sml->hname, tok->name, &absent);
+			kh_val(sml->hname, iter) = -(++sml->field_qte);
+			tok->ifield = -(sml->field_qte);
+		}
 		// the field of a record contains a pointer to the record
 		tok->f.recp = recp;
-		sml->field_qte++;
-
 		// create the list if not done
 		if (recp) {
 			if (!recp->obj.reclist) {
@@ -443,6 +520,7 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 
 int ke_manage_command(sml_t *sml, token_t *tok, int err) {
 	if (strcmp(tok->name, CMD_RTN) == 0) {
+		tok->ifield = sml->field_qte; // must put this information into the def
 		*sml->currentDefName = 0;
 	}
 	tok->ttype = KET_VCMD;
@@ -860,6 +938,8 @@ kexpr_t *ke_parse(sml_t *sml, utf8 *_s, int *err)
 	}
 	e = ke_parse_core(sml, _s, &n, err);
 	if (*err == 0) {
+		sml->localtop = sml->gfield_qte;
+		sml->inittop = sml->gfield_qte;
 		ke = (kexpr_t*)ke_calloc_memory(sml, 1, sizeof(kexpr_t));
 		ke->n = n, ke->e = e;
 		//#ifdef DEBUG
