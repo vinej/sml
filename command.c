@@ -37,10 +37,10 @@ int ke_command_def(sml_t* sml, int itok) {
     if (sml_get_assigned(sml)) {
 		for (int i = 1; i < n; i++) {
 			token_t * def_token = stack[top - i];          //   6   5
-			token_t * exe_token = stack[sml, top - i - n]; //   3   2
+			token_t * exe_token = stack[sml, top - i - (n-1)]; //   3   2
 			ke_set_val(sml, def_token, exe_token);
 		}
-		top = top - (n * 2);
+		top = top - n - (n-1);
 		sml_set_top(sml,top);
 		return itok;
     } else {

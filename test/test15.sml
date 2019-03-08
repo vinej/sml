@@ -3,7 +3,7 @@
   d = 12
   e = c + d
   print(e)
-  1+2
+  a + b
 enddef
 
 
