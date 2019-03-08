@@ -38,7 +38,7 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 				}
 				else {
 					if (sml->localtop != sml->inittop) {
-						//(*tokpp)->ttype = KET_XNAME;
+						(*tokpp)->ttype = KET_XNAME;
 						int i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
 						if (sml->fields[i] == NULL) {
 							sml->fields[i] = *tokpp;

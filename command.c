@@ -160,6 +160,16 @@ int  ke_command_val_next(sml_t* sml, int itok) {
 }
 
 int  ke_command_val_rtn(sml_t* sml, int itok) {
+	// change XNAme for VNAME
+	for (int i = itok-1; i > -1; i--) {
+		token_t *f = sml->tokens[i];
+		if (f->ttype == KET_XNAME) {
+			f->ttype == KET_VNAME;
+		}
+		if (f->vtype == KEV_DEF) {
+			break;
+		}
+	}
 	sml->localtop -= sml_get_ijmp(sml);
 	return *kdq_pop(int, sml->callstack);
 }
