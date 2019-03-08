@@ -5,11 +5,11 @@
 		j =  aa
 	next
 	print(j)
-	if (out == 0)
-		exe(test,1)
+	if (out > 1)
+		exe(test,out-1)
 	end
 enddef
 
-exe(test,0)
+exe(test,4)
 print('end')
 

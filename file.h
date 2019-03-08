@@ -37,6 +37,7 @@ void ke_file_hash(sml_t* sml);
 #define FILE_TMPNAME "file.tmpname"
 
 #define FILE_FPRINTF "file.fprintf"
+#define FILE_PRINT "print"
 #define FILE_PRINTF "file.printf"
 #define FILE_SPRINTF "file.sprintf"
 #define FILE_FSCANF "file.fscanf"

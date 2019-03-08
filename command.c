@@ -23,9 +23,8 @@ int ke_command_if(sml_t* sml, int itok) {
 // [sum]  top-5    1
 // [2]    top-4    2
 // [3]    top-3    3
-// [sum]  top-2    4
-// [_a]   top-1    5
-// [_b]   top      6    top == 6
+// [_a]   top-1    4
+// [_b]   top      5    top == 6
 // 6 == 3
 // 5 == 2
 int ke_command_def(sml_t* sml, int itok) {
@@ -36,7 +35,7 @@ int ke_command_def(sml_t* sml, int itok) {
 	int top = sml_get_top(sml);
     if (sml_get_assigned(sml)) {
 		for (int i = 1; i < n; i++) {
-			token_t * def_token = stack[top - i];          //   6   5
+			token_t * def_token = stack[top - i];              //   5   4
 			token_t * exe_token = stack[sml, top - i - (n-1)]; //   3   2
 			ke_set_val(sml, def_token, exe_token);
 		}
@@ -96,33 +95,6 @@ int ke_command_for(sml_t* sml, int itok) {
 	}
 	sml_set_top(sml, top);
 	return itok;
-}
-
-int ke_command_print_nonl(sml_t* sml, int itok) {
-	token_t * tokp = sml_get_tokp(sml);
-    int ntmp = sml_get_args(sml);
-    int n = ntmp;
-    --n;
-    sml_set_args(sml,n);
-    token_t *p = sml_pop_token(sml);
-    if (n) {
-        ke_command_print_nonl(sml, itok);
-    }
-    ke_print_one(sml,p);
-	sml_set_args(sml, ntmp);
-	return itok;
-}
-
-int ke_command_print(sml_t* sml, int itok) {
-	int top = sml_get_top(sml);
-	int n = sml_get_args(sml);
-
-    ke_command_print_nonl(sml, itok);
-    printf("\n");
-
-	top -= n;
-	sml_set_top(sml, top);
-    return itok;
 }
 
 int ke_command_val_else(sml_t* sml, int itok) {
@@ -196,11 +168,7 @@ void ke_command_hash(sml_t* sml) {
 	sml->hinextcommand = kdq_init(int); ke_inc_memory(sml);
 
     ke_command_hash_add(sml, (cmdp)&ke_command_if, CMD_IF);
-    ke_command_hash_add(sml, (cmdp)&ke_command_print, CMD_PRINT);
-	//ke_command_hash_add((cmdp)&ke_command_printf, CMD_PRINTF);
-	//ke_command_hash_add((cmdp)&ke_command_sprintf, CMD_SPRINTF);
 	ke_command_hash_add(sml, (cmdp)&ke_command_import, CMD_IMPORT);
-	ke_command_hash_add(sml, (cmdp)&ke_command_print_nonl, CMD_PRINTNOLN);
     ke_command_hash_add(sml, (cmdp)&ke_command_def, CMD_DEF);
     ke_command_hash_add(sml, (cmdp)&ke_command_exe, CMD_EXE);
     ke_command_hash_add(sml, (cmdp)&ke_command_for, CMD_FOR);

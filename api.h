@@ -276,6 +276,7 @@ void ke_dec_memory(sml_t *sml);
 void * ke_calloc_memory(sml_t *sml, size_t i, size_t x);
 void * ke_malloc_memory(sml_t *sml, size_t i);
 void ke_free_memory(sml_t *sml, void * m);
+void ke_print_one(sml_t *sml, token_t* t);
 
 #define __GLOBAL "g_"
 #define __GLOBAL_SEP "_"

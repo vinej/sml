@@ -20,10 +20,6 @@ int ke_set_ijmp(sml_t* sml,kexpr_t *kexpr, token_t ** tokens);
 #define CMD_END "end"
 #define CMD_BRK "break"
 #define CMD_CNT "continue"
-#define CMD_PRINT "print"
-#define CMD_PRINTF "printf"
-#define CMD_SPRINTF "sprintf"
-#define CMD_PRINTNOLN "printn"
 #define CMD_IMPORT "import"
 #define CMD_CONSTANTS "M_"
 

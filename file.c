@@ -67,6 +67,32 @@ static void ke_file_assert_false(sml_t* sml) {
 	}
 }
 
+
+static void ke_command_print_nonl(sml_t* sml) {
+	token_t * tokp = sml_get_tokp(sml);
+	int ntmp = sml_get_args(sml);
+	int n = ntmp;
+	--n;
+	sml_set_args(sml, n);
+	token_t *p = sml_pop_token(sml);
+	if (n) {
+		ke_command_print_nonl(sml);
+	}
+	ke_print_one(sml, p);
+	sml_set_args(sml, ntmp);
+}
+
+static void ke_command_print(sml_t* sml) {
+	int top = sml_get_top(sml);
+	int n = sml_get_args(sml);
+
+	ke_command_print_nonl(sml);
+	printf("\n");
+
+	top -= n;
+	sml_set_top(sml, top);
+}
+
 // TESTED
 /* Parameters
 IN
@@ -1189,6 +1215,8 @@ static void ke_file_perror(sml_t* sml) {
 
 
 void ke_file_hash(sml_t* sml) {
+	ke_hash_add(sml, (fncp)&ke_command_print, FILE_PRINT);
+
 	ke_hash_add(sml, (fncp)&ke_file_assert_true, FILE_ASSERT_TRUE);
 	ke_hash_add(sml, (fncp)&ke_file_assert_false, FILE_ASSERT_FALSE);
 
