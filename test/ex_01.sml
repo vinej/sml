@@ -68,7 +68,7 @@ def(plot3)
     pllab( "Angle (degrees)", "sin", "PLplot Example 1 - Sine function" )
     for (i,0,100,1)
         g_x[i] = 3.6 * i
-        g_y[i] = sin(g_x[i] * m_pi / 180.0) 
+        g_y[i] = sin(g_x[i] * PI / 180.0) 
     next	
     plcol0( 4 )
     plline( 101, g_x, g_y )

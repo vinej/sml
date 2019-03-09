@@ -127,6 +127,7 @@ struct token_s;
 struct kexpr_s;
 struct sml_s;
 
+typedef char* strptr;
 typedef struct token_s* ke1_p;
 typedef int(*cmdp)(struct sml_s * sml, int);
 typedef void(*fncp)(struct sml_s *);
@@ -137,7 +138,7 @@ typedef struct token_s *(__cdecl *dllke_get_out_t)(struct sml_s *);
 KHASH_MAP_INIT_STR(0, cmdp)
 KHASH_MAP_INIT_STR(1, vcmdp)
 KHASH_MAP_INIT_STR(2, int)
-KHASH_MAP_INIT_INT(3, int)
+KHASH_MAP_INIT_STR(3, int)
 KHASH_MAP_INIT_STR(5, fncp)
 KHASH_MAP_INIT_STR(6, int)
 KHASH_MAP_INIT_STR(7, int)
@@ -195,7 +196,6 @@ typedef struct sml_s {
 	khash_t(3) *hidefcommand;
 	khash_t(0) *hcommand;
 	khash_t(1) *hvcommand;
-	khash_t(3) *hdefcommand;
 	kstack_t *harg;
 	int g_forstack[20];
 	int g_fortop;

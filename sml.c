@@ -68,6 +68,7 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 			else {
 				sml->localtop += tokp->ijmp;
 			}
+			stack[sml->top++] = tokp;
 			break;
 		case KET_CMD:
 			itok = (tokp->f.defcmd)(sml, itok);
@@ -118,10 +119,40 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 				// we need ifield, because for a propget, the tokp is not a pointer to a real fields
 				// it's only a normal token with ifield pointing to the real field to manager
 				// it's a false record to deal with propget. 
-				stack[sml->top++] = fields[tokp->ifield];
+				int i = tokp->ifield;
+				if (i >= 0) {
+					if (sml->fields[i] == NULL) {
+						sml->fields[i] = tokp;
+					}
+				}
+				else {
+					if (sml->localtop != sml->inittop) {
+						i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
+						if (sml->fields[i] == NULL) {
+							sml->fields[i] = tokp;
+						}
+					}
+				}
+
+				stack[sml->top++] = fields[i];
 				ke_poperty_get(sml);
 			}
 			else {
+				int i = tokp->ifield;
+				if (i >= 0) {
+					if (sml->fields[i] == NULL) {
+						sml->fields[i] = tokp;
+					}
+				}
+				else {
+					if (sml->localtop != sml->inittop) {
+						i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
+						if (sml->fields[i] == NULL) {
+							sml->fields[i] = tokp;
+						}
+					}
+				}
+
 				stack[sml->top++] = tokp;
 			}
 			break;

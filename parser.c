@@ -231,16 +231,13 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, token_t ** tokens) {
 			}
 			else if (icmd == CMD_IEXE) {
 				if (!tokp->ijmp) {
-					int idefname = ifind_backward_defname(tokens, itok, tokp);
-					if (idefname != -1) {
-						token_t *def_name = tokens[idefname];
-						khint_t iter = kh_get(3, sml->hidefcommand, def_name->ifield);
-						if (kh_end(sml->hidefcommand) == iter) {
-							printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_name->name, tokp->sourceLine);
-							return -1;
-						}
-						tokp->ijmp = (int)kh_val(sml->hidefcommand, iter);
+					token_t *def_tokp = tokens[itok-1];
+					khint_t iter = kh_get(3, sml->hidefcommand, def_tokp->name);
+					if (kh_end(sml->hidefcommand) == iter) {
+						printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_tokp->name, tokp->sourceLine);
+						return -1;
 					}
+					tokp->ijmp = (int)kh_val(sml->hidefcommand, iter);
 				}
 			}
 			else if (icmd == CMD_IDEF) {
@@ -248,7 +245,7 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, token_t ** tokens) {
 				int absent;
 				sml->def_name = tokens[itok - tokp->n_args];
 				sml->def_name->vtype = KEV_DEF;
-				khint_t iter = kh_put(3, sml->hidefcommand, sml->def_name->ifield, &absent);
+				khint_t iter = kh_put(3, sml->hidefcommand, sml->def_name->name, &absent);
 				kh_val(sml->hidefcommand, iter) = ((itok)-tokp->n_args - 1);
 
 				if (!tokp->ijmp) {
@@ -376,6 +373,7 @@ int ke_manage_property(sml_t *sml, token_t *tok, int err) {
 			khint_t iter = kh_put(6, sml->hname, tok->name, &absent);
 			kh_val(sml->hname, iter) = -(++sml->field_qte);
 			tok->ifield = -(sml->field_qte);
+			sml->field_qte++;
 		}
 		//*err |= KEE_UNVAR;
 	}

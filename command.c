@@ -31,15 +31,15 @@ int ke_command_def(sml_t* sml, int itok) {
 	token_t * tokp = sml_get_tokp(sml);
 
 	token_t **stack = sml_get_stack(sml);
-	int n = sml_get_args(sml);
+	int n = sml_get_args(sml);  // the name of the def is not into the stack
 	int top = sml_get_top(sml);
     if (sml_get_assigned(sml)) {
 		for (int i = 1; i < n; i++) {
-			token_t * def_token = stack[top - i];              //   5   4
-			token_t * exe_token = stack[sml, top - i - (n-1)]; //   3   2
+			token_t * def_token = stack[top - i - 1];           //   6   5
+			token_t * exe_token = stack[sml, top - i - n - 1 ]; //   3   2
 			ke_set_val(sml, def_token, exe_token);
 		}
-		top = top - n - (n-1);
+		top = (top - n - n);
 		sml_set_top(sml,top);
 		return itok;
     } else {
@@ -135,14 +135,15 @@ int  ke_command_val_rtn(sml_t* sml, int itok) {
 	// change XNAme for VNAME
 	for (int i = itok-1; i > -1; i--) {
 		token_t *f = sml->tokens[i];
-		if (f->ttype == KET_XNAME) {
+		if (f->ttype == KET_XNAME && f->ifield < 0) {
 			f->ttype == KET_VNAME;
 		}
 		if (f->vtype == KEV_DEF) {
 			break;
 		}
 	}
-	sml->localtop -= sml_get_ijmp(sml);
+	token_t * tokp = sml_get_tokp(sml);
+	sml->localtop -= sml_get_ifield(tokp);
 	return *kdq_pop(int, sml->callstack);
 }
 
