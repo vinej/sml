@@ -1,11 +1,4 @@
-﻿
-test~get = "12"
-test~put = "zz"
-test~zz = "zz"
-
-print(test)
-
-buf = buf.new(4);
+﻿buf = buf.new(4);
 assert.true( buf.len(buf) == 4, "buffer len is set")
 
 # test file.open

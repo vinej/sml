@@ -411,7 +411,7 @@ void ke_print_one_stack(token_t * tokp)
 void ke_print_one(sml_t *sml, token_t * tokp)
 {
 	if (tokp->vtype == KEV_REC) {
-		for (int i = 0; i < tokp->i; i++) {
+		for (int i = 0; i < tokp->ijmp; i++) {
 			token_t * tmptokp = sml->fields[tokp->obj.reclist[i]];
 			printf("%s = ", tmptokp->name);
 			ke_print_one(sml, tmptokp);

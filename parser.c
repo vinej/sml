@@ -429,7 +429,7 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 	if (!isFieldExist) {
 		// if the name contains '~', we must create a variable for the record and
 		// add the current ifield to the record list
-		char * dotp = strchr(tok->name, '~');
+		char * dotp = strchr(tok->name, RECORD_SEP);
 		if (dotp) {
 			// split at the dot. tok.name will contain only the rec name  p~test => p
 			*dotp = 0;
@@ -467,25 +467,25 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 				int absent;
 				char * recName = ke_calloc_memory(sml, strlen(tok->name) + 1, 1);
 				strcpy(recName, tok->name);
-
-				if (!tok->islocal || (strncmp(tok->name, __GLOBAL, 2) == 0)) {
-					khint_t iter = kh_put(7, sml->gname, recName, &absent);
-					kh_val(sml->gname, iter) = sml->rec_qte;
-					recp->ifield = sml->gfield_qte++;
-				}
-				else {
-					khint_t iter = kh_put(6, sml->hname, recName, &absent);
-					kh_val(sml->hname, iter) = -(++sml->rec_qte);
-					recp->ifield = -(sml->field_qte);
-				}
 				recp = (token_t *)ke_calloc_memory(sml, sizeof(token_t), 1);
 				recp->name = recName;
 				recp->ttype = KET_REC;
 				recp->vtype = KEV_REC;
+
+				if (!tok->islocal || (strncmp(tok->name, __GLOBAL, 2) == 0)) {
+					khint_t iter = kh_put(7, sml->gname, recName, &absent);
+					kh_val(sml->gname, iter) = sml->gfield_qte;
+					recp->ifield = sml->gfield_qte++;
+				}
+				else {
+					khint_t iter = kh_put(6, sml->hname, recName, &absent);
+					kh_val(sml->hname, iter) = -(++sml->field_qte);
+					recp->ifield = -(sml->field_qte);
+				}
 				sml->recp[sml->rec_qte] = recp;
 				sml->rec_qte++;
 			}
-			*dotp = '~';
+			*dotp = RECORD_SEP;
 		}
 		int absent;
 		if (!tok->islocal || (strncmp(tok->name, __GLOBAL, 2) == 0)) {
@@ -510,6 +510,19 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 			recp->obj.reclist[recp->i] = tok->ifield;
 			++recp->i;
 		}
+	}
+	else {
+		// check if it a record
+		for (int i = 0; i < sml->rec_qte; i++) {
+			if (strcmp(sml->recp[i]->name, tok->name) == 0) {
+				tok->ttype = KET_REC;
+				tok->vtype = KEV_REC;
+				tok->obj.reclist = sml->recp[i]->obj.reclist;
+				tok->ijmp = sml->recp[i]->i;
+				break;
+			}
+		}
+
 	}
 	return err;
 }
@@ -739,7 +752,9 @@ token_t ke_read_token(sml_t *sml, char *p, char **r, int *err, int last_is_val) 
 				tok.i = 0, tok.r = 0.;
 			}
 			// default type for a variable
-			tok.vtype = KEV_REAL;
+			if (tok.vtype != KEV_REC) {
+				tok.vtype = KEV_REAL;
+			}
 		}
 		*r = p;
 	}
@@ -869,7 +884,7 @@ token_t *ke_parse_core(sml_t* sml, utf8 *_s, int *_n, int *err)
 				break;
 			}
 
-			if (v.ttype == KET_VAL || v.ttype == KET_VCMD || v.ttype == KET_VNAME) {
+			if (v.ttype == KET_VAL || v.ttype == KET_VCMD || v.ttype == KET_VNAME || v.ttype == KET_REC) {
 				u = push_back(sml, &out, &n_out, &m_out);
 				*u = v;
 				last_is_val = 1;

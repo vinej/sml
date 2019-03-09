@@ -61,6 +61,26 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 		tokp = sml->tokp;
 		sml->tok_idx = itok;
 		switch (tokp->ttype) {
+		case KET_REC:
+			{
+				int i = tokp->ifield;
+				if (i >= 0) {
+					if (sml->fields[i] == NULL) {
+						sml->fields[i] = tokp;
+					}
+				}
+				else {
+					if (sml->localtop != sml->inittop) {
+						i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
+						if (sml->fields[i] == NULL) {
+							sml->fields[i] = tokp;
+						}
+					}
+				}
+				stack[sml->top++] = fields[i];
+			}
+			break;
+
 		case KET_DEFNAME:
 			if (!tokp->assigned) {
 				tokp->assigned = 1;

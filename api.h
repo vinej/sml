@@ -17,7 +17,8 @@
 #include <Windows.h>
 #endif
 
-#define LOCAL_VAR '_'
+#define RECORD_SEP '~'
+
 
 // Parse errors
 #define KEE_UNQU    0x01 // unmatched quotation marks
@@ -107,15 +108,15 @@ extern char * kev_to_str[17];
 #define KET_VCMD  3
 #define KET_OP    4
 #define KET_FUNC  5
-#define KET_XPROP 6
-#define KET_PROP  7
-#define KET_VAL_SEP 8  
-#define KET_CONST 9
-#define KET_VAL   10
-#define KET_VNAME 11
-#define KET_REC   12
+#define KET_REC   6
+#define KET_XPROP 7
+#define KET_PROP  8
+#define KET_VAL_SEP 9  
+#define KET_CONST 10
+#define KET_VAL   11
+#define KET_VNAME 12
 #define KET_FILE  13
-#define KET_XNAME 14 // already set when it's VNAME
+#define KET_XNAME 14 //already set when it's VNAME
 
 #define KEF_NULL  0
 #define KEF_REAL  1
