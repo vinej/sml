@@ -4,9 +4,10 @@
 		j =  aa
 	next
 	print(j)
-	if (out > 1) 
+	if (out > 1)
 		exe(test,out-1)
 	end
+	print('exit')
 enddef
 
 exe(test,2)

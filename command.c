@@ -138,6 +138,9 @@ int  ke_command_val_rtn(sml_t* sml, int itok) {
 		if (f->ttype == KET_XNAME && f->ifield < 0) {
 			f->ttype == KET_VNAME;
 		}
+		if (f->ttype == KET_XPROP && f->ifield < 0) {
+			f->ttype == KET_PROP;
+		}
 		if (f->vtype == KEV_DEF) {
 			break;
 		}
