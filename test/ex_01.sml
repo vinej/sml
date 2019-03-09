@@ -1,6 +1,6 @@
 ﻿import('plplotdll.dll')
 
-def(plot1)
+def(plot1v1)
     print('string plot1')
     for(i,0,59,1)
         g_x[i] = g_xoff + g_xscale * ( i + 1.0 ) / 60.0
@@ -28,7 +28,7 @@ def(plot1)
     plline( 60, g_x, g_y )
 enddef
 
-def(plot2)
+def(plot2v2)
     plcol0( 1 )
     plenv( -2.0 , 10.0, -0.4, 1.2, 0, 1 )
     plcol0( 2 )
@@ -46,7 +46,7 @@ def(plot2)
     plwidth( 1.0 )
 enddef
 
-def(plot3)
+def(plot3v3)
 	space0 = vector_int(1)
     vi_set(space0,0,0)
 	mark0 = vector_int(1)
@@ -100,7 +100,7 @@ g_xoff   = 0.0
 g_yoff   = 0.0
 
 print('plot 1/2')
-exe(plot1)
+exe(plot1v1)
 
 g_xscale = 1.0;
 g_yscale = 0.0014;
@@ -110,10 +110,10 @@ digmax = 5
 plsyax( digmax, 0 )
 
 print('plot 2/2')
-exe(plot1)
+exe(plot1v1)
 print('plot 2')
-exe(plot2)
+exe(plot2v2)
 print('plot 3')
-exe(plot3)
+exe(plot3v3)
 plspause(1)
 plend()

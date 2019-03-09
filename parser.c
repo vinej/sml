@@ -231,7 +231,13 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, token_t ** tokens) {
 			}
 			else if (icmd == CMD_IEXE) {
 				if (!tokp->ijmp) {
-					token_t *def_tokp = tokens[itok-1];
+					int i = itok - 1;
+					while (1) {
+						if (tokens[i]->ttype == KET_OP && tokens[i]->op == KEO_NOP) break;
+						--i;
+					}
+					++i;
+					token_t *def_tokp = tokens[i];
 					khint_t iter = kh_get(3, sml->hidefcommand, def_tokp->name);
 					if (kh_end(sml->hidefcommand) == iter) {
 						printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_tokp->name, tokp->sourceLine);
