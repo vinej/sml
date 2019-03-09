@@ -251,6 +251,13 @@ void ke_free_val(sml_t *sml) {
 		ke_free_memory(sml, fieldp->obj.reclist);
 		ke_free_memory(sml, fieldp);
 	}
+
+	for (int i = 0; i < sml->grec_qte; ++i) {
+		token_t*fieldp = sml->grecp[i];
+		ke_free_memory(sml, fieldp->name);
+		ke_free_memory(sml, fieldp->obj.reclist);
+		ke_free_memory(sml, fieldp);
+	}
 }
 
 void ke_free_tokens(sml_t *sml) {
@@ -413,7 +420,6 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 {
 	if (tokp->vtype == KEV_REC) {
 		for (int i = 0; i < tokp->ijmp; i++) {
-
 			int ifield = tokp->obj.reclist[i];
 			if (ifield < 0)
 			{

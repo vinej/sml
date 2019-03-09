@@ -441,9 +441,9 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 				if (kh_end(sml->gname) != iter) {
 					isRecordExist = 1;
 					ifield = kh_val(sml->gname, iter);
-					for (int k = 0; k < sml->rec_qte; ++k) {
-						if (sml->recp[k]->ifield == ifield) {
-							recp = sml->recp[k];
+					for (int k = 0; k < sml->grec_qte; ++k) {
+						if (sml->grecp[k]->ifield == ifield) {
+							recp = sml->grecp[k];
 							break;
 						}
 					}
@@ -476,14 +476,16 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 					khint_t iter = kh_put(7, sml->gname, recName, &absent);
 					kh_val(sml->gname, iter) = sml->gfield_qte;
 					recp->ifield = sml->gfield_qte++;
+					sml->grecp[sml->grec_qte] = recp;
+					sml->grec_qte++;
 				}
 				else {
 					khint_t iter = kh_put(6, sml->hname, recName, &absent);
 					kh_val(sml->hname, iter) = -(++sml->field_qte);
 					recp->ifield = -(sml->field_qte);
+					sml->recp[sml->rec_qte] = recp;
+					sml->rec_qte++;
 				}
-				sml->recp[sml->rec_qte] = recp;
-				sml->rec_qte++;
 			}
 			*dotp = RECORD_SEP;
 		}
@@ -512,18 +514,32 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 		}
 	}
 	else {
-		// check if it a record
-		for (int i = 0; i < sml->rec_qte; i++) {
-			if (strcmp(sml->recp[i]->name, tok->name) == 0) {
-				tok->ttype = KET_REC;
-				tok->vtype = KEV_REC;
-				tok->obj.reclist = sml->recp[i]->obj.reclist;
-				tok->i = sml->recp[i]->i;
-				tok->ijmp = sml->recp[i]->i;
-				break;
+		if (!tok->islocal || (strncmp(tok->name, __GLOBAL, 2) == 0)) {
+			// check if it a record
+			for (int i = 0; i < sml->grec_qte; i++) {
+				if (strcmp(sml->grecp[i]->name, tok->name) == 0) {
+					tok->ttype = KET_REC;
+					tok->vtype = KEV_REC;
+					tok->obj.reclist = sml->grecp[i]->obj.reclist;
+					tok->i = sml->grecp[i]->i;
+					tok->ijmp = sml->grecp[i]->i;
+					break;
+				}
 			}
 		}
-
+		else {
+			// check if it a record
+			for (int i = 0; i < sml->rec_qte; i++) {
+				if (strcmp(sml->recp[i]->name, tok->name) == 0) {
+					tok->ttype = KET_REC;
+					tok->vtype = KEV_REC;
+					tok->obj.reclist = sml->recp[i]->obj.reclist;
+					tok->i = sml->recp[i]->i;
+					tok->ijmp = sml->recp[i]->i;
+					break;
+				}
+			}
+		}
 	}
 	return err;
 }

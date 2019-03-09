@@ -8,11 +8,11 @@ enddef
 
 exe(testin)
 
-test2~integer = 111
-test2~string = 'test111'
-test2~reat = 2.2111
+test~integer = 111
+test~string = 'test111'
+test~reat = 2.2111
 
-print(test2)
+print(test)
 
 
 

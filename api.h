@@ -184,8 +184,10 @@ typedef struct sml_s {
 	int isFirstToken;			// use to remove separators at the beginning of the program
 	int isLastTokenNop;			// use to manage the command seperator, the rule is to have one separator between each comand
 	char lastErrorMessage[256]; // 
-	struct token_s * recp[100];
-	int rec_qte;        // number of global fields  
+	struct token_s * recp[100]; // local record fields
+	struct token_s * grecp[100];// global record fields
+	int rec_qte;        // number of local record fields  
+	int grec_qte;        // number of global record fields  
 	khash_t(5) *hfunction;
 	khash_t(6) *hname;  // function name = negative stack
 	khash_t(7) *gname;  // global name = positif stack
