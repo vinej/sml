@@ -518,6 +518,7 @@ int ke_manage_variable(sml_t *sml, token_t *tok, int err) {
 				tok->ttype = KET_REC;
 				tok->vtype = KEV_REC;
 				tok->obj.reclist = sml->recp[i]->obj.reclist;
+				tok->i = sml->recp[i]->i;
 				tok->ijmp = sml->recp[i]->i;
 				break;
 			}

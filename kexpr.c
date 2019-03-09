@@ -232,6 +232,7 @@ void ke_free_val(sml_t *sml) {
 			ke_vector_int_freemem(sml, fieldp);
 		} else if (fieldp->vtype == KEV_STR && fieldp->obj.s) {
             ke_free_memory(sml, fieldp->obj.s);
+			fieldp->obj.s = NULL;
 		} else if (fieldp->vtype == KEV_DATE && fieldp->obj.date) {
 			ke_free_memory(sml, fieldp->obj.date);
 		} else if (fieldp->vtype == KEV_BUFFER && fieldp->obj.buffer) {
@@ -412,7 +413,13 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 {
 	if (tokp->vtype == KEV_REC) {
 		for (int i = 0; i < tokp->ijmp; i++) {
-			token_t * tmptokp = sml->fields[tokp->obj.reclist[i]];
+
+			int ifield = tokp->obj.reclist[i];
+			if (ifield < 0)
+			{
+				ifield = ifield + +sml->localtop;
+			}
+			token_t * tmptokp = sml->fields[ifield];
 			printf("%s = ", tmptokp->name);
 			ke_print_one(sml, tmptokp);
 			printf("\n");
