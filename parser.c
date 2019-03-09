@@ -240,10 +240,18 @@ int ke_set_ijmp(sml_t* sml, kexpr_t *kexpr, token_t ** tokens) {
 					token_t *def_tokp = tokens[i];
 					khint_t iter = kh_get(3, sml->hidefcommand, def_tokp->name);
 					if (kh_end(sml->hidefcommand) == iter) {
-						printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_tokp->name, tokp->sourceLine);
-						return -1;
+						++i;
+						token_t *def_tokp = tokens[i];
+						khint_t iter = kh_get(3, sml->hidefcommand, def_tokp->name);
+						if (kh_end(sml->hidefcommand) == iter) {
+							printf("SML: ERROR: Command <def> not found for token <exe>(%s) at line <%d>\n", def_tokp->name, tokp->sourceLine);
+							return -1;
+						}
+						tokp->ijmp = (int)kh_val(sml->hidefcommand, iter);
 					}
-					tokp->ijmp = (int)kh_val(sml->hidefcommand, iter);
+					else {
+						tokp->ijmp = (int)kh_val(sml->hidefcommand, iter);
+					}
 				}
 			}
 			else if (icmd == CMD_IDEF) {
