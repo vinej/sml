@@ -107,13 +107,15 @@ extern char * kev_to_str[17];
 #define KET_VCMD  3
 #define KET_OP    4
 #define KET_FUNC  5
-#define KET_PROP  6
-#define KET_CONST 7
-#define KET_VAL   8
-#define KET_VNAME 9
-#define KET_REC   10
-#define KET_FILE  11
-#define KET_XNAME 12 // already set when it's VNAME
+#define KET_XPROP 6
+#define KET_PROP  7
+#define KET_VAL_SEP 8  
+#define KET_CONST 9
+#define KET_VAL   10
+#define KET_VNAME 11
+#define KET_REC   12
+#define KET_FILE  13
+#define KET_XNAME 14 // already set when it's VNAME
 
 #define KEF_NULL  0
 #define KEF_REAL  1

@@ -21,7 +21,7 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 		//sml->top = top;
 		// put into the stack all values type
 		tokpp = &tokens[itok];
-		while ((*tokpp)->ttype > KET_PROP) {
+		while ((*tokpp)->ttype > KET_VAL_SEP) {
 			// here if it's a field, we must put into the stack the point to the field, not the pointer of the current token
 			if ((*tokpp)->ttype == KET_VNAME) {
 				int i = (*tokpp)->ifield;
@@ -114,6 +114,22 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 		case KET_FUNC:
 			(tokp->f.deffunc)(sml);
 			break;
+		case KET_XPROP:
+			if (tokp->propget) {
+				// we need ifield, because for a propget, the tokp is not a pointer to a real fields
+				// it's only a normal token with ifield pointing to the real field to manager
+				// it's a false record to deal with propget. 
+				int i = tokp->ifield;
+				if (i < 0) {
+					i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
+				}
+				stack[sml->top++] = fields[i];
+				ke_poperty_get(sml);
+			}
+			else {
+				stack[sml->top++] = tokp;
+			}
+			break;
 		case KET_PROP:
 			if (tokp->propget) {
 				// we need ifield, because for a propget, the tokp is not a pointer to a real fields
@@ -121,12 +137,14 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 				// it's a false record to deal with propget. 
 				int i = tokp->ifield;
 				if (i >= 0) {
+					tokp->ttype = KET_XPROP;
 					if (sml->fields[i] == NULL) {
 						sml->fields[i] = tokp;
 					}
 				}
 				else {
 					if (sml->localtop != sml->inittop) {
+						tokp->ttype = KET_XPROP;
 						i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
 						if (sml->fields[i] == NULL) {
 							sml->fields[i] = tokp;
@@ -140,12 +158,14 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 			else {
 				int i = tokp->ifield;
 				if (i >= 0) {
+					tokp->ttype = KET_XPROP;
 					if (sml->fields[i] == NULL) {
 						sml->fields[i] = tokp;
 					}
 				}
 				else {
 					if (sml->localtop != sml->inittop) {
+						tokp->ttype = KET_XPROP;
 						i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
 						if (sml->fields[i] == NULL) {
 							sml->fields[i] = tokp;

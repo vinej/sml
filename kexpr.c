@@ -403,7 +403,7 @@ void ke_print_one_stack(token_t * tokp)
 		}
     } else if (tokp->ttype == KET_OP) {
         printf("%d", tokp->op);
-    } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_PROP || tokp->ttype == KET_CMD) {
+    } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_PROP || tokp->ttype == KET_XPROP || tokp->ttype == KET_CMD) {
         printf("%s(%d)", tokp->name, tokp->n_args);
     }
 }
@@ -452,7 +452,7 @@ void ke_print_one(sml_t *sml, token_t * tokp)
     #ifdef DEBUG
         if (tokp->ttype == KET_OP) {
             //printf("%s ", ke_opstr[tokp->op]);
-        } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_CMD || tokp->ttype == KET_PROP) {
+        } else if (tokp->ttype == KET_FUNC || tokp->ttype == KET_CMD || tokp->ttype == KET_PROP || tokp->ttype == KET_XPROP) {
             printf("%s(%d) ", tokp->name, tokp->n_args);
         }
     #endif // DEBUG

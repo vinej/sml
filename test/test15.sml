@@ -7,7 +7,6 @@
 	if (out > 1) 
 		exe(test,out-1)
 	end
-	print('end')
 enddef
 
 exe(test,2)
