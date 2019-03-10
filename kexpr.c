@@ -207,6 +207,64 @@ void ke_import(sml_t *sml, char * s) {
 #endif
 }
 
+gsl_matrix * sml_pop_set_matrix(sml_t * sml) {
+	token_t* p = sml->stack[--sml->top];
+	int i = p->ifield;
+	i = i < 0 ? i + sml->localtop : i;
+	p = sml->fields[i];
+	return p->obj.matrix;
+}
+
+gsl_vector * sml_pop_set_vector(sml_t * sml) {
+	token_t* p = sml->stack[--sml->top];
+	int i = p->ifield;
+	i = i < 0 ? i + sml->localtop : i;
+	p = sml->fields[i];
+	return p->obj.vector;
+}
+
+gsl_vector_int * sml_pop_set_vector_int(sml_t * sml) {
+	token_t* p = sml->stack[--sml->top];
+	int i = p->ifield;
+	i = i < 0 ? i + sml->localtop : i;
+	p = sml->fields[i];
+	return p->obj.vector_int;
+}
+
+gsl_matrix * sml_peek_set_matrix(sml_t * sml, int n) {
+	token_t* p = sml->stack[n];
+	int i = p->ifield;
+	i = i < 0 ? i + sml->localtop : i;
+	p = sml->fields[i];
+	return p->obj.matrix;
+}
+
+void * sml_peek_set_ptr(sml_t * sml, int n) {
+	token_t* p = sml->stack[n];
+	int i = p->ifield;
+	i = i < 0 ? i + sml->localtop : i;
+	p = sml->fields[i];
+	return p->obj.ptr;
+}
+
+gsl_vector * sml_peek_set_vector(sml_t * sml, int n) {
+	token_t* p = sml->stack[n];
+	int i = p->ifield;
+	i = i < 0 ? i - sml->localtop : i;
+	p = sml->fields[i];
+	return p->obj.vector;
+}
+
+gsl_vector_int * sml_peek_set_vector_int(sml_t * sml, int n) {
+	token_t* p = sml->stack[n];
+	int i = p->ifield;
+	i = i < 0 ? i - sml->localtop : i;
+	p = sml->fields[i];
+	return p->obj.vector_int;
+}
+
+
+
 void ke_load_dll(sml_t *sml, char * p) {
 	char *t = p;
 	while (*t != '"' && *t != '\'') ++t;
@@ -431,7 +489,7 @@ void ke_print_one(sml_t *sml, token_t * tokp)
 			printf("\n");
 		}
 	} else if (tokp->vtype == KEV_BUFFER && tokp->i > 0) {
-		printf("%.*s", tokp->i, tokp->obj.buffer);
+		printf("%.*s", strlen(tokp->obj.buffer), tokp->obj.buffer);
 	} else if (tokp->vtype == KEV_FPOS && tokp->i > 0) {
 		printf("fpos");
 	} else if (tokp->vtype == KEV_VEC ) {
@@ -551,29 +609,34 @@ void ke_set_val_index(sml_t *sml, int i, token_t *tokp) {
 }
 
 void ke_set_val(sml_t* sml, token_t* e, token_t *q) {
-	 e->vtype = q->vtype;
-	 if (q->vtype == KEV_INT)  e->i = q->i, e->r = (double)e->i; 
-	 else if (q->vtype == KEV_REAL)	e->r = q->r, e->i = (int64_t)e->r;
-	 else if (q->vtype == KEV_STR) 	ke_set_str(sml, e, q->obj.s);
-	 else if (q->vtype == KEV_VEC)	ke_set_vector(sml, e, q->obj.vector);
-	 else if (q->vtype == KEV_VEC_INT)	ke_set_vector_int(sml, e, q->obj.vector_int);
-	 else if (q->vtype == KEV_MAT) 	ke_set_matrix(sml, e, q->obj.matrix);
-	 else if (q->vtype == KEV_COMPLEX) ke_set_complex(sml, e, q->obj.tcomplex);
-	 else if (q->vtype == KEV_REC) ke_set_record(sml, q, e);
-	 else if (q->vtype == KEV_IMAGE) ke_set_image(sml, q, e);
-	 else if (q->vtype == KEV_FILE) ke_set_file(sml, q, e);
-	 else if (q->vtype == KEV_DATE) ke_set_date(sml, e, q->obj.date);
-	 else if (q->vtype == KEV_BUFFER) ke_set_buffer(sml, q, e);
-	 else if (q->vtype == KEV_FPOS) ke_set_fpos(sml, q, e);
-	 else {
-        printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
-     }
-	 if (q->tofree == 1) {
-		 if (q->vtype == KEV_STR) {
-			 ke_free_memory(sml, q->obj.s);
-			 q->tofree = 0;
-		 }
-	 }
+	int i = e->ifield;
+	if (i < 0) {
+		i += sml->localtop;
+	}
+ 	e = sml->fields[i];
+	e->vtype = q->vtype;
+	if (q->vtype == KEV_INT)  e->i = q->i, e->r = (double)e->i; 
+	else if (q->vtype == KEV_REAL)	e->r = q->r, e->i = (int64_t)e->r;
+	else if (q->vtype == KEV_STR) 	ke_set_str(sml, e, q->obj.s);
+	else if (q->vtype == KEV_VEC)	ke_set_vector(sml, e, q->obj.vector);
+	else if (q->vtype == KEV_VEC_INT)	ke_set_vector_int(sml, e, q->obj.vector_int);
+	else if (q->vtype == KEV_MAT) 	ke_set_matrix(sml, e, q->obj.matrix);
+	else if (q->vtype == KEV_COMPLEX) ke_set_complex(sml, e, q->obj.tcomplex);
+	else if (q->vtype == KEV_REC) ke_set_record(sml, q, e);
+	else if (q->vtype == KEV_IMAGE) ke_set_image(sml, q, e);
+	else if (q->vtype == KEV_FILE) ke_set_file(sml, q, e);
+	else if (q->vtype == KEV_DATE) ke_set_date(sml, e, q->obj.date);
+	else if (q->vtype == KEV_BUFFER) ke_set_buffer(sml, q, e);
+	else if (q->vtype == KEV_FPOS) ke_set_fpos(sml, q, e);
+	else {
+       printf("\n->*** ERROR: %s:%s\n\n", "Error: Invalid type ", e->name);
+    }
+	if (q->tofree == 1) {
+		if (q->vtype == KEV_STR) {
+			ke_free_memory(sml, q->obj.s);
+			q->tofree = 0;
+		}
+	}
 }
 
 inline token_t * ke_get_out(sml_t *sml) {

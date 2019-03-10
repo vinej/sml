@@ -157,6 +157,7 @@ KDQ_INIT(int)
 
 struct sml_s;
 typedef struct sml_s {
+	int is_execute;
 	int topGlobal;
 	struct token_s *def_name;      // current def name to put the stack ref
 	struct token_s **stack;        // stack for the evaluation of the program
@@ -282,6 +283,14 @@ void * ke_calloc_memory(sml_t *sml, size_t i, size_t x);
 void * ke_malloc_memory(sml_t *sml, size_t i);
 void ke_free_memory(sml_t *sml, void * m);
 void ke_print_one(sml_t *sml, token_t* t);
+gsl_matrix * sml_pop_set_matrix(sml_t * sml);
+gsl_vector * sml_pop_set_vector(sml_t * sml);
+gsl_vector_int * sml_pop_set_vector_int(sml_t * sml);
+gsl_matrix * sml_peek_set_matrix(sml_t * sml, int n);
+gsl_vector * sml_peek_set_vector(sml_t * sml, int n);
+gsl_vector_int * sml_peek_set_vector_int(sml_t * sml, int n);
+void * sml_peek_set_ptr(sml_t * sml, int n);
+
 
 #define __GLOBAL "g_"
 #define __GLOBAL_SEP "_"
@@ -341,17 +350,42 @@ void ke_print_one(sml_t *sml, token_t* t);
 #define sml_get_real(t) t->r
 #define sml_get_int(t) t->i
 #define sml_get_ifield(t) t->ifield
-#define sml_set_int(t,ii) t->i = ii
+
+#define sml_set_int(sml,t,ii) { int i = t->ifield; \
+	if (i < 0) { \
+		i += sml->localtop; \
+	} \
+	t = sml->fields[i]; \
+	t->i = ii; }
+
 #define sml_get_ptr(t) t->obj.ptr
 #define sml_get_file(t) t->obj.file
 #define sml_get_buffer(t) t->obj.buffer
 #define sml_get_fpos(t) t->obj.fpos
-#define sml_set_fpos(t,fposp) t->obj.fpos = fposp
-#define sml_set_ptr_null(t) t->obj.ptr = NULL
-#define sml_get_len(t) t->i
 
+#define sml_set_fpos(sml,t,fposp) { int i = t->ifield; \
+	if (i < 0) { \
+		i += sml->localtop; \
+	} \
+	t = sml->fields[i]; \
+	t->obj.fpos = fposp; }
+
+
+#define sml_set_ptr_null(sml,t) { int i = t->ifield; \
+	if (i < 0) { \
+		i += sml->localtop; \
+	} \
+	t = sml->fields[i]; \
+	t->obj.ptr = NULL; }
+
+#define sml_get_len(t) t->i
 #define sml_adr_str(t) &t->obj.s
 #define sml_adr_ptr(t) &t->obj
+
+#define sml_get_matrix(t) t->obj.matrix
+#define sml_get_vector(t) t->obj.vector
+#define sml_get_vector_int(t) t->obj.vector_int
+#define sml_get_complex(t) t->obj.complex
 
 #define sml_push_buffer(sml, b, ii) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
@@ -486,6 +520,10 @@ void ke_print_one(sml_t *sml, token_t* t);
 #define sml_mem_inc ke_inc_memory
 
 #define sml_save_str(sml, tokp, tmp) \
+	int k = tokp->ifield; \
+    if (k < 0) \
+		k += sml->localtop; \
+	tokp = sml->fields[k]; \
 	if (tokp->vtype == KEV_STR && tokp->obj.s) { \
 		ke_free_memory(sml, tokp->obj.s); \
 	} \

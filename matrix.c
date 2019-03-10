@@ -76,7 +76,7 @@ static void ke_matrix_free(sml_t* sml) {
 	token_t * tokp = sml_pop_token(sml);
 	void * m = sml_get_ptr(tokp);
 	sml_free_ptr(sml, m);
-	sml_set_ptr_null(tokp);
+	sml_set_ptr_null(sml,tokp);
 }
 
 static void ke_matrix_set_all(sml_t* sml) { 

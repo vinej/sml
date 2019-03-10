@@ -54,7 +54,7 @@ SML_EXPORT void SML_CALL ke_plimfree(sml_t* sml) {
 	token_t * tokp = sml_pop_token(sml);
 	void * ptr = sml_get_ptr(tokp);
 	free(ptr);
-	sml_set_ptr_null(tokp);
+	sml_set_ptr_null(sml,tokp);
 }
 
 SML_EXPORT void SML_CALL ke_plimwrite(sml_t* sml) {

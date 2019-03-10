@@ -254,6 +254,7 @@
     <ClInclude Include="vector.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="buildin.c" />
     <ClCompile Include="command.c" />
     <ClCompile Include="complex.c" />
     <ClCompile Include="constants.c" />

@@ -22,14 +22,14 @@
 	token_t * tokp = sml_pop_token(sml);
 	void * v = sml_get_ptr(tokp);
 	sml_free_ptr(sml, v);
-	sml_set_ptr_null(tokp);
+	sml_set_ptr_null(sml,tokp);
 }
 
  static void ke_vector_int_free(sml_t* sml) { 
 	 token_t * tokp = sml_pop_token(sml);
 	 void * v = sml_get_ptr(tokp);
 	 sml_free_ptr(sml, v);
-	 sml_set_ptr_null(tokp);
+	 sml_set_ptr_null(sml,tokp);
 }
 
 void ke_vector_get(sml_t* sml) { 

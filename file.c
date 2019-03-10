@@ -126,9 +126,9 @@ static void ke_file_free_buffer(sml_t* sml) {
 	void * ptr = sml_get_ptr(tokp);
 	sml_assert_ptr(sml, ptr, 1, FILE_FREEBUFFER);
 	sml_free_ptr(sml, ptr);
-	sml_set_ptr_null(tokp);
-	sml_set_int(tokp, 0);
-	sml_set_ptr_null(tokp);
+	sml_set_ptr_null(sml,tokp);
+	sml_set_int(sml,tokp, 0);
+	sml_set_ptr_null(sml,tokp);
 }
 
 // TESTED
@@ -231,8 +231,8 @@ static void ke_file_fclose(sml_t* sml) {
 	if (st != 0) {
 		sml_fatal_error(sml, cant_close_file, FILE_FCLOSE);
 	}
-	sml_set_ptr_null(tokp);
-	sml_set_int(tokp, 0);
+	sml_set_ptr_null(sml,tokp);
+	sml_set_int(sml,tokp, 0);
 }
 
 // TESTED
@@ -786,7 +786,7 @@ static void ke_file_sprintf(sml_t* sml) {
 	char * format = sml_peek_str(sml, (top-tokp->n_args+1));
 	sml_assert_str(sml, 2, FILE_SPRINTF);
 
-	void * ptr = sml_peek_ptr(sml, (top-tokp->n_args));
+	void * ptr = sml_peek_set_ptr(sml, (top-tokp->n_args));
 	sml_assert_ptr(sml, ptr, 1, FILE_SPRINTF);
 
 	if (tokp->n_args > 2) {
@@ -850,6 +850,11 @@ void** gen_scan_valist(sml_t*sml, size_t n_args, int top) {
 	void** va = ke_calloc_memory(sml,128, sizeof(void*)); /* prepare enough memory*/
 	for (int i = top - (int)n_args + 1, j = 0; i < top; i++, j++) {
 		q = stack[i];
+		int t = q->ifield;
+		if (t < 0) {
+			t += sml->localtop;
+		}
+		q = sml->fields[t];
 		if (q->vtype == KEV_STR) {
 			ke_free_memory(sml, q->obj.s);
 			q->obj.s = ke_calloc_memory(sml,MAX_BUF+1, 1);
@@ -870,6 +875,11 @@ void set_i_r(sml_t*sml, size_t n_args, int top) {
 	token_t *q;
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = stack[i];
+		int t = q->ifield;
+		if (t < 0) {
+			t += sml->localtop;
+		}
+		q = sml->fields[t];
 		if (q->vtype == KEV_STR) {
 			size_t len = strlen(q->obj.s);
 			char * tmp = ke_calloc_memory(sml,len + 1,1);
@@ -890,6 +900,11 @@ void set_xi_r(sml_t*sml, size_t n_args, int top) {
 	token_t *q;
 	for (int i = top - (int)n_args + 1; i < top; i++) {
 		q = stack[i];
+		int t = q->ifield;
+		if (t < 0) {
+			t += sml->localtop;
+		}
+		q = sml->fields[t];
 		if (q->vtype == KEV_INT) {
 			q->r = (double)q->i;
 		}
@@ -1062,6 +1077,12 @@ static void ke_file_fgets(sml_t* sml) {
 	sml_assert_ptr(sml, file, 1, FILE_FGETS);
 
 	token_t * token = sml_pop_token(sml);
+	int t = token->ifield;
+	if (t < 0) {
+		t += sml->localtop;
+	}
+	token = sml->fields[t];
+
 	char ** str = sml_adr_str(token);
 	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
 	if (fgets(ptr, MAX_BUF, file) == NULL) {
@@ -1093,6 +1114,12 @@ static void ke_file_xfgets(sml_t* sml) {
 	sml_assert_size(sml, size, 2, FILE_XFGETS);
 
 	token_t* token = sml_pop_token(sml);
+	int t = token->ifield;
+	if (t < 0) {
+		t += sml->localtop;
+	}
+	token = sml->fields[t];
+
 	char ** str = sml_adr_str(token);
 	if ( fgets(*str, size, file) == NULL) {
 		printf("Error: ke_file_xfgets");
@@ -1136,6 +1163,12 @@ static void ke_file_getchar(sml_t* sml) {
 // char *gets(char *str)
 static void ke_file_gets(sml_t* sml) { 
 	token_t* token = sml_pop_token(sml);
+	int t = token->ifield;
+	if (t < 0) {
+		t += sml->localtop;
+	}
+	token = sml->fields[t];
+
 	char ** str = sml_adr_str(token);
 
 	char * ptr = sml_new_ptr(sml,MAX_BUF+1);
@@ -1157,6 +1190,12 @@ static void ke_file_gets(sml_t* sml) {
 static void ke_file_xgets(sml_t* sml) { 
 	int size = sml_pop_int(sml);
 	token_t * token = sml_pop_token(sml);
+	int t = token->ifield;
+	if (t < 0) {
+		t += sml->localtop;
+	}
+	token = sml->fields[t];
+
 	char ** str = sml_adr_str(token);
 	if ( fgets(*str, (int)size, stdin) == 0) {
 		printf("Error ke_file_xgets");

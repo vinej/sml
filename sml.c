@@ -26,26 +26,34 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 			if ((*tokpp)->ttype == KET_VNAME) {
 				int i = (*tokpp)->ifield;
 				if (i >= 0) {
-					(*tokpp)->ttype = KET_XNAME;
+					//(*tokpp)->ttype = KET_XNAME;
 					if (sml->fields[i] == NULL) {
 						sml->fields[i] = *tokpp;
-						stack[sml->top] = *tokpp;
+						token_t* out = ke_get_out(sml);
+						memcpy(out, *tokpp, sizeof(token_t));
+						stack[sml->top] = out;
 					}
 					else {
-						stack[sml->top] = sml->fields[i];
+						token_t* out = ke_get_out(sml);
+						memcpy(out, sml->fields[i], sizeof(token_t));
+						stack[sml->top] = out;
 						*tokpp = sml->fields[i];
 					}
 				}
 				else {
 					if (sml->localtop != sml->inittop) {
-						(*tokpp)->ttype = KET_XNAME;
+						//(*tokpp)->ttype = KET_XNAME;
 						int i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
 						if (sml->fields[i] == NULL) {
 							sml->fields[i] = *tokpp;
-							stack[sml->top] = *tokpp;
+							token_t* out = ke_get_out(sml);
+							memcpy(out, *tokpp, sizeof(token_t));
+							stack[sml->top] = out;
 						}
 						else {
-							stack[sml->top] = sml->fields[i];
+							token_t* out = ke_get_out(sml);
+							memcpy(out, sml->fields[i], sizeof(token_t));
+							stack[sml->top] = out;
 							*tokpp = sml->fields[i];
 						}
 					}
@@ -53,7 +61,10 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 				sml->top++;
 				*tokpp++;
 			} else {
-				stack[sml->top++] = *tokpp++;
+				token_t* out = ke_get_out(sml);
+				memcpy(out, *tokpp, sizeof(token_t));
+				stack[sml->top++] = out;
+				*tokpp++;
 			}
 			++itok;
 		}
@@ -77,15 +88,14 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 						}
 					}
 				}
-				stack[sml->top++] = fields[i];
+				token_t* out = ke_get_out(sml);
+				memcpy(out, fields[i], sizeof(token_t));
+				stack[sml->top++] = out;
 			}
 			break;
 
 		case KET_DEFNAME:
-			if (!tokp->assigned) {
-				tokp->assigned = 1;
-			}
-			else {
+			if (sml->is_execute) {
 				sml->localtop += tokp->ijmp;
 			}
 			stack[sml->top++] = tokp;
@@ -103,9 +113,7 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 				if (!stack[top_m2]->propset) {
 					q = stack[--sml->top];
 					p = stack[--sml->top];
-					if (q->vtype == KEV_INT)  p->vtype = KEV_INT, p->i = q->i, p->r = (double)p->i;
-					else if (q->vtype == KEV_REAL) p->vtype = KEV_REAL, p->r = q->r, p->i = (int64_t)p->r;
-					else { ke_set_val(sml, p, q); }
+					ke_set_val(sml, p, q); 
 				}
 				else {
 					e = stack[top_m2];

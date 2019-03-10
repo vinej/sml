@@ -10,6 +10,6 @@
 	print('exit')
 enddef
 
-exe(test,2)
+exe(test,1)
 print('end')
 

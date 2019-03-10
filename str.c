@@ -58,8 +58,6 @@ void ke_str_prop_get_2par(sml_t* sml) {
 
 void ke_str_prop_set_1par(sml_t* sml) {
 	// a[2] = 'z' =>  2 a(1) 'z' =
-	// TODO NOT UTF8
-	token_t *p, *q, *v;
 	char * dest = sml_pop_str(sml);
 	char * src = sml_pop_str(sml);
 	int i = sml_pop_int(sml);
@@ -86,6 +84,7 @@ static void ke_strcpy(sml_t* sml) {
 static void ke_strcat(sml_t* sml) {
 	char * src = sml_pop_str(sml);
 	token_t * tokp = sml_pop_token(sml);
+
 	char * dest = sml_get_str(tokp);
 
 	size_t destlen = (dest == NULL ? 0 : utf8size(dest));
@@ -103,6 +102,11 @@ static void ke_strcat(sml_t* sml) {
 static void ke_strbuf(sml_t* sml) {
 	int i = sml_pop_int(sml);
 	token_t * tokp = sml_pop_token(sml);
+	int t = tokp->ifield;
+	if (t < 0) {
+		t += sml->localtop;
+	}
+	tokp = sml->fields[t];
 	char ** str = sml_adr_str(tokp);
 	*str = sml_new_ptr(sml,i);
 	tokp->ttype = KET_VAL;
@@ -111,6 +115,11 @@ static void ke_strbuf(sml_t* sml) {
 
 static void ke_strfree(sml_t* sml) {
 	token_t * tokp = sml_pop_token(sml);
+	int t = tokp->ifield;
+	if (t < 0) {
+		t += sml->localtop;
+	}
+	tokp = sml->fields[t];
 	char ** str = sml_adr_str(tokp);
 	sml_free_ptr(sml, *str);
 }
