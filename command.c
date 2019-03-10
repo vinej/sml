@@ -72,16 +72,14 @@ int ke_command_for(sml_t* sml, int itok) {
 	int top = rtop - n;
 
 	token_t *var = stack[top]; // copy of the real variable into the stack
-	int i = var->ifield;
-	if (i < 0) {
-		i += sml->localtop;
+	if (var->ifield < 0) {
+		int i = var->ifield + sml->localtop;
+		var = sml->fields[i];
 	}
-	var = sml->fields[i];
+
 	if (!sml_get_assigned(sml)) {
-	
 		token_t *min = stack[top + 1];
 		sml_set_assigned(sml, 1);
-
 		var->ijmp = sml_get_ijmp(sml);
 		var->r = min->r;
 		var->i = min->i;
@@ -144,6 +142,19 @@ int  ke_command_val_next(sml_t* sml, int itok) {
 }
 
 int  ke_command_val_rtn(sml_t* sml, int itok) {
+	for (int i = itok - 1; i > -1; i--) {
+		token_t *f = sml->tokens[i];
+		if (f->ttype == KET_XNAME && f->ifield < 0) {
+			f->ttype == KET_VNAME;
+		}
+		if (f->ttype == KET_XPROP && f->ifield < 0) {
+			f->ttype == KET_PROP;
+		}
+		if (f->vtype == KEV_DEF) {
+			break;
+		}
+	}
+
 	token_t * tokp = sml_get_tokp(sml);
 	sml->localtop -= sml_get_ifield(tokp);
 	return *kdq_pop(int, sml->callstack);

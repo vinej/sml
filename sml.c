@@ -24,9 +24,9 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 		while ((*tokpp)->ttype > KET_VAL_SEP) {
 			// here if it's a field, we must put into the stack the point to the field, not the pointer of the current token
 			if ((*tokpp)->ttype == KET_VNAME) {
-				int i = (*tokpp)->ifield;
-				if (i >= 0) {
-					//(*tokpp)->ttype = KET_XNAME;
+				// VNAME means that it's inside a DEF, because global variables have XNAME
+				if (sml->localtop != sml->inittop) {
+					int i = (*tokpp)->ifield + sml->localtop;
 					if (sml->fields[i] == NULL) {
 						sml->fields[i] = *tokpp;
 						token_t* out = ke_get_out(sml);
@@ -39,32 +39,11 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 						stack[sml->top] = out;
 						*tokpp = sml->fields[i];
 					}
+					sml->top++;
 				}
-				else {
-					if (sml->localtop != sml->inittop) {
-						//(*tokpp)->ttype = KET_XNAME;
-						int i = (*tokpp)->ifield + sml->localtop; // +(*tokpp)->ijmp;
-						if (sml->fields[i] == NULL) {
-							sml->fields[i] = *tokpp;
-							token_t* out = ke_get_out(sml);
-							memcpy(out, *tokpp, sizeof(token_t));
-							stack[sml->top] = out;
-						}
-						else {
-							token_t* out = ke_get_out(sml);
-							memcpy(out, sml->fields[i], sizeof(token_t));
-							stack[sml->top] = out;
-							*tokpp = sml->fields[i];
-						}
-					}
-				}
-				sml->top++;
 				*tokpp++;
 			} else {
-				token_t* out = ke_get_out(sml);
-				memcpy(out, *tokpp, sizeof(token_t));
-				stack[sml->top++] = out;
-				*tokpp++;
+				stack[sml->top++] = *tokpp++;
 			}
 			++itok;
 		}
@@ -113,7 +92,7 @@ int ke_sml(sml_t *sml, kexpr_t *kexpr, int64_t *_i, double *_r, char **_p, int *
 				if (!stack[top_m2]->propset) {
 					q = stack[--sml->top];
 					p = stack[--sml->top];
-					ke_set_val(sml, p, q); 
+					ke_set_val(sml, p, q);
 				}
 				else {
 					e = stack[top_m2];

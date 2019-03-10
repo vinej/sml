@@ -328,30 +328,21 @@ int ke_fill_list(sml_t *sml, kexpr_t *ke)
 	token_t * ne = NULL;
 	for (int i = 0; i < ke->n; ++i) {
         token_t *tokp = &ke->e[i];
-		/*
-        if (tokp->ttype == KET_VNAME) {
-			ne = sml->fields[tokp->ifield];
-			if (ne == NULL) {
-				//char * newname = ke_mystrndup(sml, tokp->name, strlen(tokp->name));
-				ne = ke_malloc_memory(sml, sizeof(token_t));
-				if (ne == NULL) {
-					printf("out of memory at ke_fill_list");
-					printf("TODO clean up the memory");
-					abort();
+		if (tokp->ttype == KET_VNAME) {
+			if (tokp->ifield >= 0) {
+				if (sml->fields[tokp->ifield] == NULL) {
+					sml->fields[tokp->ifield] = tokp;
 				}
-				if ((tokp->ifield < sml->rec_qte) && (strcmp(sml->recp[tokp->ifield]->name, tokp->name) == 0)) {
-					memcpy(ne, sml->recp[tokp->ifield], sizeof(token_t));
-				}
-				else {
-					memcpy(ne, tokp, sizeof(token_t));
-				}
-				ne->name = tokp->name;
-				sml->fields[tokp->ifield] = ne;
-            }
-			tokp = ne;
+				sml->fields[tokp->ifield]->ttype = KET_XNAME;
+				sml->tokens[i] = sml->fields[tokp->ifield];
+			}
+			else {
+				sml->tokens[i] = tokp;
+			}
 		}
-		*/
-        sml->tokens[i] = tokp;
+		else {
+			sml->tokens[i] = tokp;
+		}
 	}
 	return ke_set_ijmp(sml, ke, sml->tokens);
 }
@@ -609,11 +600,10 @@ void ke_set_val_index(sml_t *sml, int i, token_t *tokp) {
 }
 
 void ke_set_val(sml_t* sml, token_t* e, token_t *q) {
-	int i = e->ifield;
-	if (i < 0) {
-		i += sml->localtop;
+	if (e->ifield < 0) {
+		int i = e->ifield + sml->localtop;
+		e = sml->fields[i];
 	}
- 	e = sml->fields[i];
 	e->vtype = q->vtype;
 	if (q->vtype == KEV_INT)  e->i = q->i, e->r = (double)e->i; 
 	else if (q->vtype == KEV_REAL)	e->r = q->r, e->i = (int64_t)e->r;

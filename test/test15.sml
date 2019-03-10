@@ -1,4 +1,5 @@
 ﻿def(test,out) 
+    aa = 1
     j = 1
 	for(aa,1,1000000)
 		j =  aa
@@ -10,6 +11,12 @@
 	print('exit')
 enddef
 
-exe(test,1)
+#exe(test,2)
+aa = 1
+j = 1
+for(aa,1,1000000)
+	j =  aa
+next
+print(j)
 print('end')
 
