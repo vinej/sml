@@ -350,7 +350,7 @@ int ke_fill_list(sml_t *sml, kexpr_t *ke)
 void ke_set_int(sml_t* sml, token_t *tokp, int64_t y)
 {
 	double yy = (double)y;
-	tokp->i = y, tokp->r = yy, tokp->vtype = KEV_INT, tokp->assigned = 1;
+	tokp->i = y, tokp->r = yy, tokp->vtype = KEV_INT;
 }
 
 void ke_set_real(sml_t* sml, token_t *tokp, double x)
@@ -362,13 +362,13 @@ void ke_set_real(sml_t* sml, token_t *tokp, double x)
 void ke_set_vector(sml_t * sml, token_t *tokp, gsl_vector * vecp)
 {
     ke_vector_freemem(sml, tokp);
-    tokp->obj.vector = vecp, tokp->vtype = KEV_VEC, tokp->ttype = KET_VAL, tokp->assigned = 1;
+    tokp->obj.vector = vecp, tokp->vtype = KEV_VEC, tokp->ttype = KET_VAL;
 }
 
 void ke_set_vector_int(sml_t * sml, token_t *tokp, gsl_vector_int * vecp)
 {
 	ke_vector_int_freemem(sml,tokp);
-	tokp->obj.vector_int = vecp, tokp->vtype = KEV_VEC_INT, tokp->ttype = KET_VAL, tokp->assigned = 1;
+	tokp->obj.vector_int = vecp, tokp->vtype = KEV_VEC_INT, tokp->ttype = KET_VAL;
 }
 
 void ke_set_date(sml_t * sml, token_t *tokp, GDate_t * datep)
@@ -379,19 +379,18 @@ void ke_set_date(sml_t * sml, token_t *tokp, GDate_t * datep)
 	tokp->obj.date = datep;
 	tokp->vtype = KEV_DATE;
 	tokp->ttype = KET_VAL;
-	tokp->assigned = 1;
 }
 
 void ke_set_matrix(sml_t *sml, token_t *tokp, gsl_matrix * matp)
 {
     ke_matrix_freemem(sml, tokp);
-    tokp->obj.matrix = matp, tokp->vtype = KEV_MAT, tokp->ttype = KET_VAL, tokp->assigned = 1;
+    tokp->obj.matrix = matp, tokp->vtype = KEV_MAT, tokp->ttype = KET_VAL;
 }
 
 
 void ke_set_complex(sml_t *sml, token_t *tokp, gsl_complex complex)
 {
-	tokp->obj.tcomplex = complex, tokp->vtype = KEV_COMPLEX, tokp->assigned = 1;
+	tokp->obj.tcomplex = complex, tokp->vtype = KEV_COMPLEX;
 }
 
 static void ke_set_str_internal(sml_t* sml,token_t *tokp, char * tmp) {
@@ -399,7 +398,7 @@ static void ke_set_str_internal(sml_t* sml,token_t *tokp, char * tmp) {
         ke_free_memory(sml,tokp->obj.s);
     }
     tokp->obj.s = tmp;
-    tokp->i = strlen(tmp), tokp->r = (double)tokp->i, tokp->assigned = 1;
+    tokp->i = strlen(tmp), tokp->r = (double)tokp->i;
     tokp->vtype = KEV_STR;
 }
 

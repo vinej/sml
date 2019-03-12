@@ -29,7 +29,6 @@ int ke_command_if(sml_t* sml, int itok) {
 // 5 == 2
 int ke_command_def(sml_t* sml, int itok) {
 	token_t * tokp = sml_get_tokp(sml);
-
 	token_t **stack = sml_get_stack(sml);
 	int n = sml_get_args(sml);  // the name of the def is not into the stack
 	int top = sml_get_top(sml);
@@ -71,35 +70,43 @@ int ke_command_for(sml_t* sml, int itok) {
 	int n = sml_get_args(sml);
 	int top = rtop - n;
 
-	token_t *var = stack[top]; // copy of the real variable into the stack
+	register token_t *var = stack[top]; // copy of the real variable into the stack
 	if (var->ifield < 0) {
 		int i = var->ifield + sml->localtop;
 		var = sml->fields[i];
 	}
 
-	if (!sml_get_assigned(sml)) {
-		token_t *min = stack[top + 1];
-		sml_set_assigned(sml, 1);
-		var->ijmp = sml_get_ijmp(sml);
-		var->r = min->r;
-		var->i = min->i;
-		pushfor(sml, itok);
-	}
-	else {
-		if (var->r >= stack[top + 2]->r) {
-			sml_set_assigned(sml, 0);
-			popfor(sml);
-			sml_set_top(sml, top);
-			return var->ijmp;
+	if (!var->assigned) {
+		// loop infinie
+		if (n == 1) {
+			pushfor(sml, var->ifield);
 		}
 		else {
-			if (n == 4) {
-				var->r += stack[top + 3]->r;
-				var->i += stack[top + 3]->i;
+			token_t *min = stack[top + 1];
+			var->assigned = 1;
+			var->ijmp = sml_get_ijmp(sml);
+			var->r = min->r;
+			var->i = min->i;
+			pushfor(sml, var->ifield);
+		}
+	}
+	else {
+		if (n != 1) {
+			if (var->i >= stack[top + 2]->i) {
+				var->assigned = 0;
+				popfor(sml);
+				sml_set_top(sml, top);
+				return var->ijmp;
 			}
 			else {
-				var->r += 1;
-				++var->i;
+				if (n == 4) {
+					var->r += stack[top + 3]->r;
+					var->i += stack[top + 3]->i;
+				}
+				else {
+					var->r += 1;
+					++var->i;
+				}
 			}
 		}
 	}
@@ -116,22 +123,32 @@ int  ke_command_val_end(sml_t* sml, int itok) {
 }
 
 int  ke_command_val_brk(sml_t* sml, int itok) {
-
-	int ifor = popfor(sml);
-	token_t *efor = ke_get_tokidx(sml,ifor);
-	efor->assigned = 0;
+	int ifield = popfor(sml);
+	if (ifield < 100000) { // for without variable
+		int ifor = ifield - 10000;
+		token_t *efor = ke_get_tokidx(sml, ifor);
+		efor->assigned = 0;
+	}
+	else {
+		if (ifield < 0) {
+			ifield = ifield + sml->localtop;
+		}
+		token_t *var = sml->fields[ifield];
+		var->assigned = 0;
+	}
 	return sml_get_ijmp(sml);
 }
 
-
+/*
 int  ke_command_val_for(sml_t* sml, int itok) {
 	token_t * tokp = sml_get_tokp(sml);
 	if (!sml_get_assigned(sml)) {
 		sml_set_assigned(sml,1);
-		pushfor(sml,itok);
+		pushfor(sml,itok + 100000);
 	}
 	return itok;
 }
+*/
 
 int  ke_command_val_cnt(sml_t* sml, int itok) {
 	return sml_get_ijmp(sml);
@@ -187,7 +204,7 @@ void ke_command_hash(sml_t* sml) {
     ke_command_hash_add(sml, (cmdp)&ke_command_exe, CMD_EXE);
     ke_command_hash_add(sml, (cmdp)&ke_command_for, CMD_FOR);
 
-	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_for, CMD_FOR);
+	//ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_for, CMD_FOR);
 	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_else, CMD_ELSE);
 	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_end, CMD_END);
 	ke_vcommand_hash_add(sml, (vcmdp)&ke_command_val_brk, CMD_BRK);

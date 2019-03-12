@@ -111,12 +111,12 @@ extern char * kev_to_str[17];
 #define KET_REC   6
 #define KET_XPROP 7
 #define KET_PROP  8
-#define KET_VAL_SEP 9  
-#define KET_CONST 10
-#define KET_VAL   11
-#define KET_VNAME 12
+#define KET_VAL_SEP 10
+#define KET_CONST 11
+#define KET_VAL   12
 #define KET_FILE  13
 #define KET_XNAME 14 //already set when it's VNAME
+#define KET_VNAME 15
 
 #define KEF_NULL  0
 #define KEF_REAL  1
@@ -394,8 +394,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out->i = ii; \
 	out->r == (double)ii; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_BUFFER; \
-	out->assigned = 1;
+	out->vtype = KEV_BUFFER;
 
 #define sml_push_file(sml, file) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
@@ -404,23 +403,20 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out->i = 1; \
 	out->r == 1.0; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_FILE; \
-	out->assigned = 1;
+	out->vtype = KEV_FILE;
 
 #define sml_push_new_complex(sml) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
 	out = sml->stack[sml->top++]; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_COMPLEX; \
-	out->assigned = 1;
+	out->vtype = KEV_COMPLEX;
 
 #define sml_push_complex(sml, z) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
 	out = sml->stack[sml->top++]; \
 	out->obj.tcomplex = z; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_COMPLEX; \
-	out->assigned = 1;
+	out->vtype = KEV_COMPLEX;
 
 #define sml_push_real(sml, r) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
@@ -428,16 +424,14 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out->r = r; \
 	out->i = (int64_t)r; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_REAL; \
-	out->assigned = 1;
+	out->vtype = KEV_REAL;
 
 #define sml_push_date(sml, dt) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
 	out = sml->stack[sml->top++]; \
 	out->obj.date = dt; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_DATE; \
-	out->assigned = 1;
+	out->vtype = KEV_DATE;
 
 #define  sml_push_int(sml, ii) token_t* out; \
 	sml->stack[sml->top] = ke_get_out(sml); \
@@ -445,8 +439,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out->i = ii; \
 	out->r = (double)ii; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_INT; \
-	out->assigned = 1;
+	out->vtype = KEV_INT;
 
 #define  sml_push_ptr(sml, ptr) \
 	token_t* out; \
@@ -454,8 +447,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out = sml->stack[sml->top++]; \
 	out->obj.ptr = ptr; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_PTR; \
-	out->assigned = 1; 
+	out->vtype = KEV_PTR;
 
 #define  sml_push_str(sml, str) \
 	token_t* out; \
@@ -463,8 +455,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out = sml->stack[sml->top++]; \
 	out->obj.s = str; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_STR; \
-	out->assigned = 1; 
+	out->vtype = KEV_STR;
 
 #define  sml_push_matrix(sml, m) \
 	token_t* out; \
@@ -472,8 +463,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out = sml->stack[sml->top++]; \
 	out->obj.matrix = m; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_MAT; \
-	out->assigned = 1; 
+	out->vtype = KEV_MAT;
 
 #define  sml_push_vector(sml, v) \
 	token_t* out; \
@@ -481,8 +471,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out = sml->stack[sml->top++]; \
 	out->obj.vector = v; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_VEC; \
-	out->assigned = 1; 
+	out->vtype = KEV_VEC;
 
 #define  sml_push_vector_int(sml, v) \
 	token_t* out; \
@@ -490,8 +479,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out = sml->stack[sml->top++]; \
 	out->obj.vector_int = v; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_VEC_INT; \
-	out->assigned = 1; 
+	out->vtype = KEV_VEC_INT;
 
 #define  sml_push_image(sml, image) \
 	token_t* out; \
@@ -499,8 +487,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out = sml->stack[sml->top++]; \
 	out->obj.image = image; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_IMAGE; \
-	out->assigned = 1; 
+	out->vtype = KEV_IMAGE;
 
 #define  sml_push_fpos(sml, fposp) \
 	token_t* out; \
@@ -508,8 +495,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 	out = sml->stack[sml->top++]; \
 	out->obj.fpos = fposp; \
 	out->ttype = KET_VAL; \
-	out->vtype = KEV_FPOS; \
-	out->assigned = 1; 
+	out->vtype = KEV_FPOS;
 
 #define sml_out_date out->obj.date
 
@@ -528,7 +514,7 @@ void * sml_peek_set_ptr(sml_t * sml, int n);
 		ke_free_memory(sml, tokp->obj.s); \
 	} \
 	tokp->obj.s = tmp; \
-	tokp->i = 0, tokp->r = 0, tokp->assigned = 1; \
+	tokp->i = 0, tokp->r = 0 ; \
 	tokp->vtype = KEV_STR;
 
 #endif

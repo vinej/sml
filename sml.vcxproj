@@ -194,10 +194,10 @@
       <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
       <OmitFramePointers>true</OmitFramePointers>
       <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
-      <EnableFiberSafeOptimizations>true</EnableFiberSafeOptimizations>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
       <EnableEnhancedInstructionSet>AdvancedVectorExtensions</EnableEnhancedInstructionSet>
       <OptimizeForWindowsApplication>true</OptimizeForWindowsApplication>
-      <Parallelization>true</Parallelization>
+      <Parallelization>false</Parallelization>
       <UseIntelOptimizedHeaders>false</UseIntelOptimizedHeaders>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <EnableExpandedLineNumberInfo>false</EnableExpandedLineNumberInfo>
@@ -206,10 +206,9 @@
       </DisableSpecificWarnings>
       <DebugInformationFormat>None</DebugInformationFormat>
       <FloatingPointModel>Fast</FloatingPointModel>
-      <LoopUnrolling>
-      </LoopUnrolling>
+      <LoopUnrolling>16</LoopUnrolling>
       <FlushDenormalResultsToZero>true</FlushDenormalResultsToZero>
-      <EnableMatrixMultiplyLibraryCall>Yes</EnableMatrixMultiplyLibraryCall>
+      <EnableMatrixMultiplyLibraryCall>No</EnableMatrixMultiplyLibraryCall>
       <StringPooling>true</StringPooling>
       <InterproceduralOptimization>MultiFile</InterproceduralOptimization>
       <StructMemberAlignment>Default</StructMemberAlignment>
